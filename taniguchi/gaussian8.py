@@ -29,7 +29,7 @@ class Gaussian8:
         image_orig = numpy.array(input_image)
         image_array = numpy.array(input_image, 'f')
         
-        # Remove hot spots (clip 0 to mean + 10 * sigma)
+        # Remove hot spots
         image_array = image_array.clip(self.image_clip_min, self.image_clip_max)
         image_array = - (image_array - numpy.max(image_array)) / numpy.ptp(image_array)
         

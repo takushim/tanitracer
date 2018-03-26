@@ -47,7 +47,10 @@ if lifetime_span[0] < 2:
     raise Exception('lifetime starting plane must be >= 2')
 
 if args.output_file is None:
-    output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_liftime.txt'
+    if selected_mode == 'lifetime':
+        output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_liftime.txt'
+    else:
+        output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_regression.txt'    
     if input_filename == output_filename:
         raise Exception('input_filename == output_filename')
 else:

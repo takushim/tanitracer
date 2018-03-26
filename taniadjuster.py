@@ -95,6 +95,12 @@ orig_image = tifffile.imread(input_filename)
 if len(orig_image.shape) > 2:
     orig_image = orig_image[use_plane]
 
+# image clip
+median = numpy.median(orig_image)
+sigma = numpy.std(orig_image)
+tracer.image_clip_min = 0.0
+tracer.image_clip_max = median + 10 * sigma
+
 # prepare image of 8-bit RGB color (one plane only)
 image_color = marker.convert_to_color(numpy.array([orig_image]))[0]
 if invert_image is True:
