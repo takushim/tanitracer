@@ -35,7 +35,7 @@ parser.add_argument('input_file', nargs=1, default=input_filename, \
 args = parser.parse_args()
 
 # set arguments
-input_filename = args.input_file
+input_filename = args.input_file[0]
 marker.marker_size = args.marker_size[0]
 marker.marker_colors = args.marker_colors
 invert_image = args.invert_image

@@ -65,9 +65,8 @@ parser.add_argument('input_file', nargs=1, default=input_filename, \
 
 args = parser.parse_args()
 
-
 # set arguments
-input_filename = args.input_file
+input_filename = args.input_file[0]
 use_plane = args.use_plane[0]
 marker.marker_colors = [args.marker_colors[0] for i in range(3)] + [args.marker_colors[1]]
 marker.marker_size = args.marker_size[0]

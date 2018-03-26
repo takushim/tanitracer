@@ -39,7 +39,7 @@ parser.add_argument('input_file', nargs=1, default=input_filename, \
 args = parser.parse_args()
 
 # set arguments
-input_filename = args.input_file
+input_filename = args.input_file[0]
 selected_mode = args.selected_mode
 count_plane = args.count_plane[0]
 lifetime_span = args.lifetime_span

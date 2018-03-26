@@ -31,7 +31,7 @@ parser.add_argument('-t', '--threshold-abs', nargs=1, type=float, default=[trace
 
 parser.add_argument('-C', '--chase-spots', action='store_true', default=chase_spots, \
                     help='chase spots before output tsv file')
-parser.add_argument('-d', '--chase-distance', nargs=1, type=float, default = chaser.chase_distance, \
+parser.add_argument('-d', '--chase-distance', nargs=1, type=float, default = [chaser.chase_distance], \
                     help='maximum distance to assume as identical spots (pixel)')
 
 parser.add_argument('-O', '--output-image', action='store_true', default=output_image, \
@@ -52,7 +52,7 @@ parser.add_argument('input_file', nargs=1, default=input_filename, \
 args = parser.parse_args()
 
 # set arguments
-input_filename = args.input_file
+input_filename = args.input_file[0]
 if args.output_tsv_file is None:
     output_tsv_filename = os.path.splitext(os.path.basename(input_filename))[0] + '.txt'
     if input_filename == output_tsv_filename:
