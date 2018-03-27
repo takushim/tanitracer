@@ -61,9 +61,9 @@ class AlignSift:
             
         # make pandas dataframe
         result = pandas.DataFrame({ \
-                'plane' : numpy.arange(len(images_uint8)), \
-                'x' : move_x, \
-                'y' : move_y})
+                'align_plane' : numpy.arange(len(images_uint8)), \
+                'align_x' : move_x, \
+                'align_y' : move_y})
 
         return result[self.columns]
             
