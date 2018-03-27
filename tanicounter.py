@@ -7,7 +7,7 @@ input_filename = None
 output_filename = None
 count_modes = ['regression', 'lifetime', 'counting']
 selected_mode = count_modes[0]
-lifetime_span = [1, 10]
+lifetime_span = [1, 20]
 count_plane = 0
 start_regression = 0
 

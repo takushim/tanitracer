@@ -86,10 +86,7 @@ if len(orig_image.shape) == 2:
 print("Read image %s" % (input_filename))
 
 # image clip
-median = numpy.median(orig_image[0])
-sigma = numpy.std(orig_image[0])
-tracer.image_clip_min = 0.0
-tracer.image_clip_max = median + 10 * sigma
+tracer.set_image_clip(orig_image[0])
 
 # fitting and combine all results
 results = pandas.DataFrame(index = [], columns = tracer.columns)

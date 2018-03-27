@@ -8,7 +8,7 @@ class BFChaser:
         self.chase_distance = 4.0
         
     def output_header (self, output_file):
-        output_file.write('# Chased by TaniChaser at %s.\n' % (time.ctime()))
+        output_file.write('## Chased by TaniChaser at %s\n' % (time.ctime()))
         output_file.write('#   chase_distance = %f\n' % (self.chase_distance,))
     
     def chase_spots (self, spot_table):

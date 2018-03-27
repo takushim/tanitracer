@@ -1,64 +1,79 @@
 #!/usr/bin/env python
 
 import sys, argparse, pandas, tifffile, numpy
-from taniguchi import spotmarker
+from taniguchi import spotplotter
 
 # prepare spot marker
-marker = spotmarker.SpotMarker()
+plotter = spotplotter.SpotPlotter()
 
 # defaults
-input_filename = 'test.tif'
-marker_filename = 'test.txt'
+input_filenames = None
+image_size = None
+align_spots = True
+align_filename = 'align.txt'
 output_filename = 'output.tif'
-invert_image = False
 
 # parse arguments
-parser = argparse.ArgumentParser(description='plot centroids to check gaussian fitting.', \
+parser = argparse.ArgumentParser(description='make super-resolution image from spot centroids.', \
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
 parser.add_argument('-o', '--output-file', nargs=1, default=[output_filename], \
-                    help='output multipage-tiff file with markers')
+                    help='output super-resolution tiff file')
 
-parser.add_argument('-f', '--marker-file', nargs=1, default=[marker_filename], \
-                    help='read marker tsv file and no running')
-parser.add_argument('-z', '--marker-size', nargs=1, type=int, default=[marker.marker_size], \
-                    help='marker size to plot')
-parser.add_argument('-c', '--marker-colors', nargs=3, type=str, default=marker.marker_colors, \
-                    metavar=('NEW', 'CONT', 'END'), \
-                    help='marker colors for new/continued/end spots')
+parser.add_argument('-n', '--no-align', action='store_true', default=(align_spots is False), \
+                    help='plot without alignment')
+parser.add_argument('-a', '--align-file', nargs=1, default=[align_filename], \
+                    help='tsv file with alignment (align.txt if not specified)')
+parser.add_argument('-e', '--align-each', nargs=1, type=int, default=[plotter.align_each], \
+                    help='tsv file with alignment (align.txt if not specified)')
+                    
+parser.add_argument('-x', '--scale', nargs=1, type=int, default=[plotter.scale], \
+                    help='scale factor to original image')
+parser.add_argument('-z', '--size', nargs=2, type=int, default=image_size, \
+                    metavar=('WIDTH', 'HEIGHT'), \
+                    help='size of original image (read from first file if not specified)')
 
-parser.add_argument('-i', '--invert-image', action='store_true', default=invert_image, \
-                    help='invert image look-up table')
-
-parser.add_argument('input_file', nargs='?', default=input_filename, \
-                    help='input multpage-tiff file to plot markers')
+parser.add_argument('input_file', nargs='+', default=None, \
+                    help='input tsv file(s) with plotting geometries')
 
 args = parser.parse_args()
 
+# collect input filenames
+if (platform.system() == "Windows"):
+    input_filenames = []
+    for pattern in args.input_file:
+        input_filenames.extend(sorted(glob.glob(pattern)))
+else:
+    input_filenames = args.input_file
+
 # set arguments
-input_filename = args.input_file
-output_filename = args.output_file[0]
-marker_filename = args.marker_file[0]
-marker.marker_size = args.marker_size[0]
-marker.marker_colors = args.marker_colors
-invert_image = args.invert_image
+align_spots = (args.no_align is False)
+align_filename = args.align_file[0]
+image_size = args.image_size
+plotter.align_each = args.align_each[0]
 
-# read image
-orig_image = tifffile.imread(input_filename)
-if len(orig_image.shape) == 2:
-    orig_image = numpy.array([orig_image])
+# read align table
+if align_spots is True:
+    align_table = pandas.read_table(align_filename, comment = '#')
 
-# convert image to 8-bit RGB color
-image_color = marker.convert_to_color(orig_image)
-if invert_image is True:
-    image_color = 255 - image_color
+# read first table and determine size
+if image_size is None:
+    locals = {}
+    with open(input_filenames[0], 'r') as spot_file:
+        for line in spot_file:
+            if line.startwith('#') is False:
+                break
+            line = line[1:].strip()
+            exec(line, {}, locals)
+    width, height = int(locals['width']), int(locals['height'])
+else:            
+    width, height = image_size[0], image_size[1]
 
-# read results
-spot_table = pandas.read_table(marker_filename, comment = '#')
+print(width, height)
+sys.exit()
 
-# mark tracking status
-spot_status = marker.tracking_status(spot_table)
-image_color = marker.mark_spots(image_color, spot_table, spot_status)
+# plot spot table(s)
+output_image = numpy.zeros((height, width), dtype=numpy.int32)
 
-# output multipage tiff
-tifffile.imsave(output_filename, image_color)
+for input_filename in input_filenames:
 
