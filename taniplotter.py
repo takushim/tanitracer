@@ -57,18 +57,29 @@ plotter.image_scale = args.image_scale[0]
 # read align table
 if align_spots is True:
     align_table = pandas.read_table(align_filename, comment = '#')
+else:
+    align_table = None
 
 # read first table and determine size
 if image_size is None:
-    width, height = plotter.find_image_size(input_filenames[0])
+    width, height = plotter.read_image_size(input_filenames[0])
 else:            
     width, height = image_size[0], image_size[1]
 
-print(width, height)
-sys.exit()
+# prepare output image
+output_image = numpy.zeros((height * plotter.image_scale, width * plotter.image_scale), dtype=numpy.int32)
 
-# plot spot table(s)
-output_image = numpy.zeros((height, width), dtype=numpy.int32)
+# plot spots for each table
+last_plane = 0
 
-#for input_filename in input_filenames:
+for input_filename in input_filenames:
+    params = plotter.read_image_params(input_filename)
+    spot_table = pandas.read_csv(input_filename, sep='\t', comment='#')
 
+    output_image = plotter.plot_spots(output_image, last_plane, spot_table, align_table)
+    
+    last_plane += params['total_planes']
+
+# output (multipage) tiff
+print("Output image file to %s." % (output_filename))
+tifffile.imsave(output_filename, output_image)

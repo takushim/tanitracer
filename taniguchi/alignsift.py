@@ -5,7 +5,7 @@ import cv2
 
 class AlignSift:
     def __init__ (self):
-        self.columns = ['plane', 'x', 'y']
+        self.columns = ['align_plane', 'align_x', 'align_y']
         self.matching_ratio = 0.6
         
     def output_header (self, output_file, input_filename, reference_filename):

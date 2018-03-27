@@ -18,6 +18,7 @@ invert_image = False
 
 # parse arguments
 parser = argparse.ArgumentParser(description='trace spots using gaussian fitting.', \
+                                 epilog='use "ls *.stk | foreach -process{tanitracer [options] $_.fullname}"', \
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-f', '--output-tsv-file', nargs=1, default = None, \
                     help='output tsv file name ([basename].txt if not specified)')
