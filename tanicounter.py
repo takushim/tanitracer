@@ -7,8 +7,9 @@ input_filename = None
 output_filename = None
 count_modes = ['regression', 'lifetime', 'counting']
 selected_mode = count_modes[0]
-lifetime_span = [2, 11]
+lifetime_span = [1, 10]
 count_plane = 0
+start_regression = 0
 
 # parse arguments
 parser = argparse.ArgumentParser(description='count lifetime using regression.', \
@@ -29,7 +30,9 @@ group.add_argument('-C', '--counting', action='store_const', \
                     
 parser.add_argument('-l', '--lifetime-span', nargs = 2, type = int, \
                     metavar = ('START', 'END'), default = lifetime_span, \
-                    help='specify the span to coung using lifetime (start >= 2)')
+                    help='specify the span to coung using lifetime (start >= 1)')
+parser.add_argument('-r', '--start-regression', nargs = 1, type = int, default=[start_regression], \
+                    help='specify the plane to start regression')
 parser.add_argument('-c', '--count-plane', nargs = 1, type = int, default=[count_plane], \
                     help='specify the plane to count spots')
 
@@ -42,9 +45,10 @@ args = parser.parse_args()
 input_filename = args.input_file[0]
 selected_mode = args.selected_mode
 count_plane = args.count_plane[0]
+start_regression = args.start_regression[0]
 lifetime_span = args.lifetime_span
-if lifetime_span[0] < 2:
-    raise Exception('lifetime starting plane must be >= 2')
+if lifetime_span[0] < 1:
+    raise Exception('lifetime starting plane must be >= 1')
 
 if args.output_file is None:
     if selected_mode == 'lifetime':
@@ -62,14 +66,19 @@ spot_table = spot_table.sort_values(by = ['total_index', 'plane']).reset_index(d
 
 # lifetime or regression
 if selected_mode == 'regression' or selected_mode == 'lifetime':
-    # count lifetime
+
+    # drop planes for regression
+    if selected_mode == 'regression':
+        spot_table = spot_table[spot_table.plane >= start_regression].reset_index(drop=True)
+
+    # set lifetime column
     lifetime_series = spot_table['total_index'].value_counts()
     spot_table = spot_table.drop_duplicates(subset='total_index', keep='first').reset_index(drop=True)
     spot_table['lifetime'] = lifetime_series.sort_index().tolist()
 
-    # regression of lifetime
+    # drop unnecessary planes
     if selected_mode == 'regression':
-        spot_table = spot_table[spot_table.plane == 0]
+        spot_table = spot_table[spot_table.plane == start_regression]
     else:
         spot_table = spot_table[(lifetime_span[0] <= spot_table.plane) & (spot_table.plane <= lifetime_span[1])]
 
