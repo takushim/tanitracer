@@ -10,7 +10,7 @@ class AlignSift:
         
     def output_header (self, output_file, input_filename, reference_filename):
         output_file.write('## Alignment by TaniAligner at %s\n' % (time.ctime()))
-        output_file.write('#   file (first) = %s; reference = %s\n' % (input_filename, reference_filename))
+        output_file.write('#   file = "%s"; reference = %s\n' % (input_filename, reference_filename))
         output_file.write('#   matching_ratio = %f\n' % (self.matching_ratio))
         
     def convert_to_uint8 (self, orig_image):

@@ -77,9 +77,9 @@ if invert_image is True:
 reference_uint8 = None
 if reference_image_filename is not None:
     image = tifffile.imread(reference_image_filename)
-    if len(images.shape) > 2:
+    if len(image.shape) > 2:
         image = image[0]
-    reference_uint8 = aligner.convert_to_uint8(images)
+    reference_uint8 = aligner.convert_to_uint8(image)
     if invert_image is True:
         reference_uint8 = 255 - reference_uint8
 

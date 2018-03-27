@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import sys, argparse, pandas, tifffile, numpy
+import os, platform, sys, glob, argparse
+import pandas, tifffile, numpy
 from taniguchi import spotplotter
 
 # prepare spot marker
@@ -27,9 +28,9 @@ parser.add_argument('-a', '--align-file', nargs=1, default=[align_filename], \
 parser.add_argument('-e', '--align-each', nargs=1, type=int, default=[plotter.align_each], \
                     help='tsv file with alignment (align.txt if not specified)')
                     
-parser.add_argument('-x', '--scale', nargs=1, type=int, default=[plotter.scale], \
+parser.add_argument('-x', '--image-scale', nargs=1, type=int, default=[plotter.image_scale], \
                     help='scale factor to original image')
-parser.add_argument('-z', '--size', nargs=2, type=int, default=image_size, \
+parser.add_argument('-z', '--image-size', nargs=2, type=int, default=image_size, \
                     metavar=('WIDTH', 'HEIGHT'), \
                     help='size of original image (read from first file if not specified)')
 
@@ -51,6 +52,7 @@ align_spots = (args.no_align is False)
 align_filename = args.align_file[0]
 image_size = args.image_size
 plotter.align_each = args.align_each[0]
+plotter.image_scale = args.image_scale[0]
 
 # read align table
 if align_spots is True:
@@ -58,14 +60,7 @@ if align_spots is True:
 
 # read first table and determine size
 if image_size is None:
-    locals = {}
-    with open(input_filenames[0], 'r') as spot_file:
-        for line in spot_file:
-            if line.startwith('#') is False:
-                break
-            line = line[1:].strip()
-            exec(line, {}, locals)
-    width, height = int(locals['width']), int(locals['height'])
+    width, height = plotter.find_image_size(input_filenames[0])
 else:            
     width, height = image_size[0], image_size[1]
 
@@ -75,5 +70,5 @@ sys.exit()
 # plot spot table(s)
 output_image = numpy.zeros((height, width), dtype=numpy.int32)
 
-for input_filename in input_filenames:
+#for input_filename in input_filenames:
 
