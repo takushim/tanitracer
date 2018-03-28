@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, platform, sys, glob, argparse, datetime
+import os, platform, sys, glob, argparse, datetime, time
 import pandas, tifffile, numpy
 from taniclass import spotplotter, bfchaser, spotfilter
 
@@ -167,7 +167,7 @@ for index, input_filename in enumerate(input_filenames):
         print("Consolidated (%s) to %d of %d spots." % (consolidate_mode, len(spot_table), total_spots))
 
     # plot
-    print(spot_table)
+    #print(spot_table)
     output_image = plotter.plot_spots(output_image, last_plane, spot_table, align_table)
     
     # save into stack
@@ -186,14 +186,16 @@ if output_stackmode is not None:
 
 
 # output (multipage) tiff
+desc_text = 'output by %s (Daisuke Taniguchi and Takushi Miyoshi)' % (os.path.basename(__file__))
+
 if output_stackmode is None:
     # clip output.tif to 32bit and output
     print("Output image file to %s." % (output_filename))
     output_image_32bit = output_image.clip(0, numpy.iinfo(numpy.int32).max).astype(numpy.int32)
-    tifffile.imsave(output_filename, output_image_32bit)
+    tifffile.imsave(output_filename, output_image_32bit, description = desc_text)
 else:
     # clip output.tif to 32bit and output
     print("Output %s stack image file to %s." % (output_stackmode, output_filename))
     output_image_32bit = output_stack.clip(0, numpy.iinfo(numpy.int32).max).astype(numpy.int32)
-    tifffile.imsave(output_filename, output_image_32bit)
+    tifffile.imsave(output_filename, output_image_32bit, description = desc_text)
 
