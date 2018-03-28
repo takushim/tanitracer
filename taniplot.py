@@ -2,7 +2,7 @@
 
 import os, platform, sys, glob, argparse, datetime
 import pandas, tifffile, numpy
-from taniguchi import spotplotter
+from taniclass import spotplotter
 
 # prepare spot marker
 plotter = spotplotter.SpotPlotter()

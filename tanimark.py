@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os, sys, argparse, pandas, tifffile, numpy
-from taniguchi import spotmarker
+from taniclass import spotmarker
 
 # prepare spot marker
 marker = spotmarker.SpotMarker()

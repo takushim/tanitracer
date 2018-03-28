@@ -2,7 +2,7 @@
 
 import os, platform, sys, glob, argparse
 import numpy, pandas, tifffile
-from taniguchi import alignsift
+from taniclass import alignsift
 from PIL import Image
 
 # prepare aligner

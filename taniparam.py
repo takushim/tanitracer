@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os, sys, argparse, pandas, tifffile, numpy, itertools
-from taniguchi import gaussian8, spotmarker
+from taniclass import gaussian8, spotmarker
 from PIL import Image, ImageDraw, ImageFont
 
 # prepare tracing library

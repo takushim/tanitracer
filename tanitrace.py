@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os, sys, argparse, pandas, tifffile, numpy
-from taniguchi import gaussian8, bfchaser, spotmarker
+from taniclass import gaussian8, bfchaser, spotmarker
 
 # prepare library instances
 tracer = gaussian8.Gaussian8()
