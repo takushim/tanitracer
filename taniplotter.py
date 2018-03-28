@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, platform, sys, glob, argparse
+import os, platform, sys, glob, argparse, datetime
 import pandas, tifffile, numpy
 from taniguchi import spotplotter
 
@@ -12,7 +12,7 @@ input_filenames = None
 image_size = None
 align_spots = True
 align_filename = 'align.txt'
-output_filename = 'output.tif'
+output_filename = 'taniplot_%s.tif' % datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 # parse arguments
 parser = argparse.ArgumentParser(description='make super-resolution image from spot centroids.', \
@@ -26,7 +26,7 @@ parser.add_argument('-n', '--no-align', action='store_true', default=(align_spot
 parser.add_argument('-a', '--align-file', nargs=1, default=[align_filename], \
                     help='tsv file with alignment (align.txt if not specified)')
 parser.add_argument('-e', '--align-each', nargs=1, type=int, default=[plotter.align_each], \
-                    help='tsv file with alignment (align.txt if not specified)')
+                    help='alignment correction every X plane')
                     
 parser.add_argument('-x', '--image-scale', nargs=1, type=int, default=[plotter.image_scale], \
                     help='scale factor to original image')
@@ -57,6 +57,7 @@ plotter.image_scale = args.image_scale[0]
 # read align table
 if align_spots is True:
     align_table = pandas.read_table(align_filename, comment = '#')
+    print("Using alignment file %s." % (align_filename))
 else:
     align_table = None
 
@@ -67,7 +68,7 @@ else:
     width, height = image_size[0], image_size[1]
 
 # prepare output image
-output_image = numpy.zeros((height * plotter.image_scale, width * plotter.image_scale), dtype=numpy.int32)
+output_image = numpy.zeros((height * plotter.image_scale, width * plotter.image_scale), dtype=numpy.int64)
 
 # plot spots for each table
 last_plane = 0
@@ -79,7 +80,12 @@ for input_filename in input_filenames:
     output_image = plotter.plot_spots(output_image, last_plane, spot_table, align_table)
     
     last_plane += params['total_planes']
+    
+    print("Plot %d spots (%d planes) from %s." % (len(spot_table), params['total_planes'], input_filename))
+
+# clip output.tif to 32bit
+output_image_32bit = output_image.clip(0, numpy.iinfo(numpy.int32).max).astype(numpy.int32)
 
 # output (multipage) tiff
 print("Output image file to %s." % (output_filename))
-tifffile.imsave(output_filename, output_image)
+tifffile.imsave(output_filename, output_image_32bit)

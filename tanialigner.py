@@ -102,13 +102,13 @@ if output_image is True:
     output_image_array = numpy.zeros(images_uint8.shape, dtype=numpy.uint8)
     
     for row, align in results.iterrows():
-        plane = results.plane[row]
+        plane = results.align_plane[row]
         if plane not in range(len(images_uint8)):
             print("Skip plane %d due to out-of-range." % (results.plane[row]))
             continue
 
         image = Image.fromarray(images_uint8[plane])
-        image = image.rotate(0, translate=(int(-align.x), int(-align.y)))
+        image = image.rotate(0, translate=(int(-align.align_x), int(-align.align_y)))
         output_image_array[plane] = numpy.asarray(image, dtype=numpy.uint8)
 
     # output multipage tiff
