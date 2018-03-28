@@ -29,12 +29,13 @@ class SpotPlotter:
         work_image = last_image.copy()
         
         # make spots dataframe
-        spots = spot_table[['plane', 'x', 'y']].copy()
+        spots = spot_table[['plane', 'x', 'y']].copy().reset_index(drop=True)
 
         # scale and alignment        
         if align_table is not None:
-            spots['align_index'] = (spots['plane'] + last_plane) // self.align_each
-            spots = pandas.merge(spots, align_table, left_on='align_index', right_on='align_plane', how='left')
+            spots['align_index'] = ((spots['plane'] + last_plane) // self.align_each)
+            spots = pandas.merge(spots, align_table, left_on='align_index', right_on='align_plane', \
+                                 how='left')
             spots['plot_x'] = ((spots['x']  - spots['align_x']) * self.image_scale).astype(numpy.int)
             spots['plot_y'] = ((spots['y']  - spots['align_y']) * self.image_scale).astype(numpy.int)
         else:
