@@ -167,6 +167,7 @@ for index, input_filename in enumerate(input_filenames):
         print("Consolidated (%s) to %d of %d spots." % (consolidate_mode, len(spot_table), total_spots))
 
     # plot
+    print(spot_table)
     output_image = plotter.plot_spots(output_image, last_plane, spot_table, align_table)
     
     # save into stack

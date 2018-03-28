@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os, sys, argparse, pandas, numpy
+from taniclass import spotfilter
 
 # defaults
 input_filename = None
@@ -53,8 +54,13 @@ if lifetime_span[0] < 1:
 if args.output_file is None:
     if selected_mode == 'lifetime':
         output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_liftime.txt'
+    elif selected_mode == 'regression':
+        output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_regression.txt' 
+    elif selected_mode == 'counting':
+        output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_counting.txt'
     else:
-        output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_regression.txt'    
+        raise Exception('invalid counting mode')
+
     if input_filename == output_filename:
         raise Exception('input_filename == output_filename')
 else:
@@ -65,42 +71,47 @@ spot_table = pandas.read_table(input_filename, comment = '#')
 spot_table = spot_table.sort_values(by = ['total_index', 'plane']).reset_index(drop=True)
 
 # lifetime or regression
-if selected_mode == 'regression' or selected_mode == 'lifetime':
-
+if selected_mode == 'regression':
     # drop planes for regression
-    if selected_mode == 'regression':
-        spot_table = spot_table[spot_table.plane >= start_regression].reset_index(drop=True)
-
-    # set lifetime column
-    lifetime_series = spot_table['total_index'].value_counts()
-    spot_table = spot_table.drop_duplicates(subset='total_index', keep='first').reset_index(drop=True)
-    spot_table['lifetime'] = lifetime_series.sort_index().tolist()
-
-    # drop unnecessary planes
-    if selected_mode == 'regression':
-        spot_table = spot_table[spot_table.plane == start_regression]
-    else:
-        spot_table = spot_table[(lifetime_span[0] <= spot_table.plane) & (spot_table.plane <= lifetime_span[1])]
-
-    # output tsv
-    print(spot_table['lifetime'].tolist())
-    lifetime_series = spot_table['lifetime'].value_counts().sort_index()
-
-    lifetime_counts = numpy.zeros(max(lifetime_series.index.tolist()), dtype=numpy.int)
-    lifetime_counts[numpy.asarray(lifetime_series.index.tolist()) - 1] = lifetime_series.tolist()
-
-    print(lifetime_counts)
-    lifetime_table = pandas.DataFrame({ \
-                        'lifetime' : numpy.arange(len(lifetime_counts)) + 1, \
-                        'count' : lifetime_counts}, \
-                        columns = ['lifetime', 'count'])
-    lifetime_table.to_csv(output_filename, sep='\t', index=False)
+    spot_table = spot_table[spot_table.plane >= start_regression].reset_index(drop=True)
+        
+    # calculate lifetime
+    spot_table = filter.calculate_lifetime(spot_table)
+    spot_table = spot_table[spot_table.plane == start_regression].reset_index(drop=True)
     
+    # prepare data
+    output_columns = ['lifetime', 'spots']
+    lifetime_max = spot_table.lifetime.max()
+    output_indexes = [i for i in range(1, lifetime_max + 1)]
+    output_counts = [len(results[spot_table.lifetime == i]) for i in output_indexes]
+
+elif selected_mode == 'lifetime':
+    # calculate lifetime
+    spot_table = filter.calculate_lifetime(spot_table)
+    spot_table = spot_table[(lifetime_span[0] <= spot_table.plane) & \
+                            (spot_table.plane <= lifetime_span[1])].reset_index(drop=True)
+
+    # prepare data
+    output_columns = ['lifetime', 'spots']
+    lifetime_max = spot_table.lifetime.max()
+    output_indexes = [i for i in range(1, lifetime_max + 1)]
+    output_counts = [len(results[spot_table.lifetime == i]) for i in output_indexes]
+
 elif selected_mode == 'counting':
-    spot_table = spot_table[spot_table.plane == count_plane]
-    print("File %s, Plane %d, spots %d" % (input_filename, count_plane, len(spot_table)))
-    
+    # prepare data
+    output_columns = ['plane', 'spots']
+    plane_max = spot_table.plane.max()
+    output_indexes = [i for i in range(1, plane_max + 1)]
+    output_counts = [len(results[spot_table.plane == i]) for i in output_indexes]
+
 else:
     raise Exception('invalid counting mode')
 
+
+output_table = pandas.DataFrame({ \
+                    output_columns[0] : output_indexes, \
+                    output_columns[1] : output_counts}, \
+                    columns = output_columns)
+
+output_table.to_csv(output_filename, sep='\t', index=False)
 

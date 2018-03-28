@@ -39,3 +39,17 @@ class SpotFilter:
         spot_table = spot_table.groupby('total_index').agg(agg_dict).reset_index(drop=True)
         return spot_table
 
+    def calculate_lifetime (self, spot_table):
+        if ('lifetime' in spot_table.columns) is False:
+            spot_table = self.add_lifetime(spot_table)
+
+        agg_dict = {x : numpy.min for x in spot_table.columns}
+        agg_dict['lifetime'] = numpy.max
+        agg_dict['x'] = numpy.mean
+        agg_dict['y'] = numpy.mean
+        agg_dict['intensity'] = numpy.mean
+        agg_dict['distance'] = numpy.sum
+        spot_table = spot_table.groupby('total_index').agg(agg_dict).reset_index(drop=True)
+
+        return spot_table
+
