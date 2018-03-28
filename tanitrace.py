@@ -95,16 +95,14 @@ for index in range(len(orig_image)):
     result = tracer.fitting_image_array(orig_image[index])
     result['plane'] = index
     results = results.append(result, ignore_index = True)
-    print("%d" % (len(result)), end = " ", flush = True)
-print("")
+    #print("%d" % (len(result)), end = " ", flush = True)
+
+spot_counts = [len(results[results.plane == i]) for i in range(results.plane.max() + 1)]
+print("Detected spots: %s" % (' '.join(map(str, spot_counts))))
+
 # re-number table
 results['total_index'] = numpy.arange(len(results))
 print("Total %d spots detected in %d frames." % (len(results), len(orig_image)))
-
-# check detected spots
-#spots_in_planes = results.groupby('plane').size()
-#print(spots_in_planes)
-#print(spots_in_planes.mean())
 
 # chase spots
 if chase_spots is True:
@@ -136,6 +134,5 @@ if output_image is True:
 
     # output multipage tiff
     tifffile.imsave(output_image_filename, image_color)
-
-print("Output image file to %s." % (output_image_filename))
+    print("Output image file to %s." % (output_image_filename))
 
