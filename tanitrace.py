@@ -114,7 +114,8 @@ if chase_spots is True:
 # open tsv file and output header
 output_tsv_file = open(output_tsv_filename, 'w', newline='')
 tracer.output_header(output_tsv_file, input_filename, orig_image)
-chaser.output_header(output_tsv_file)
+if chase_spots is True:
+    chaser.output_header(output_tsv_file)
 output_tsv_file.write('\t'.join(results.columns) + '\n')
 
 # output result table and close
