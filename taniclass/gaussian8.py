@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import numpy, tifffile, pandas, time
+import sys, numpy, pandas, time
 import scipy.ndimage as ndimage
 import scipy.stats as stats
 from skimage.feature import peak_local_max

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import os, sys, argparse, pandas, tifffile, numpy
+import os, sys, argparse, pandas, numpy
 from taniclass import spotmarker
+from skimage.external import tifffile
 
 # prepare spot marker
 marker = spotmarker.SpotMarker()

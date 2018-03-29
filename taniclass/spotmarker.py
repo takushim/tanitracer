@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, pandas, tifffile, numpy
+import sys, pandas, numpy
 from PIL import Image, ImageDraw
 
 class SpotMarker:

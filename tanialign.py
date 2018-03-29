@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 import os, platform, sys, glob, argparse
-import numpy, pandas, tifffile
+import numpy, pandas
 from taniclass import alignsift
 from PIL import Image
+from skimage.external import tifffile
 
 # prepare aligner
 aligner = alignsift.AlignSift()

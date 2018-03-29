@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-import os, sys, datetime
-import numpy, pandas
-import tifffile
+import sys, numpy, pandas
 
 class SpotPlotter:
     def __init__ (self):

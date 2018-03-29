@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-import os, platform, sys, glob, argparse, datetime, time
-import pandas, tifffile, numpy
+import os, platform, sys, glob, argparse, time
+import pandas, numpy
 from taniclass import spotplotter, bfchaser, spotfilter
+from skimage.external import tifffile
 
 # prepare classes
 plotter = spotplotter.SpotPlotter()
@@ -14,7 +15,7 @@ input_filenames = None
 image_size = None
 align_spots = True
 align_filename = 'align.txt'
-output_filename = 'plot_%s.tif' % datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+output_filename = 'plot_%s.tif' % time.strftime("%Y-%m-%d_%H-%M-%S")
 output_stackmode = None
 output_stackeach = 1
 chase_spots = False
