@@ -3,6 +3,9 @@
 import os, sys, argparse, pandas, numpy
 from taniclass import spotfilter
 
+# prepare filter
+filter = spotfilter.SpotFilter()
+
 # defaults
 input_filename = None
 output_filename = None
@@ -102,11 +105,10 @@ elif selected_mode == 'counting':
     output_columns = ['plane', 'spots']
     plane_max = spot_table.plane.max()
     output_indexes = [i for i in range(1, plane_max + 1)]
-    output_counts = [len(results[spot_table.plane == i]) for i in output_indexes]
+    output_counts = [len(spot_table[spot_table.plane == i]) for i in output_indexes]
 
 else:
     raise Exception('invalid counting mode')
-
 
 output_table = pandas.DataFrame({ \
                     output_columns[0] : output_indexes, \

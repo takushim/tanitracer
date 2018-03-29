@@ -83,25 +83,20 @@ class Gaussian8:
             + ( c00 + c10 + c20 - c01 + c02 - numpy.log(float_image[xy[:,0] - 1, xy[:,1] + 1]) )**2 \
             + ( c00 + c10 + c20 - numpy.log(float_image[xy[:,0], xy[:,1] + 1]) )**2 \
             + ( c00 + c10 + c20 + c01 + c02 - numpy.log(float_image[xy[:,0] + 1, xy[:,1] + 1]) )**2
-
-        # Add subpixel correction
-        xy[:,1] = xy[:,1] - 0.5 * (c10/c20) # x
-        xy[:,0] = xy[:,0] - 0.5 * (c01/c02) # y
         
-        return xy[:,1], xy[:,0], fit_error
+        return (xy[:,1] - 0.5 * (c10/c20)), (xy[:,0] - 0.5 * (c01/c02)), fit_error
 
-    def clip_and_standardize_array (self, float_array):
-        float_array = float_array.clip(self.image_clip_min, self.image_clip_max)
-        float_array = - (float_array - numpy.max(float_array)) / numpy.ptp(float_array)
-        return float_array
+    def clip_array (self, float_array):
+        return float_array.clip(self.image_clip_min, self.image_clip_max)
 
-    def gaussian_laplacian_filter_image (self, float_image):
+    def standardize_and_filter_image (self, float_image):
+        float_image = - (float_image - numpy.max(float_image)) / numpy.ptp(float_image)
         return ndimage.gaussian_laplace(float_image, self.laplace)
     
-    def convert_to_pandas (self, plane, x, y, intensity, error):
+    def convert_to_pandas (self, plane, index, x, y, intensity, error):
         length = max(len(x), len(y), len(intensity), len(error))
         result = pandas.DataFrame({'total_index' : numpy.arange(length), 'plane' : plane, \
-                                   'index' : numpy.arange(length), 'x' : x, 'y' : y, \
+                                   'index' : index, 'x' : x, 'y' : y, \
                                    'intensity' : intensity, 'fit_error' : error}, \
                                    columns = self.columns)
          
@@ -114,35 +109,50 @@ class Gaussian8:
             print("Dropped %d spots due to NaN." % (total_count - len(spot_table)))
         return spot_table
     
-    def fitting_image_array (self, float_image):
+    def fitting_image_array (self, input_image):
         # get float image anf filter
         float_image = numpy.array(input_image, 'f')
-        float_image = self.clip_and_standardize_array(float_image)
-        float_image = self.gaussian_laplacian_filter_image(float_image)
+        float_image = self.clip_array(float_image)
+        float_image = self.standardize_and_filter_image(float_image)
         
         # fitting
         x, y, error = self.gaussian_fitting(float_image)
-        intensity = input_image[x.astype(numpy.int), y.astype(numpy.int)]
+        intensity = input_image[y.astype(numpy.int), x.astype(numpy.int)]
 
         # Make Pandas dataframe
-        result = self.convert_to_pandas(0, x, y, intensity, error)
+        result = self.convert_to_pandas(0, numpy.arange(len(x)), x, y, intensity, error)
 
         return result
         
     def fitting_image_stack (self, input_stack):
         # get float image anf filter
         float_stack = numpy.array(input_stack, 'f')
-        float_stack = self.clip_and_standardize_array(float_stack)
+        float_stack = self.clip_array(float_stack)
+        
+        # arrays to store results
+        stored_plane = numpy.array([], dtype=numpy.int)
+        stored_index = numpy.array([], dtype=numpy.int)
+        stored_x = numpy.array([], dtype=numpy.float)
+        stored_y = numpy.array([], dtype=numpy.float)
+        stored_error = numpy.array([], dtype=numpy.float)
+        stored_intensity = numpy.array([], dtype=numpy.int)
 
-        # filter and fitting
-        spot_table = pandas.DataFrame(index = [], columns = self.columns)
-        for index in range(len(float_stack)):
-            float_stack[index] = self.gaussian_laplacian_filter_image(float_stack[index])
+        for index in range(len(input_stack)):
+            # filter and fitting            
+            float_stack[index] = self.standardize_and_filter_image(float_stack[index])
             x, y, error = self.gaussian_fitting(float_stack[index])
-            intensity = input_stack[index, x.astype(numpy.int), y.astype(numpy.int)]
-            result = self.convert_to_pandas(index, x, y, intensity, error)
-            spot_table = spot_table.append(result, ignore_index = True)
+            intensity = input_stack[index, y.astype(numpy.int), x.astype(numpy.int)]
+            
+            # append to arrays
+            stored_plane = numpy.append(stored_plane, numpy.full(len(x), index))
+            stored_index = numpy.append(stored_index, numpy.arange(len(x)))
+            stored_x = numpy.append(stored_x, x)
+            stored_y = numpy.append(stored_y, y)
+            stored_error = numpy.append(stored_error, error)
+            stored_intensity = numpy.append(stored_intensity, intensity)
 
+        spot_table = self.convert_to_pandas(stored_plane, stored_index, \
+                                            stored_x, stored_y, stored_intensity, stored_error)
         spot_table['total_index'] = numpy.arange(len(spot_table))
         return spot_table
 
