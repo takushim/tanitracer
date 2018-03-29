@@ -90,6 +90,7 @@ align_filename = args.align_file[0]
 image_size = args.image_size
 output_stackmode = args.output_stackmode
 output_stackeach = args.stack_each[0]
+output_filename = args.output_file[0]
 
 plotter.align_each = args.align_each[0]
 plotter.image_scale = args.image_scale[0]
