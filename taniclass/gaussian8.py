@@ -84,7 +84,23 @@ class Gaussian8:
             + ( c00 + c10 + c20 - numpy.log(float_image[xy[:,0], xy[:,1] + 1]) )**2 \
             + ( c00 + c10 + c20 + c01 + c02 - numpy.log(float_image[xy[:,0] + 1, xy[:,1] + 1]) )**2
         
-        return (xy[:,1] - 0.5 * (c10/c20)), (xy[:,0] - 0.5 * (c01/c02)), fit_error
+        x = xy[:,1] - 0.5 * (c10/c20)
+        y = xy[:,0] - 0.5 * (c01/c02)
+        
+        total_spots = len(xy)
+        
+        indexes = numpy.ones(len(xy), dtype=numpy.bool)
+        indexes = indexes & (x >= 0) & (x <= float_image.shape[1])
+        indexes = indexes & (y >= 0) & (y <= float_image.shape[0])
+        
+        x = x[indexes]
+        y = y[indexes]
+        fit_error = fit_error[indexes]
+        
+        if total_spots - len(x) > 0:
+            print("Dropped %d of %d spots due to NaN or Inf values." % (total_spots - len(x), total_spots))
+        
+        return x, y, fit_error
 
     def clip_array (self, float_array):
         return float_array.clip(self.image_clip_min, self.image_clip_max)
