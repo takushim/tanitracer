@@ -21,7 +21,8 @@ chase_spots = False
 lifetime_range = [1, 0]
 consolidate_spots = False
 consolidate_mode_choices = ['average', 'first', 'last']
-consolidate_mode = consolidate_mode_choices[0]
+consolidate_mode = consolidate_mode_choices[1]
+omit_lastplane_spots = False
 
 # parse arguments
 parser = argparse.ArgumentParser(description='make super-resolution image from spot centroids.', \
@@ -39,6 +40,9 @@ parser.add_argument('-s', '--consolidate-spots', action='store_true', default=co
 parser.add_argument('-m', '--consolidate-mode', nargs=1, default=[consolidate_mode], \
                     choices = consolidate_mode_choices, \
                     help='consolidation mode for chased spots')
+
+parser.add_argument('-t', '--omit-lastplane-spots', action='store_true', default=omit_lastplane_spots, \
+                    help='omit spots contained in the last plane')
 
 parser.add_argument('-n', '--no-align', action='store_true', default=(align_spots is False), \
                     help='plot without alignment')
@@ -101,6 +105,8 @@ lifetime_range = args.lifetime_range
 consolidate_spots = args.consolidate_spots
 consolidate_mode = args.consolidate_mode[0]
 
+omit_lastplane_spots = args.omit_lastplane_spots
+
 # read align table
 if align_spots is True:
     align_table = pandas.read_table(align_filename, comment = '#')
@@ -133,26 +139,35 @@ for index, input_filename in enumerate(input_filenames):
     # get parameters and spots
     params = plotter.read_image_params(input_filename)
     spot_table = pandas.read_csv(input_filename, sep='\t', comment='#')
+    print("Total %d spots in %s." % (len(spot_table), input_filename))
     
     # chase if necessary
     if chase_spots is True:
         if 'distance' in spot_table.columns:
             print("Skip chasing in %s (already chased)." % (input_filename))
         else:
-            print("Total %d spots in %s." % (len(spot_table), input_filename))
             spot_table = chaser.chase_spots(spot_table)
             print("Chaser detected %d unique spots." % (len(spot_table.total_index.unique())))
 
-    # add lifetime (added here for easier debug)
-    spot_table = filter.add_lifetime(spot_table)
-
+    # omit spots contained in the last plane
+    if omit_lastplane_spots is True:
+        total_spots = len(spot_table)
+        spot_table = filter.omit_lastplane_spots(spot_table, params['total_planes'] - 1)
+        print("Omitted %d spots contained in the last plane." % (total_spots - len(spot_table)))
+    
     # filter using lifetime of spots
     if lifetime_range != [1, 0]:
         total_spots = len(spot_table)
         filter.lifetime_min = lifetime_range[0]
-        filter.lifetime_max = [numpy.inf if lifetime_range[1] == 0 else lifetime_range[1]]
+        filter.lifetime_max = numpy.inf if lifetime_range[1] == 0 else lifetime_range[1]
         spot_table = filter.filter_spots_lifetime(spot_table)
-        print("Filtered %d of %d spots." % (total_spots - len(spot_table), total_spots))
+        if lifetime_range[1] == 0:
+            print("Filtered %d of %d spots (%d %f)." % \
+                    (total_spots - len(spot_table), total_spots, filter.lifetime_min, filter.lifetime_max))
+        else:
+            print("Filtered %d of %d spots (%d %d)." % \
+                    (total_spots - len(spot_table), total_spots, filter.lifetime_min, filter.lifetime_max))
+                    
 
     # average cenroids
     if consolidate_spots is True:
@@ -179,6 +194,7 @@ for index, input_filename in enumerate(input_filenames):
     last_plane += params['total_planes']
     
     print("Plot %d spots (%d planes) from %s." % (len(spot_table), params['total_planes'], input_filename))
+    print("--")
 
 # save into last stack
 if output_stackmode is not None:

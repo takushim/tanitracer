@@ -9,7 +9,7 @@ class Gaussian8:
     def __init__ (self):
         self.laplace = 3.0 # Diameter of Spots
         self.min_distance = 1 # Pixel area (int) to find local max (usually 1)
-        self.threshold_abs = 0.004 # Threshold to find local max
+        self.threshold_abs = 0.006 # Threshold to find local max
         self.columns = ['total_index', 'plane', 'index', 'x', 'y', 'intensity', 'fit_error']
         self.image_clip_min = 0.0
         self.image_clip_max = numpy.iinfo(numpy.int32).max

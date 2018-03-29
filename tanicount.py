@@ -80,6 +80,7 @@ if selected_mode == 'regression':
         
     # calculate lifetime
     spot_table = filter.calculate_lifetime(spot_table)
+    spot_table = filter.keep_first_spots(spot_table)
     spot_table = spot_table[spot_table.plane == start_regression].reset_index(drop=True)
     
     # prepare data
@@ -91,6 +92,7 @@ if selected_mode == 'regression':
 elif selected_mode == 'lifetime':
     # calculate lifetime
     spot_table = filter.calculate_lifetime(spot_table)
+    spot_table = filter.keep_first_spots(spot_table)
     spot_table = spot_table[(lifetime_span[0] <= spot_table.plane) & \
                             (spot_table.plane <= lifetime_span[1])].reset_index(drop=True)
 
