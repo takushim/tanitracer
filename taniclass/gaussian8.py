@@ -19,7 +19,7 @@ class Gaussian8:
         if len(image_array.shape) == 2:
             planes = 1
         output_file.write('## Traced by TaniTracer at %s.\n' % (time.ctime()))
-        output_file.write('#   file = \'%s\'; total_planes = %d; width = %d; height = %d\n' %\
+        output_file.write('#   file = r\'%s\'; total_planes = %d; width = %d; height = %d\n' %\
                           (input_filename, planes, image_array.shape[2], image_array.shape[1]))
         output_file.write('#   laplace = %f; min_distance = %d; threshold_abs = %f\n' %\
                           (self.laplace, self.min_distance, self.threshold_abs))
