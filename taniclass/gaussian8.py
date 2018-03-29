@@ -46,77 +46,103 @@ class Gaussian8:
         self.image_clip_min = stats.scoreatpercentile(image_array, 0.1)
         self.image_clip_max = stats.scoreatpercentile(image_array, 99.9)
     
-    def fitting_image_array (self, input_image):
-        image_orig = numpy.array(input_image)
-        image_array = numpy.array(input_image, 'f')
-        
-        # Remove hot spots
-        image_array = image_array.clip(self.image_clip_min, self.image_clip_max)
-        image_array = - (image_array - numpy.max(image_array)) / numpy.ptp(image_array)
-        
-        # Clear objects larger than self.laplace. If no points exist, this filter may give abnormal result.
-        image_array = ndimage.gaussian_laplace(image_array, self.laplace)
-        
+    def gaussian_fitting (self, float_image):
         # Find local max at 1-pixel resolution (order: [y, x])
-        xy = peak_local_max(image_array, min_distance = self.min_distance,\
+        xy = peak_local_max(float_image, min_distance = self.min_distance,\
                             threshold_abs = self.threshold_abs, exclude_border = True)
 
-        # Calculate subpixel correction
-        c10 = ( - numpy.log(image_array[xy[:,0] - 1, xy[:,1] - 1]) - numpy.log(image_array[xy[:,0], xy[:,1] - 1]) \
-                - numpy.log(image_array[xy[:,0] + 1, xy[:,1] - 1]) + numpy.log(image_array[xy[:,0] - 1, xy[:,1] + 1]) \
-                + numpy.log(image_array[xy[:,0], xy[:,1] + 1]) + numpy.log(image_array[xy[:,0] + 1, xy[:,1] + 1]) ) / 6
-        c01 = ( - numpy.log(image_array[xy[:,0] - 1, xy[:,1] - 1]) - numpy.log(image_array[xy[:,0] - 1, xy[:,1]]) \
-                - numpy.log(image_array[xy[:,0] - 1, xy[:,1] + 1]) + numpy.log(image_array[xy[:,0] + 1, xy[:,1] - 1]) \
-                + numpy.log(image_array[xy[:,0] + 1, xy[:,1]]) + numpy.log(image_array[xy[:,0] + 1, xy[:,1] + 1]) ) / 6
-        c20 = (   numpy.log(image_array[xy[:,0] - 1, xy[:,1] - 1]) + numpy.log(image_array[xy[:,0], xy[:,1] - 1]) \
-                + numpy.log(image_array[xy[:,0] + 1, xy[:,1] - 1]) - 2 * numpy.log(image_array[xy[:,0] - 1,xy[:,1]]) \
-                - 2 * numpy.log(image_array[xy[:,0], xy[:,1]]) - 2 * numpy.log(image_array[xy[:,0] + 1, xy[:,1]]) \
-                + numpy.log(image_array[xy[:,0] - 1, xy[:,1] + 1]) + numpy.log(image_array[xy[:,0], xy[:,1] + 1]) \
-                + numpy.log(image_array[xy[:,0] + 1, xy[:,1] + 1]) ) / 6
-        c02 = (   numpy.log(image_array[xy[:,0] - 1, xy[:,1] - 1]) + numpy.log(image_array[xy[:,0] - 1,xy[:,1]]) \
-                + numpy.log(image_array[xy[:,0] - 1, xy[:,1] + 1]) - 2 * numpy.log(image_array[xy[:,0], xy[:,1] - 1]) \
-                - 2 * numpy.log(image_array[xy[:,0], xy[:,1]]) - 2 * numpy.log(image_array[xy[:,0], xy[:,1] + 1]) \
-                + numpy.log(image_array[xy[:,0] + 1, xy[:,1] - 1]) + numpy.log(image_array[xy[:,0] + 1,xy[:,1]]) \
-                + numpy.log(image_array[xy[:,0] + 1, xy[:,1] + 1]) ) / 6
-        c00 = ( - numpy.log(image_array[xy[:,0] - 1, xy[:,1] - 1]) + 2 * numpy.log(image_array[xy[:,0], xy[:,1] - 1]) \
-                - numpy.log(image_array[xy[:,0] + 1, xy[:,1] - 1]) + 2 * numpy.log(image_array[xy[:,0] - 1,xy[:,1]]) \
-                + 5 * numpy.log(image_array[xy[:,0], xy[:,1]]) + 2 * numpy.log(image_array[xy[:,0] + 1, xy[:,1]]) \
-                - numpy.log(image_array[xy[:,0] - 1, xy[:,1] + 1]) + 2 * numpy.log(image_array[xy[:,0], xy[:,1] + 1]) \
-                - numpy.log(image_array[xy[:,0] + 1, xy[:,1] + 1]) ) / 9
+        # Calculate subpixel correction (x = xy[:,1], y = xy[:,0])
+        c10 = ( - numpy.log(float_image[xy[:,0] - 1, xy[:,1] - 1]) - numpy.log(float_image[xy[:,0], xy[:,1] - 1]) \
+                - numpy.log(float_image[xy[:,0] + 1, xy[:,1] - 1]) + numpy.log(float_image[xy[:,0] - 1, xy[:,1] + 1]) \
+                + numpy.log(float_image[xy[:,0], xy[:,1] + 1]) + numpy.log(float_image[xy[:,0] + 1, xy[:,1] + 1]) ) / 6
+        c01 = ( - numpy.log(float_image[xy[:,0] - 1, xy[:,1] - 1]) - numpy.log(float_image[xy[:,0] - 1, xy[:,1]]) \
+                - numpy.log(float_image[xy[:,0] - 1, xy[:,1] + 1]) + numpy.log(float_image[xy[:,0] + 1, xy[:,1] - 1]) \
+                + numpy.log(float_image[xy[:,0] + 1, xy[:,1]]) + numpy.log(float_image[xy[:,0] + 1, xy[:,1] + 1]) ) / 6
+        c20 = (   numpy.log(float_image[xy[:,0] - 1, xy[:,1] - 1]) + numpy.log(float_image[xy[:,0], xy[:,1] - 1]) \
+                + numpy.log(float_image[xy[:,0] + 1, xy[:,1] - 1]) - 2 * numpy.log(float_image[xy[:,0] - 1,xy[:,1]]) \
+                - 2 * numpy.log(float_image[xy[:,0], xy[:,1]]) - 2 * numpy.log(float_image[xy[:,0] + 1, xy[:,1]]) \
+                + numpy.log(float_image[xy[:,0] - 1, xy[:,1] + 1]) + numpy.log(float_image[xy[:,0], xy[:,1] + 1]) \
+                + numpy.log(float_image[xy[:,0] + 1, xy[:,1] + 1]) ) / 6
+        c02 = (   numpy.log(float_image[xy[:,0] - 1, xy[:,1] - 1]) + numpy.log(float_image[xy[:,0] - 1,xy[:,1]]) \
+                + numpy.log(float_image[xy[:,0] - 1, xy[:,1] + 1]) - 2 * numpy.log(float_image[xy[:,0], xy[:,1] - 1]) \
+                - 2 * numpy.log(float_image[xy[:,0], xy[:,1]]) - 2 * numpy.log(float_image[xy[:,0], xy[:,1] + 1]) \
+                + numpy.log(float_image[xy[:,0] + 1, xy[:,1] - 1]) + numpy.log(float_image[xy[:,0] + 1,xy[:,1]]) \
+                + numpy.log(float_image[xy[:,0] + 1, xy[:,1] + 1]) ) / 6
+        c00 = ( - numpy.log(float_image[xy[:,0] - 1, xy[:,1] - 1]) + 2 * numpy.log(float_image[xy[:,0], xy[:,1] - 1]) \
+                - numpy.log(float_image[xy[:,0] + 1, xy[:,1] - 1]) + 2 * numpy.log(float_image[xy[:,0] - 1,xy[:,1]]) \
+                + 5 * numpy.log(float_image[xy[:,0], xy[:,1]]) + 2 * numpy.log(float_image[xy[:,0] + 1, xy[:,1]]) \
+                - numpy.log(float_image[xy[:,0] - 1, xy[:,1] + 1]) + 2 * numpy.log(float_image[xy[:,0], xy[:,1] + 1]) \
+                - numpy.log(float_image[xy[:,0] + 1, xy[:,1] + 1]) ) / 9
 
-        fit_error = ( c00 - c10 + c20 - c01 + c02 - numpy.log(image_array[xy[:,0] - 1, xy[:,1] - 1]) )**2 \
-            + ( c00 - c10 + c20 - numpy.log(image_array[xy[:,0], xy[:,1] - 1]) )**2 \
-            + ( c00 - c10 + c20 + c01 + c02 - numpy.log(image_array[xy[:,0] + 1, xy[:,1] - 1]) )**2 \
-            + ( c00 - c01 + c02 - numpy.log(image_array[xy[:,0] - 1, xy[:,1]]) )**2 \
-            + ( c00 - numpy.log(image_array[xy[:,0], xy[:,1]]) )**2 \
-            + ( c00 + c01 + c02 - numpy.log(image_array[xy[:,0] + 1, xy[:,1]]) )**2 \
-            + ( c00 + c10 + c20 - c01 + c02 - numpy.log(image_array[xy[:,0] - 1, xy[:,1] + 1]) )**2 \
-            + ( c00 + c10 + c20 - numpy.log(image_array[xy[:,0], xy[:,1] + 1]) )**2 \
-            + ( c00 + c10 + c20 + c01 + c02 - numpy.log(image_array[xy[:,0] + 1, xy[:,1] + 1]) )**2
-
-        dx = - 0.5 * (c10/c20)
-        dy = - 0.5 * (c01/c02)
+        fit_error = ( c00 - c10 + c20 - c01 + c02 - numpy.log(float_image[xy[:,0] - 1, xy[:,1] - 1]) )**2 \
+            + ( c00 - c10 + c20 - numpy.log(float_image[xy[:,0], xy[:,1] - 1]) )**2 \
+            + ( c00 - c10 + c20 + c01 + c02 - numpy.log(float_image[xy[:,0] + 1, xy[:,1] - 1]) )**2 \
+            + ( c00 - c01 + c02 - numpy.log(float_image[xy[:,0] - 1, xy[:,1]]) )**2 \
+            + ( c00 - numpy.log(float_image[xy[:,0], xy[:,1]]) )**2 \
+            + ( c00 + c01 + c02 - numpy.log(float_image[xy[:,0] + 1, xy[:,1]]) )**2 \
+            + ( c00 + c10 + c20 - c01 + c02 - numpy.log(float_image[xy[:,0] - 1, xy[:,1] + 1]) )**2 \
+            + ( c00 + c10 + c20 - numpy.log(float_image[xy[:,0], xy[:,1] + 1]) )**2 \
+            + ( c00 + c10 + c20 + c01 + c02 - numpy.log(float_image[xy[:,0] + 1, xy[:,1] + 1]) )**2
 
         # Add subpixel correction
-        x = xy[:,1] + dx
-        y = xy[:,0] + dy
+        xy[:,1] = xy[:,1] - 0.5 * (c10/c20) # x
+        xy[:,0] = xy[:,0] - 0.5 * (c01/c02) # y
+        
+        return xy[:,1], xy[:,0], fit_error
+
+    def clip_and_standardize_array (self, float_array):
+        float_array = float_array.clip(self.image_clip_min, self.image_clip_max)
+        float_array = - (float_array - numpy.max(float_array)) / numpy.ptp(float_array)
+        return float_array
+
+    def gaussian_laplacian_filter_image (self, float_image):
+        return ndimage.gaussian_laplace(float_image, self.laplace)
+    
+    def convert_to_pandas (self, plane, x, y, intensity, error):
+        length = max(len(x), len(y), len(intensity), len(error))
+        result = pandas.DataFrame({'total_index' : numpy.arange(length), 'plane' : plane, \
+                                   'index' : numpy.arange(length), 'x' : x, 'y' : y, \
+                                   'intensity' : intensity, 'fit_error' : error}, \
+                                   columns = self.columns)
+         
+        return result
+
+    def drop_nan_spots (self, spot_table):
+        total_count = len(spot_table)
+        spot_table = spot_table.dropna().reset_index(drop=True)
+        if total_count - len(spot_table) > 0:
+            print("Dropped %d spots due to NaN." % (total_count - len(spot_table)))
+        return spot_table
+    
+    def fitting_image_array (self, float_image):
+        # get float image anf filter
+        float_image = numpy.array(input_image, 'f')
+        float_image = self.clip_and_standardize_array(float_image)
+        float_image = self.gaussian_laplacian_filter_image(float_image)
+        
+        # fitting
+        x, y, error = self.gaussian_fitting(float_image)
+        intensity = input_image[x.astype(numpy.int), y.astype(numpy.int)]
 
         # Make Pandas dataframe
-        result = pandas.DataFrame({ \
-                'total_index' : numpy.arange(len(xy)), \
-                'plane' : 0, \
-                'index' : numpy.arange(len(xy)), \
-                'x' : x, \
-                'y' : y, \
-                'intensity' : image_orig[xy[:,0], xy[:,1]], \
-                'fit_error' : fit_error})
+        result = self.convert_to_pandas(0, x, y, intensity, error)
+
+        return result
         
-        # Drop if x/y = Nan
-        total_count = len(result)
-        result = result.dropna().reset_index(drop=True)
-        if total_count - len(result) > 0:
-            print("Dropped %d spots due to NaN." % (total_count - len(result)))
-        
-        return result[self.columns]
-        
+    def fitting_image_stack (self, input_stack):
+        # get float image anf filter
+        float_stack = numpy.array(input_stack, 'f')
+        float_stack = self.clip_and_standardize_array(float_stack)
+
+        # filter and fitting
+        spot_table = pandas.DataFrame(index = [], columns = self.columns)
+        for index in range(len(float_stack)):
+            float_stack[index] = self.gaussian_laplacian_filter_image(float_stack[index])
+            x, y, error = self.gaussian_fitting(float_stack[index])
+            intensity = input_stack[index, x.astype(numpy.int), y.astype(numpy.int)]
+            result = self.convert_to_pandas(index, x, y, intensity, error)
+            spot_table = spot_table.append(result, ignore_index = True)
+
+        spot_table['total_index'] = numpy.arange(len(spot_table))
+        return spot_table
 

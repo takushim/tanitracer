@@ -90,18 +90,10 @@ print("Read image %s" % (input_filename))
 tracer.set_image_clip(orig_image[0])
 
 # fitting and combine all results
-results = pandas.DataFrame(index = [], columns = tracer.columns)
-for index in range(len(orig_image)):
-    result = tracer.fitting_image_array(orig_image[index])
-    result['plane'] = index
-    results = results.append(result, ignore_index = True)
-    #print("%d" % (len(result)), end = " ", flush = True)
-
+results = tracer.fitting_image_stack(orig_image)
+results = tracer.drop_nan_spots(results)
 spot_counts = [len(results[results.plane == i]) for i in range(results.plane.max() + 1)]
 print("Detected spots: %s" % (' '.join(map(str, spot_counts))))
-
-# re-number table
-results['total_index'] = numpy.arange(len(results))
 print("Total %d spots detected in %d frames." % (len(results), len(orig_image)))
 
 # chase spots
