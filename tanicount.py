@@ -12,6 +12,7 @@ output_filename = None
 count_modes = ['regression', 'lifetime', 'counting']
 selected_mode = count_modes[0]
 lifetime_span = [1, 20]
+lifetime_sum_every = 1
 count_plane = 0
 start_regression = 0
 
@@ -35,9 +36,14 @@ group.add_argument('-C', '--counting', action='store_const', \
 parser.add_argument('-l', '--lifetime-span', nargs = 2, type = int, \
                     metavar = ('START', 'END'), default = lifetime_span, \
                     help='specify the span to coung using lifetime (start >= 1)')
-parser.add_argument('-r', '--start-regression', nargs = 1, type = int, default=[start_regression], \
+parser.add_argument('-e', '--lifetime-sum-every', nargs = 1, type = int, \
+                    metavar = ('X'), default = [lifetime_sum_every], \
+                    help='sum lifetime every X plane')
+parser.add_argument('-r', '--start-regression', nargs = 1, type = int, \
+                    metavar = ('PLANE'), default=[start_regression], \
                     help='specify the plane to start regression')
-parser.add_argument('-c', '--count-plane', nargs = 1, type = int, default=[count_plane], \
+parser.add_argument('-c', '--count-plane', nargs = 1, type = int, \
+                    metavar = ('PLANE'), default=[count_plane], \
                     help='specify the plane to count spots')
 
 parser.add_argument('input_file', nargs=1, default=input_filename, \
@@ -51,6 +57,8 @@ selected_mode = args.selected_mode
 count_plane = args.count_plane[0]
 start_regression = args.start_regression[0]
 lifetime_span = args.lifetime_span
+lifetime_sum_every = args.lifetime_sum_every[0]
+
 if lifetime_span[0] < 1:
     raise Exception('lifetime starting plane must be >= 1')
 
@@ -87,7 +95,7 @@ if selected_mode == 'regression':
     output_columns = ['lifetime', 'spots']
     lifetime_max = spot_table.lifetime.max()
     output_indexes = [i for i in range(1, lifetime_max + 1)]
-    output_counts = [len(results[spot_table.lifetime == i]) for i in output_indexes]
+    output_counts = [len(spot_table[spot_table.lifetime == i]) for i in output_indexes]
 
 elif selected_mode == 'lifetime':
     # calculate lifetime
@@ -95,12 +103,17 @@ elif selected_mode == 'lifetime':
     spot_table = filter.keep_first_spots(spot_table)
     spot_table = spot_table[(lifetime_span[0] <= spot_table.plane) & \
                             (spot_table.plane <= lifetime_span[1])].reset_index(drop=True)
-
+    
     # prepare data
     output_columns = ['lifetime', 'spots']
     lifetime_max = spot_table.lifetime.max()
-    output_indexes = [i for i in range(1, lifetime_max + 1)]
-    output_counts = [len(results[spot_table.lifetime == i]) for i in output_indexes]
+    if lifetime_sum_every == 1:
+        output_indexes = [i for i in range(1, lifetime_max + 1)]
+        output_counts = [len(spot_table[spot_table.lifetime == i]) for i in output_indexes]
+    else:
+        output_indexes = [i * lifetime_sum_every for i in range(1, ((lifetime_max - 1) // lifetime_sum_every) + 2)]
+        output_counts = [len(spot_table[((i - lifetime_sum_every) < spot_table.lifetime) & (spot_table.lifetime <= i)]) \
+                         for i in output_indexes]
 
 elif selected_mode == 'counting':
     # prepare data
