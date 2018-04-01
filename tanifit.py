@@ -33,7 +33,8 @@ parser.add_argument('-p', '--use-plane', nargs=1, type=int, default=[use_plane],
 
 parser.add_argument('-z', '--marker-size', nargs=1, type=int, default=[marker.marker_size], \
                     help='marker size to plot')
-parser.add_argument('-c', '--marker-colors', nargs=2, type=str, metavar = ['NORMAL', 'ERROR'], \
+parser.add_argument('-c', '--marker-colors', nargs=2, type=str, \
+                    metavar = ('NORMAL', 'ERROR'), \
                     default=[marker.marker_colors[0], marker.marker_colors[3]], 
                     help='marker colors for normal/error spots')
 

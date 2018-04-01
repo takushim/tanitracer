@@ -15,6 +15,7 @@ lifetime_span = [1, 20]
 lifetime_sum_every = 1
 count_plane = 0
 start_regression = 0
+time_scale = 1
 
 # parse arguments
 parser = argparse.ArgumentParser(description='count lifetime using regression.', \
@@ -33,6 +34,10 @@ group.add_argument('-C', '--counting', action='store_const', \
                     dest='selected_mode', const=count_modes[2], \
                     help='count spots withoug tracking')
                     
+parser.add_argument('-x', '--time-scale', nargs = 1, type = float, \
+                    metavar = ('SCALE'), default=[time_scale], \
+                    help='interval of time-lapse (in seconds)')
+
 parser.add_argument('-l', '--lifetime-span', nargs = 2, type = int, \
                     metavar = ('START', 'END'), default = lifetime_span, \
                     help='specify the span to coung using lifetime (start >= 1)')
@@ -53,11 +58,16 @@ args = parser.parse_args()
 
 # set arguments
 input_filename = args.input_file[0]
+if os.path.splitext(os.path.basename(input_filename))[1].lower() == '.stk':
+    input_filename = os.path.splitext(os.path.basename(input_filename))[0] + '.txt'
+    print("Reading %s instead of %s." % (input_filename, args.input_file[0]))
+
 selected_mode = args.selected_mode
 count_plane = args.count_plane[0]
 start_regression = args.start_regression[0]
 lifetime_span = args.lifetime_span
 lifetime_sum_every = args.lifetime_sum_every[0]
+time_scale = args.time_scale[0]
 
 if lifetime_span[0] < 1:
     raise Exception('lifetime starting plane must be >= 1')
@@ -83,19 +93,22 @@ spot_table = spot_table.sort_values(by = ['total_index', 'plane']).reset_index(d
 
 # lifetime or regression
 if selected_mode == 'regression':
-    # drop planes for regression
-    spot_table = spot_table[spot_table.plane >= start_regression].reset_index(drop=True)
-        
-    # calculate lifetime
-    spot_table = filter.calculate_lifetime(spot_table)
-    spot_table = filter.keep_first_spots(spot_table)
-    spot_table = spot_table[spot_table.plane == start_regression].reset_index(drop=True)
-    
+    # spots to be counted
+    index_set = set(spot_table[spot_table.plane == start_regression].total_index.tolist())
+
+    # regression
+    output_indexes = []
+    output_counts = []
+    for index in range(start_regression, spot_table.plane.max() + 1):
+        spot_count = len(spot_table[(spot_table.total_index.isin(index_set)) & (spot_table.plane == index)])
+        if spot_count == 0:
+            break
+        output_indexes += [index]
+        output_counts += [spot_count]
+
     # prepare data
-    output_columns = ['lifetime', 'spots']
-    lifetime_max = spot_table.lifetime.max()
-    output_indexes = [i for i in range(1, lifetime_max + 1)]
-    output_counts = [len(spot_table[spot_table.lifetime == i]) for i in output_indexes]
+    output_columns = ['lifecount', 'lifetime', 'regression']
+    output_times = [i * time_scale for i in output_indexes]
 
 elif selected_mode == 'lifetime':
     # calculate lifetime
@@ -105,21 +118,24 @@ elif selected_mode == 'lifetime':
                             (spot_table.plane <= lifetime_span[1])].reset_index(drop=True)
     
     # prepare data
-    output_columns = ['lifetime', 'spots']
-    lifetime_max = spot_table.lifetime.max()
+    output_columns = ['lifecount', 'lifetime', 'spotcount']
+    lifecount_max = spot_table.lifetime.max()
     if lifetime_sum_every == 1:
-        output_indexes = [i for i in range(1, lifetime_max + 1)]
+        output_indexes = [i for i in range(1, lifecount_max + 1)]
+        output_times = [i * time_scale for i in output_indexes]
         output_counts = [len(spot_table[spot_table.lifetime == i]) for i in output_indexes]
     else:
-        output_indexes = [i * lifetime_sum_every for i in range(1, ((lifetime_max - 1) // lifetime_sum_every) + 2)]
+        output_indexes = [i * lifetime_sum_every for i in range(1, ((lifecount_max - 1) // lifetime_sum_every) + 2)]
+        output_times = [i * time_scale for i in output_indexes]
         output_counts = [len(spot_table[((i - lifetime_sum_every) < spot_table.lifetime) & (spot_table.lifetime <= i)]) \
                          for i in output_indexes]
 
 elif selected_mode == 'counting':
     # prepare data
-    output_columns = ['plane', 'spots']
+    output_columns = ['plane', 'lifetime', 'spots']
     plane_max = spot_table.plane.max()
     output_indexes = [i for i in range(1, plane_max + 1)]
+    output_times = [i * time_scale for i in output_indexes]
     output_counts = [len(spot_table[spot_table.plane == i]) for i in output_indexes]
 
 else:
@@ -127,8 +143,10 @@ else:
 
 output_table = pandas.DataFrame({ \
                     output_columns[0] : output_indexes, \
-                    output_columns[1] : output_counts}, \
+                    output_columns[1] : output_times, \
+                    output_columns[2] : output_counts}, \
                     columns = output_columns)
 
 output_table.to_csv(output_filename, sep='\t', index=False)
+print(output_table)
 
