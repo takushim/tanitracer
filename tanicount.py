@@ -74,7 +74,7 @@ if lifetime_span[0] < 1:
 
 if args.output_file is None:
     if selected_mode == 'lifetime':
-        output_filename = os.path.splitext(os.path.basename(input_filename))[0] + ('_liftime%d.txt' % (lifetime_sum_every))
+        output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_liftime.txt'
     elif selected_mode == 'regression':
         output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_regression.txt' 
     elif selected_mode == 'counting':
