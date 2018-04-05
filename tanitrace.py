@@ -16,6 +16,7 @@ output_image_filename = None
 chase_spots = False
 output_image = False
 invert_image = False
+rainbow_colors = False
 
 # parse arguments
 parser = argparse.ArgumentParser(description='trace spots using gaussian fitting.', \
@@ -45,6 +46,9 @@ parser.add_argument('-z', '--marker-size', nargs=1, type=int, default=[marker.ma
 parser.add_argument('-c', '--marker-colors', nargs=4, type=str, \
                     default=marker.marker_colors, metavar=('NEW', 'CONT', 'END', 'ERROR'), \
                     help='marker colors for new/continued/end spots')
+parser.add_argument('-r', '--rainbow-colors', action='store_true', default=rainbow_colors, \
+                    help='use rainbow colors')
+
 parser.add_argument('-i', '--invert-image', action='store_true', default=invert_image, \
                     help='invert image LUT')
 
@@ -80,6 +84,7 @@ else:
     output_image_filename = args.output_image_file[0]
 
 invert_image = args.invert_image
+rainbow_colors = args.rainbow_colors
 
 # read image
 orig_image = tifffile.imread(input_filename)
@@ -123,7 +128,10 @@ if output_image is True:
         image_color = 255 - image_color
 
     # mark tracking status
-    image_color = marker.mark_spots(image_color, results)
+    if rainbow_colors is True:
+        image_color = marker.mark_rainbow_spots(image_color, results)    
+    else:
+        image_color = marker.mark_spots(image_color, results)
 
     # output multipage tiff
     tifffile.imsave(output_image_filename, image_color)

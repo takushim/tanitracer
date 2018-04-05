@@ -5,7 +5,7 @@ from scipy.spatial import distance
 
 class BFChaser:
     def __init__ (self):
-        self.chase_distance = 3.0
+        self.chase_distance = 3.5
         
     def output_header (self, output_file):
         output_file.write('## Chased by TaniChaser at %s\n' % (time.ctime()))

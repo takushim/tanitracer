@@ -7,6 +7,8 @@ class SpotMarker:
     def __init__ (self):
         self.marker_size = 6
         self.marker_colors = ['magenta', 'orange', 'blue', 'red']
+        self.rainbow_colors = ["red", "blue", "lightgreen", "magenta", "purple", "cyan",\
+                               "yellow", "orange", "gray", "white"]
 
     def convert_to_color (self, orig_image):
 
@@ -46,6 +48,47 @@ class SpotMarker:
             status[-1] = 'end'
         
         return status
+        
+    def mark_rainbow_spots (self, image_color, spot_table):
+        # copy for working
+        work_table = spot_table.copy()
+
+        # draw markers
+        for index in range(len(image_color)):
+            spots = work_table[work_table.plane == index].reset_index(drop=True)
+            
+            if len(spots) == 0:
+                print("Skipped plane %d with %d spots." % (index, len(spots)))
+                continue
+
+            spots['int_x'] = spots['x'].astype(numpy.int)
+            spots['int_y'] = spots['y'].astype(numpy.int)
+            spots = spots.sort_values(by = ['int_x', 'int_y']).reset_index(drop=True)
+
+            # check possible error spots (duplicated)
+            spots['duplicated'] = spots.duplicated(subset = ['int_x', 'int_y'], keep = False)
+            error_spots = len(spots[spots['duplicated'] == True])
+            if error_spots > 0:
+                print("Possible %d duplicated spots in plane %d." % (error_spots, index))
+                
+            image = Image.fromarray(image_color[index])
+            draw = ImageDraw.Draw(image)
+
+            for row, spot in spots.iterrows():
+                # draw marker
+                draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
+                              (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
+                              fill = None, outline = self.rainbow_colors[spot.total_index % len(self.rainbow_colors)])
+                # mark duplicated spot
+                #if spot['duplicated'] is True:
+                #    draw.ellipse(((spot.int_x - self.marker_size + 1, spot.int_y - self.marker_size + 1),\
+                #                  (spot.int_x + self.marker_size + 1, spot.int_y + self.marker_size + 1)),\
+                #                fill = None, outline = self.marker_colors[3])
+            
+            # save image
+            image_color[index] = numpy.asarray(image)
+        
+        return image_color
 
     def mark_spots (self, image_color, spot_table):
         # mark new, cont, end
