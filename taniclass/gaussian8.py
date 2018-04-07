@@ -10,7 +10,7 @@ class Gaussian8:
         self.laplace = 3.0 # Diameter of Spots
         self.min_distance = 1 # Pixel area (int) to find local max (usually 1)
         self.threshold_abs = 0.006 # Threshold to find local max
-        self.columns = ['total_index', 'plane', 'index', 'x', 'y', 'intensity', 'fit_error']
+        self.columns = ['total_index', 'plane', 'index', 'x', 'y', 'diameter', 'intensity', 'fit_error']
         self.image_clip_min = 0.0
         self.image_clip_max = numpy.iinfo(numpy.int32).max
                 
@@ -102,6 +102,23 @@ class Gaussian8:
         
         return x, y, fit_error
 
+    def calculate_diameter (self, input_image, int_x, int_y):
+        c20 = (   numpy.log(input_image[int_y - 1, int_x - 1]) + numpy.log(input_image[int_y, int_x - 1]) \
+                + numpy.log(input_image[int_y + 1, int_x - 1]) - 2 * numpy.log(input_image[int_y - 1,int_x]) \
+                - 2 * numpy.log(input_image[int_y, int_x]) - 2 * numpy.log(input_image[int_y + 1, int_x]) \
+                + numpy.log(input_image[int_y - 1, int_x + 1]) + numpy.log(input_image[int_y, int_x + 1]) \
+                + numpy.log(input_image[int_y + 1, int_x + 1]) ) / 6
+        c02 = (   numpy.log(input_image[int_y - 1, int_x - 1]) + numpy.log(input_image[int_y - 1,int_x]) \
+                + numpy.log(input_image[int_y - 1, int_x + 1]) - 2 * numpy.log(input_image[int_y, int_x - 1]) \
+                - 2 * numpy.log(input_image[int_y, int_x]) - 2 * numpy.log(input_image[int_y, int_x + 1]) \
+                + numpy.log(input_image[int_y + 1, int_x - 1]) + numpy.log(input_image[int_y + 1,int_x]) \
+                + numpy.log(input_image[int_y + 1, int_x + 1]) ) / 6
+
+        sigma_x = numpy.sqrt(- 2 * c20)
+        sigma_y = numpy.sqrt(- 2 * c02)
+        
+        return (2 * numpy.sqrt((sigma_x * sigma_x + sigma_y * sigma_y) / 2))
+
     def clip_array (self, float_array):
         return float_array.clip(self.image_clip_min, self.image_clip_max)
 
@@ -109,22 +126,15 @@ class Gaussian8:
         float_image = - (float_image - numpy.max(float_image)) / numpy.ptp(float_image)
         return ndimage.gaussian_laplace(float_image, self.laplace)
     
-    def convert_to_pandas (self, plane, index, x, y, intensity, error):
+    def convert_to_pandas (self, plane, index, x, y, diameter, intensity, error):
         length = max(len(x), len(y), len(intensity), len(error))
         result = pandas.DataFrame({'total_index' : numpy.arange(length), 'plane' : plane, \
-                                   'index' : index, 'x' : x, 'y' : y, \
+                                   'index' : index, 'x' : x, 'y' : y, 'diameter' : diameter, \
                                    'intensity' : intensity, 'fit_error' : error}, \
                                    columns = self.columns)
          
         return result
 
-    def drop_nan_spots (self, spot_table):
-        total_count = len(spot_table)
-        spot_table = spot_table.dropna().reset_index(drop=True)
-        if total_count - len(spot_table) > 0:
-            print("Dropped %d spots due to NaN." % (total_count - len(spot_table)))
-        return spot_table
-    
     def fitting_image_array (self, input_image):
         # get float image anf filter
         float_image = numpy.array(input_image, 'f')
@@ -134,9 +144,10 @@ class Gaussian8:
         # fitting
         x, y, error = self.gaussian_fitting(float_image)
         intensity = input_image[y.astype(numpy.int), x.astype(numpy.int)]
+        diameter = self.calculate_diameter(input_image, x.astype(numpy.int), y.astype(numpy.int))
 
         # Make Pandas dataframe
-        result = self.convert_to_pandas(0, numpy.arange(len(x)), x, y, intensity, error)
+        result = self.convert_to_pandas(0, numpy.arange(len(x)), x, y, diameter, intensity, error)
 
         return result
         
@@ -152,12 +163,14 @@ class Gaussian8:
         stored_y = numpy.array([], dtype=numpy.float)
         stored_error = numpy.array([], dtype=numpy.float)
         stored_intensity = numpy.array([], dtype=numpy.int)
+        stored_diameter = numpy.array([], dtype=numpy.float)
 
         for index in range(len(input_stack)):
             # filter and fitting            
             float_stack[index] = self.standardize_and_filter_image(float_stack[index])
             x, y, error = self.gaussian_fitting(float_stack[index])
             intensity = input_stack[index, y.astype(numpy.int), x.astype(numpy.int)]
+            diameter = self.calculate_diameter(input_stack[index], x.astype(numpy.int), y.astype(numpy.int))
             
             # append to arrays
             stored_plane = numpy.append(stored_plane, numpy.full(len(x), index))
@@ -166,9 +179,11 @@ class Gaussian8:
             stored_y = numpy.append(stored_y, y)
             stored_error = numpy.append(stored_error, error)
             stored_intensity = numpy.append(stored_intensity, intensity)
+            stored_diameter = numpy.append(stored_diameter, diameter)
 
         spot_table = self.convert_to_pandas(stored_plane, stored_index, \
-                                            stored_x, stored_y, stored_intensity, stored_error)
+                                            stored_x, stored_y, stored_diameter, \
+                                            stored_intensity, stored_error)
         spot_table['total_index'] = numpy.arange(len(spot_table))
         return spot_table
 

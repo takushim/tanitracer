@@ -9,7 +9,7 @@ class BFChaser:
         
     def output_header (self, output_file):
         output_file.write('## Chased by TaniChaser at %s\n' % (time.ctime()))
-        output_file.write('#   chase_distance = %f\n' % (self.chase_distance,))
+        output_file.write('#   chase_distance = %f\n' % (self.chase_distance))
     
     def chase_spots (self, spot_table):
         # copy pandas dataframe for working, and append total index
@@ -26,38 +26,38 @@ class BFChaser:
             # calculate distance matrix [curr, next]
             dist_matrix = distance.cdist(current_spots[['x', 'y']].values, next_spots[['x', 'y']].values)
             
-            # leave only minimum values
-            min_index = dist_matrix.argmin(axis = 0)
+            # prepare index to insert numpy.inf
             dist_index = numpy.ones(dist_matrix.shape, dtype = numpy.bool)
+
+            # leave only minimum values
+            dist_index[:,:] = True
+            min_index = dist_matrix.argmin(axis = 0)
             dist_index[min_index, range(len(min_index))] = False
             dist_matrix[dist_index] = numpy.inf
-
+            
+            dist_index[:,:] = True
             min_index = dist_matrix.argmin(axis = 1)
-            dist_index = numpy.ones(dist_matrix.shape, dtype = numpy.bool)
             dist_index[range(len(min_index)), min_index] = False
             dist_matrix[dist_index] = numpy.inf
-            
+
             # leave dists smaller than chasing distance
             dist_matrix[dist_matrix > self.chase_distance] = numpy.inf
-            
+
             # make indexes
             chased_spots = numpy.where(dist_matrix != numpy.inf)
-            current_index = current_spots.iloc[chased_spots[0]].total_index
-            next_index = next_spots.iloc[chased_spots[1]].total_index
             chased_dists = dist_matrix[chased_spots]
-            
-            #print("Plane %d: %d of %d spots chased." % (index, len(chased_spots[0]), len(current_spots)))
-            
-            # overwrite total index
-            total_index_list = work_table.total_index.copy()
-            total_index_list[next_index] = total_index_list[current_index]
-            work_table.total_index = total_index_list
+            current_index_list = current_spots.total_index.tolist()
+            current_indexes = [current_index_list[i] for i in chased_spots[0]]
+            next_index_list = next_spots.total_index.tolist()
+            next_indexes = [next_index_list[i] for i in chased_spots[1]]
             
             # append chased distances
-            dists_list = work_table.distance.copy()
-            dists_list[next_index] = chased_dists
-            work_table.distance = dists_list
-        
+            #print(chased_spots)
+            work_table.loc[work_table.total_index.isin(next_indexes), 'distance'] = chased_dists
+
+            # overwrite total index
+            work_table['total_index'] = work_table.total_index.replace(dict(zip(next_indexes, current_indexes)))
+                    
         # sort table and return
         return work_table.sort_values(by = ['total_index', 'plane']).reset_index(drop=True)
 

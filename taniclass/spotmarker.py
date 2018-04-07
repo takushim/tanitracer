@@ -8,7 +8,7 @@ class SpotMarker:
         self.marker_size = 6
         self.marker_colors = ['magenta', 'orange', 'blue', 'red']
         self.rainbow_colors = ["red", "blue", "lightgreen", "magenta", "purple", "cyan",\
-                               "yellow", "orange", "gray", "white"]
+                               "yellow", "orange", "lavender", "maroon"]
 
     def convert_to_color (self, orig_image):
 
