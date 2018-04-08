@@ -139,7 +139,7 @@ for index, condition in enumerate(conditions):
     
     # diameters
     diameters = numpy.array(results['diameter'].dropna().tolist())
-    rel95 = 2.262 * numpy.sqrt(numpy.var(diameters) / len(diameters))
+    rel95 = 2.262 * numpy.sqrt(numpy.var(diameters, ddof=1) / len(diameters))
     
     print("Plot %d spots with: M = %d, L = %f, T = %f. Diameter = %f +/- %f." % \
             (len(results), min_distance, laplace, threshold_abs, numpy.average(diameters), rel95))
