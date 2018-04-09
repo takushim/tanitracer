@@ -103,21 +103,23 @@ class Gaussian8:
         return x, y, fit_error
 
     def calculate_diameter (self, input_image, int_x, int_y):
-        c20 = (   numpy.log(input_image[int_y - 1, int_x - 1]) + numpy.log(input_image[int_y, int_x - 1]) \
-                + numpy.log(input_image[int_y + 1, int_x - 1]) - 2 * numpy.log(input_image[int_y - 1,int_x]) \
-                - 2 * numpy.log(input_image[int_y, int_x]) - 2 * numpy.log(input_image[int_y + 1, int_x]) \
-                + numpy.log(input_image[int_y - 1, int_x + 1]) + numpy.log(input_image[int_y, int_x + 1]) \
-                + numpy.log(input_image[int_y + 1, int_x + 1]) ) / 6
-        c02 = (   numpy.log(input_image[int_y - 1, int_x - 1]) + numpy.log(input_image[int_y - 1,int_x]) \
-                + numpy.log(input_image[int_y - 1, int_x + 1]) - 2 * numpy.log(input_image[int_y, int_x - 1]) \
-                - 2 * numpy.log(input_image[int_y, int_x]) - 2 * numpy.log(input_image[int_y, int_x + 1]) \
-                + numpy.log(input_image[int_y + 1, int_x - 1]) + numpy.log(input_image[int_y + 1,int_x]) \
-                + numpy.log(input_image[int_y + 1, int_x + 1]) ) / 6
+    
+        return numpy.zeros(len(int_x))
+        #c20 = (   numpy.log(input_image[int_y - 1, int_x - 1]) + numpy.log(input_image[int_y, int_x - 1]) \
+        #        + numpy.log(input_image[int_y + 1, int_x - 1]) - 2 * numpy.log(input_image[int_y - 1,int_x]) \
+        #        - 2 * numpy.log(input_image[int_y, int_x]) - 2 * numpy.log(input_image[int_y + 1, int_x]) \
+        #        + numpy.log(input_image[int_y - 1, int_x + 1]) + numpy.log(input_image[int_y, int_x + 1]) \
+        #        + numpy.log(input_image[int_y + 1, int_x + 1]) ) / 6
+        #c02 = (   numpy.log(input_image[int_y - 1, int_x - 1]) + numpy.log(input_image[int_y - 1,int_x]) \
+        #        + numpy.log(input_image[int_y - 1, int_x + 1]) - 2 * numpy.log(input_image[int_y, int_x - 1]) \
+        #        - 2 * numpy.log(input_image[int_y, int_x]) - 2 * numpy.log(input_image[int_y, int_x + 1]) \
+        #        + numpy.log(input_image[int_y + 1, int_x - 1]) + numpy.log(input_image[int_y + 1,int_x]) \
+        #        + numpy.log(input_image[int_y + 1, int_x + 1]) ) / 6
 
-        sigma_x = numpy.sqrt(- 2 * c20)
-        sigma_y = numpy.sqrt(- 2 * c02)
+        #sigma_x = numpy.sqrt(- 2 * c20)
+        #sigma_y = numpy.sqrt(- 2 * c02)
         
-        return (2 * numpy.sqrt((sigma_x * sigma_x + sigma_y * sigma_y) / 2))
+        #return (2 * numpy.sqrt((sigma_x * sigma_x + sigma_y * sigma_y) / 2))
 
     def clip_array (self, float_array):
         return float_array.clip(self.image_clip_min, self.image_clip_max)

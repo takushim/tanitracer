@@ -58,7 +58,9 @@ args = parser.parse_args()
 
 # set arguments
 input_filename = args.input_file[0]
-if os.path.splitext(os.path.basename(input_filename))[1].lower() == '.stk':
+
+fileext = os.path.splitext(os.path.basename(input_filename))[1].lower()
+if (fileext == '.stk') or (fileext == '.tif'):
     input_filename = os.path.splitext(os.path.basename(input_filename))[0] + '.txt'
     print("Reading %s instead of %s." % (input_filename, args.input_file[0]))
 
