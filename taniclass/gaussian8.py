@@ -46,7 +46,7 @@ class Gaussian8:
         self.image_clip_min = stats.scoreatpercentile(image_array, 0.1)
         self.image_clip_max = stats.scoreatpercentile(image_array, 99.9)
     
-    def gaussian_fitting (self, float_image):
+    def gaussian_fitting (self, input_image, float_image):
         # Find local max at 1-pixel resolution (order: [y, x])
         xy = peak_local_max(float_image, min_distance = self.min_distance,\
                             threshold_abs = self.threshold_abs, exclude_border = True)
@@ -86,40 +86,23 @@ class Gaussian8:
         
         x = xy[:,1] - 0.5 * (c10/c20)
         y = xy[:,0] - 0.5 * (c01/c02)
+        diameter = 2 * numpy.sqrt((- 0.5 / c20 + -0.5/c02) / 2)
+        intensity = input_image[xy[:,0], xy[:,1]]
         
         total_spots = len(xy)
-        
         indexes = numpy.ones(len(xy), dtype=numpy.bool)
         indexes = indexes & (x >= 0) & (x <= float_image.shape[1])
         indexes = indexes & (y >= 0) & (y <= float_image.shape[0])
+        if total_spots - len(x) > 0:
+            print("Dropped %d of %d spots due to NaN or Inf values." % (total_spots - len(x), total_spots))
         
         x = x[indexes]
         y = y[indexes]
         fit_error = fit_error[indexes]
+        diameter = diameter[indexes]
+        intensity = intensity[indexes]
         
-        if total_spots - len(x) > 0:
-            print("Dropped %d of %d spots due to NaN or Inf values." % (total_spots - len(x), total_spots))
-        
-        return x, y, fit_error
-
-    def calculate_diameter (self, input_image, int_x, int_y):
-    
-        return numpy.zeros(len(int_x))
-        #c20 = (   numpy.log(input_image[int_y - 1, int_x - 1]) + numpy.log(input_image[int_y, int_x - 1]) \
-        #        + numpy.log(input_image[int_y + 1, int_x - 1]) - 2 * numpy.log(input_image[int_y - 1,int_x]) \
-        #        - 2 * numpy.log(input_image[int_y, int_x]) - 2 * numpy.log(input_image[int_y + 1, int_x]) \
-        #        + numpy.log(input_image[int_y - 1, int_x + 1]) + numpy.log(input_image[int_y, int_x + 1]) \
-        #        + numpy.log(input_image[int_y + 1, int_x + 1]) ) / 6
-        #c02 = (   numpy.log(input_image[int_y - 1, int_x - 1]) + numpy.log(input_image[int_y - 1,int_x]) \
-        #        + numpy.log(input_image[int_y - 1, int_x + 1]) - 2 * numpy.log(input_image[int_y, int_x - 1]) \
-        #        - 2 * numpy.log(input_image[int_y, int_x]) - 2 * numpy.log(input_image[int_y, int_x + 1]) \
-        #        + numpy.log(input_image[int_y + 1, int_x - 1]) + numpy.log(input_image[int_y + 1,int_x]) \
-        #        + numpy.log(input_image[int_y + 1, int_x + 1]) ) / 6
-
-        #sigma_x = numpy.sqrt(- 2 * c20)
-        #sigma_y = numpy.sqrt(- 2 * c02)
-        
-        #return (2 * numpy.sqrt((sigma_x * sigma_x + sigma_y * sigma_y) / 2))
+        return {'x': x, 'y': y, 'fit_error': fit_error, 'diameter': diameter, 'intensity': intensity}
 
     def clip_array (self, float_array):
         return float_array.clip(self.image_clip_min, self.image_clip_max)
@@ -128,14 +111,10 @@ class Gaussian8:
         float_image = - (float_image - numpy.max(float_image)) / numpy.ptp(float_image)
         return ndimage.gaussian_laplace(float_image, self.laplace)
     
-    def convert_to_pandas (self, plane, index, x, y, diameter, intensity, error):
-        length = max(len(x), len(y), len(intensity), len(error))
-        result = pandas.DataFrame({'total_index' : numpy.arange(length), 'plane' : plane, \
-                                   'index' : index, 'x' : x, 'y' : y, 'diameter' : diameter, \
-                                   'intensity' : intensity, 'fit_error' : error}, \
-                                   columns = self.columns)
-         
-        return result
+    def convert_to_pandas (self, result):
+        length = max([len(item) for item in result.values()])
+        result.update({'total_index' : numpy.arange(length)})
+        return pandas.DataFrame(result, columns = self.columns)
 
     def fitting_image_array (self, input_image):
         # get float image anf filter
@@ -144,14 +123,14 @@ class Gaussian8:
         float_image = self.standardize_and_filter_image(float_image)
         
         # fitting
-        x, y, error = self.gaussian_fitting(float_image)
-        intensity = input_image[y.astype(numpy.int), x.astype(numpy.int)]
-        diameter = self.calculate_diameter(input_image, x.astype(numpy.int), y.astype(numpy.int))
+        result = self.gaussian_fitting(input_image, float_image)
 
         # Make Pandas dataframe
-        result = self.convert_to_pandas(0, numpy.arange(len(x)), x, y, diameter, intensity, error)
+        length = max([len(item) for item in result.values()])
+        result.update({'plane': numpy.full(length, 0), 'index': numpy.arange(length)})
+        spot_table = self.convert_to_pandas(result)
 
-        return result
+        return spot_table
         
     def fitting_image_stack (self, input_stack):
         # get float image anf filter
@@ -159,33 +138,27 @@ class Gaussian8:
         float_stack = self.clip_array(float_stack)
         
         # arrays to store results
-        stored_plane = numpy.array([], dtype=numpy.int)
-        stored_index = numpy.array([], dtype=numpy.int)
-        stored_x = numpy.array([], dtype=numpy.float)
-        stored_y = numpy.array([], dtype=numpy.float)
-        stored_error = numpy.array([], dtype=numpy.float)
-        stored_intensity = numpy.array([], dtype=numpy.int)
-        stored_diameter = numpy.array([], dtype=numpy.float)
+        result_array = []
 
         for index in range(len(input_stack)):
             # filter and fitting            
             float_stack[index] = self.standardize_and_filter_image(float_stack[index])
-            x, y, error = self.gaussian_fitting(float_stack[index])
-            intensity = input_stack[index, y.astype(numpy.int), x.astype(numpy.int)]
-            diameter = self.calculate_diameter(input_stack[index], x.astype(numpy.int), y.astype(numpy.int))
+            result = self.gaussian_fitting(input_stack[index], float_stack[index])
+            
+            # add plane and index
+            length = max([len(item) for item in result.values()])
+            result.update({'plane': numpy.full(length, index), 'index': numpy.arange(length)})
             
             # append to arrays
-            stored_plane = numpy.append(stored_plane, numpy.full(len(x), index))
-            stored_index = numpy.append(stored_index, numpy.arange(len(x)))
-            stored_x = numpy.append(stored_x, x)
-            stored_y = numpy.append(stored_y, y)
-            stored_error = numpy.append(stored_error, error)
-            stored_intensity = numpy.append(stored_intensity, intensity)
-            stored_diameter = numpy.append(stored_diameter, diameter)
+            result_array.append(result)
 
-        spot_table = self.convert_to_pandas(stored_plane, stored_index, \
-                                            stored_x, stored_y, stored_diameter, \
-                                            stored_intensity, stored_error)
+        # accumulate result
+        result_concat = {}
+        for key in result_array[0].keys():
+            result_concat[key] = numpy.concatenate([result[key] for result in result_array])
+
+        # make pandas table
+        spot_table = self.convert_to_pandas(result_concat)
         spot_table['total_index'] = numpy.arange(len(spot_table))
         return spot_table
 
