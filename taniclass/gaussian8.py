@@ -32,6 +32,8 @@ class Gaussian8:
                           (planes, image_array.shape[2], image_array.shape[1]))
         output_file.write('#   laplace = %f; min_distance = %d; threshold_abs = %f\n' %\
                           (self.laplace, self.min_distance, self.threshold_abs))
+        output_file.write('#   max_diameter = %f\n' %\
+                          (self.max_diameter))
         output_file.write('#   image_clip_min = %f; image_clip_max = %f\n' %\
                           (self.image_clip_min, self.image_clip_max))
     
