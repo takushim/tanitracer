@@ -7,18 +7,26 @@ from skimage.feature import peak_local_max
 
 class Gaussian8:
     def __init__ (self):
-        self.laplace = 3.0 # Diameter of Spots
+        self.laplace = 2.0 # Diameter of Spots
         self.min_distance = 1 # Pixel area (int) to find local max (usually 1)
         self.threshold_abs = 0.006 # Threshold to find local max
+        self.max_diameter = 10.0
         self.columns = ['total_index', 'plane', 'index', 'x', 'y', 'diameter', 'intensity', 'fit_error']
         self.image_clip_min = 0.0
         self.image_clip_max = numpy.iinfo(numpy.int32).max
                 
     def output_header (self, output_file, input_filename, image_array):
-        planes = image_array.shape[0]
         filename = os.path.basename(input_filename)
+        planes = image_array.shape[0]
         if len(image_array.shape) == 2:
             planes = 1
+            
+        #params = {'input_file': filename, 'total_planes': planes, \
+        #          'width': image_array.shape[2], 'height': image_array.shape[1], \
+        #          'laplace': self.laplace. 'min_distance': self.min_distance, \
+        #          'threshold_abs': self.threshold_abs, \
+        #          'image_clip_min': self.image_clip_min, 'image_clip_max': self.image_clip_max}
+        
         output_file.write('## Traced by TaniTracer at %s for %s\n' % (time.ctime(), filename))
         output_file.write('#   total_planes = %d; width = %d; height = %d\n' %\
                           (planes, image_array.shape[2], image_array.shape[1]))
@@ -71,15 +79,24 @@ class Gaussian8:
         
         x = xy[:,1] - 0.5 * (c10/c20)
         y = xy[:,0] - 0.5 * (c01/c02)
-        diameter = 2 * numpy.sqrt((- 0.5 / c20 + -0.5/c02) / 2)
+        diameter = 2 * numpy.sqrt(- (0.5/c20 + 0.5/c02) / 2)
         intensity = input_image[xy[:,0], xy[:,1]]
         
         total_spots = len(xy)
         indexes = numpy.ones(len(xy), dtype=numpy.bool)
         indexes = indexes & (x >= 0) & (x <= float_image.shape[1])
         indexes = indexes & (y >= 0) & (y <= float_image.shape[0])
+        drop_by_nan = total_spots - numpy.sum(indexes)
+        last_spots = numpy.sum(indexes)
+        
         indexes = indexes & ((0.5 * (c10/c20)) < 1)
         indexes = indexes & ((0.5 * (c01/c02)) < 1)
+        drop_by_shift = last_spots - numpy.sum(indexes)
+        last_spots = numpy.sum(indexes)
+        
+        indexes = indexes & (diameter <= self.max_diameter)
+        drop_by_diameter = last_spots - numpy.sum(indexes)
+        last_spots = numpy.sum(indexes)
         
         x = x[indexes]
         y = y[indexes]
@@ -87,8 +104,9 @@ class Gaussian8:
         diameter = diameter[indexes]
         intensity = intensity[indexes]
         
-        if total_spots - len(x) > 0:
-            print("Dropped %d of %d spots due to NaN values or subpixel shift error." % (total_spots - len(x), total_spots))
+        if total_spots - last_spots > 0:
+            print("Dropped %d of %d spots (nan: %d, shift: %d, diameter: %d)." % \
+                  (total_spots - last_spots, total_spots, drop_by_nan, drop_by_shift, drop_by_diameter))
 
         return {'x': x, 'y': y, 'fit_error': fit_error, 'diameter': diameter, 'intensity': intensity}
 

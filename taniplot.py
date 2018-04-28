@@ -52,9 +52,9 @@ parser.add_argument('-a', '--align-file', nargs=1, default=[align_filename], \
 parser.add_argument('-e', '--align-each', nargs=1, type=int, default=[plotter.align_each], \
                     help='alignment correction every X plane')
                     
-parser.add_argument('-x', '--image-scale', nargs=1, type=int, default=[plotter.image_scale], \
+parser.add_argument('-X', '--image-scale', nargs=1, type=int, default=[plotter.image_scale], \
                     help='scale factor to original image')
-parser.add_argument('-z', '--image-size', nargs=2, type=int, default=image_size, \
+parser.add_argument('-Z', '--image-size', nargs=2, type=int, default=image_size, \
                     metavar=('WIDTH', 'HEIGHT'), \
                     help='size of original image (read from first file if not specified)')
 

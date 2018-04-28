@@ -39,6 +39,8 @@ parser.add_argument('-m', '--min-distance', nargs=1, type=int, default=[tracer.m
                     help='pixel area to find local max (usually 1.0)')
 parser.add_argument('-t', '--threshold-abs', nargs=1, type=float, default=[tracer.threshold_abs], \
                     help='threshold to find local max')
+parser.add_argument('-x', '--max-diameter', nargs=1, type=float, default=[tracer.max_diameter], \
+                    help='maximum diameter of spots')
 
 parser.add_argument('-C', '--chase-spots', action='store_true', default=chase_spots, \
                     help='chase spots before output tsv file')
@@ -77,6 +79,7 @@ else:
 tracer.laplace = args.laplace[0]
 tracer.min_distance = args.min_distance[0]
 tracer.threshold_abs = args.threshold_abs[0]
+tracer.max_diameter = args.max_diameter[0]
 
 chase_spots = args.chase_spots
 chaser.chase_distance = args.chase_distance[0]
@@ -86,7 +89,7 @@ marker.marker_size = args.marker_size[0]
 
 output_histgram = args.output_histgram
 if args.output_histgram_file is None:
-    output_histgram_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_histed.tif'
+    output_histgram_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_histgram.tif'
     if input_filename == output_histgram_filename:
         raise Exception('input_filename == output_histgram_filename')
 else:
@@ -149,7 +152,7 @@ if output_histgram is True:
     pylab.hist(diameters, bins=50)
     pylab.xlabel("diameter (pixel)")
     pylab.ylabel("counts")
-    pylab.yscale("log")
+    #pylab.yscale("log")
     pylab.savefig(output_histgram_filename, dpi=100, pad_inches=0.0, bbox_inches='tight')
     print("Output histgram image to %s." % (output_histgram_filename))
 
