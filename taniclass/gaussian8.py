@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, numpy, pandas, time
+import os, sys, numpy, pandas, time
 import scipy.ndimage as ndimage
 import scipy.stats as stats
 from skimage.feature import peak_local_max
@@ -16,33 +16,18 @@ class Gaussian8:
                 
     def output_header (self, output_file, input_filename, image_array):
         planes = image_array.shape[0]
+        filename = os.path.basename(input_filename)
         if len(image_array.shape) == 2:
             planes = 1
-        output_file.write('## Traced by TaniTracer at %s.\n' % (time.ctime()))
-        output_file.write('#   file = r\'%s\'; total_planes = %d; width = %d; height = %d\n' %\
-                          (input_filename, planes, image_array.shape[2], image_array.shape[1]))
+        output_file.write('## Traced by TaniTracer at %s for %s\n' % (time.ctime(), filename))
+        output_file.write('#   total_planes = %d; width = %d; height = %d\n' %\
+                          (planes, image_array.shape[2], image_array.shape[1]))
         output_file.write('#   laplace = %f; min_distance = %d; threshold_abs = %f\n' %\
                           (self.laplace, self.min_distance, self.threshold_abs))
         output_file.write('#   image_clip_min = %f; image_clip_max = %f\n' %\
                           (self.image_clip_min, self.image_clip_max))
     
     def set_image_clip (self, image_array):
-        self.set_image_clip_percentile(image_array)
-
-    def set_image_clip_sigma (self, image_array):
-        median = numpy.median(image_array)
-        sigma = numpy.std(image_array)
-        self.image_clip_min = 0.0
-        self.image_clip_max = median + 10 * sigma
-
-    def set_image_clip_iqr (self, image_array):
-        q1 = stats.scoreatpercentile(image_array, 25)
-        q3 = stats.scoreatpercentile(image_array, 75)
-        iqr = q3 - q1
-        self.image_clip_min = q1 - 20 * iqr
-        self.image_clip_max = q3 + 20 * iqr
-    
-    def set_image_clip_percentile (self, image_array):
         self.image_clip_min = stats.scoreatpercentile(image_array, 0.1)
         self.image_clip_max = stats.scoreatpercentile(image_array, 99.9)
     
@@ -93,8 +78,8 @@ class Gaussian8:
         indexes = numpy.ones(len(xy), dtype=numpy.bool)
         indexes = indexes & (x >= 0) & (x <= float_image.shape[1])
         indexes = indexes & (y >= 0) & (y <= float_image.shape[0])
-        if total_spots - len(x) > 0:
-            print("Dropped %d of %d spots due to NaN or Inf values." % (total_spots - len(x), total_spots))
+        indexes = indexes & ((0.5 * (c10/c20)) < 1)
+        indexes = indexes & ((0.5 * (c01/c02)) < 1)
         
         x = x[indexes]
         y = y[indexes]
@@ -102,6 +87,9 @@ class Gaussian8:
         diameter = diameter[indexes]
         intensity = intensity[indexes]
         
+        if total_spots - len(x) > 0:
+            print("Dropped %d of %d spots due to NaN values or subpixel shift error." % (total_spots - len(x), total_spots))
+
         return {'x': x, 'y': y, 'fit_error': fit_error, 'diameter': diameter, 'intensity': intensity}
 
     def clip_array (self, float_array):

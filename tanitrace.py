@@ -3,6 +3,7 @@
 import os, sys, argparse, pandas, numpy
 from taniclass import gaussian8, bfchaser, spotmarker
 from skimage.external import tifffile
+from matplotlib import pylab
 
 # prepare library instances
 tracer = gaussian8.Gaussian8()
@@ -13,7 +14,9 @@ marker = spotmarker.SpotMarker()
 input_filename = None
 output_tsv_filename = None
 output_image_filename = None
+output_histgram_filename = None
 chase_spots = False
+output_histgram = False
 output_image = False
 invert_image = False
 rainbow_colors = False
@@ -24,6 +27,11 @@ parser = argparse.ArgumentParser(description='trace spots using gaussian fitting
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-f', '--output-tsv-file', nargs=1, default = None, \
                     help='output tsv file name ([basename].txt if not specified)')
+
+parser.add_argument('-G', '--output-histgram', action='store_true', default=output_histgram, \
+                    help='output histgram image tiff')
+parser.add_argument('-g', '--output-histgram-file', nargs=1, default = None, \
+                    help='output histgram image file name ([basename]_hist.tif if not specified)')
 
 parser.add_argument('-l', '--laplace', nargs=1, type=float, default=[tracer.laplace], \
                     help='maximum spot diameter to filter noise')
@@ -75,6 +83,15 @@ chaser.chase_distance = args.chase_distance[0]
 
 marker.marker_colors = args.marker_colors
 marker.marker_size = args.marker_size[0]
+
+output_histgram = args.output_histgram
+if args.output_histgram_file is None:
+    output_histgram_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_histed.tif'
+    if input_filename == output_histgram_filename:
+        raise Exception('input_filename == output_histgram_filename')
+else:
+    output_histgram_filename = args.output_histgram_file[0]
+
 output_image = args.output_image
 if args.output_image_file is None:
     output_image_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_marked.tif'
@@ -122,6 +139,19 @@ results.to_csv(output_tsv_file, columns = results.columns, \
                sep='\t', index = False, header = False, mode = 'a')
 output_tsv_file.close()
 print("Output tsv file to %s." % (output_tsv_filename))
+
+# output histgram
+if output_histgram is True:
+    diameters = results.diameter.dropna().values
+    print("Mean diameter %f (%f - %f)." % (numpy.mean(diameters), numpy.min(diameters), numpy.max(diameters)))
+
+    pylab.figure(figsize = (5, 5))
+    pylab.hist(diameters, bins=50)
+    pylab.xlabel("diameter (pixel)")
+    pylab.ylabel("counts")
+    pylab.yscale("log")
+    pylab.savefig(output_histgram_filename, dpi=100, pad_inches=0.0, bbox_inches='tight')
+    print("Output histgram image to %s." % (output_histgram_filename))
 
 # output marked image
 if output_image is True:
