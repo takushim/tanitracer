@@ -45,6 +45,7 @@ class NNChaser:
             # find duplicated targets
             pairs = numpy.sort(pairs, order=['next_array_index', 'distance'])
             unique_index = numpy.unique(pairs['next_array_index'], return_index = True)[1]
+            
             # omit duplicates
             mask = numpy.ones(len(pairs), dtype=numpy.bool)
             mask[unique_index] = False
@@ -97,9 +98,11 @@ class NNChaser:
             mask = numpy.ones(len(next_pairs), dtype=numpy.bool)
             mask[next_indexes] = False
             next_pairs['distance'][mask] = 0.0
+
+        # update distance at plane 0
         results[0]['distance'] = 0.0
             
-        # make new columns
+        # update indexes and make a distance column
         spot_table['total_index'] = numpy.concatenate([result['orig_total_index'] for result in results])
         spot_table['distance'] = numpy.concatenate([result['distance'] for result in results])
         
