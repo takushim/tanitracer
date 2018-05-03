@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 import os, sys, argparse, pandas, numpy
-from taniclass import gaussian8, bfchaser, spotmarker
+from taniclass import gaussian8, nnchaser, spotmarker
 from skimage.external import tifffile
 from matplotlib import pylab
 
 # prepare library instances
 tracer = gaussian8.Gaussian8()
-chaser = bfchaser.BFChaser()
+chaser = nnchaser.NNChaser()
 marker = spotmarker.SpotMarker()
 
 # defaults

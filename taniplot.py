@@ -2,12 +2,12 @@
 
 import os, platform, sys, glob, argparse, time
 import pandas, numpy
-from taniclass import spotplotter, bfchaser, spotfilter
+from taniclass import spotplotter, nnchaser, spotfilter
 from skimage.external import tifffile
 
 # prepare classes
 plotter = spotplotter.SpotPlotter()
-chaser = bfchaser.BFChaser()
+chaser = nnchaser.NNChaser()
 filter = spotfilter.SpotFilter()
 
 # defaults
