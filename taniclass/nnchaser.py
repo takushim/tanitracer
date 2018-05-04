@@ -32,11 +32,13 @@ class NNChaser:
                                                         ('orig_total_index', numpy.int), \
                                                         ('next_array_index', numpy.int), \
                                                         ('distance', numpy.float), \
+                                                        ('track_distance', numpy.float), \
                                                         ('valid', numpy.bool)])
             pairs['orig_array_index'] = numpy.arange(len(orig_spots))
             pairs['orig_total_index'] = orig_spots.total_index.values
             pairs['next_array_index'] = targets.flatten()
             pairs['distance'] = distances.flatten()
+            pairs['track_distance'] = 0.0
             pairs['valid'] = True
             
             # omit too far spots
@@ -65,11 +67,13 @@ class NNChaser:
                                                          ('orig_total_index', numpy.int), \
                                                          ('next_array_index', numpy.int), \
                                                          ('distance', numpy.float), \
+                                                         ('track_distance', numpy.float), \
                                                          ('valid', numpy.bool)])
         pairs['orig_array_index'] = numpy.arange(len(lastplane_spots))
         pairs['orig_total_index'] = lastplane_spots.total_index.values
         pairs['next_array_index'] = -1
         pairs['distance'] = 0.0
+        pairs['track_distance'] = 0.0
         pairs['valid'] = False
         results.append(pairs)
         
@@ -83,28 +87,11 @@ class NNChaser:
             orig_indexes = orig_pairs['orig_array_index'][orig_pairs['valid'] == True]
             next_indexes = orig_pairs['next_array_index'][orig_indexes]
             next_pairs['orig_total_index'][next_indexes] = orig_pairs['orig_total_index'][orig_indexes]
+            next_pairs['track_distance'][next_indexes] = orig_pairs['distance'][orig_indexes]
         
-        # shift distances
-        for index in reversed(range(max(spot_table.plane))):
-            orig_pairs = results[index]
-            next_pairs = results[index + 1]
-            if (len(orig_pairs) == 0) or (len(next_pairs) == 0):
-                continue
-
-            orig_indexes = orig_pairs['orig_array_index'][orig_pairs['valid'] == True]
-            next_indexes = orig_pairs['next_array_index'][orig_indexes]
-            next_pairs['distance'][next_indexes] = orig_pairs['distance'][orig_indexes]
-            
-            mask = numpy.ones(len(next_pairs), dtype=numpy.bool)
-            mask[next_indexes] = False
-            next_pairs['distance'][mask] = 0.0
-
-        # update distance at plane 0
-        results[0]['distance'] = 0.0
-            
         # update indexes and make a distance column
         spot_table['total_index'] = numpy.concatenate([result['orig_total_index'] for result in results])
-        spot_table['distance'] = numpy.concatenate([result['distance'] for result in results])
+        spot_table['distance'] = numpy.concatenate([result['track_distance'] for result in results])
         
         return spot_table.sort_values(by = ['total_index', 'plane']).reset_index(drop=True)
 
