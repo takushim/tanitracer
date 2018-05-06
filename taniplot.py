@@ -135,7 +135,7 @@ last_plane = 0
 for index, input_filename in enumerate(input_filenames):
     # init output image for separate stack
     if output_stackmode == 'separate':
-        output_image = 0
+        output_image.fill(0)
 
     # get parameters and spots
     params = plotter.read_image_params(input_filename)
@@ -168,7 +168,6 @@ for index, input_filename in enumerate(input_filenames):
         else:
             print("Filtered %d of %d spots (%d %d)." % \
                     (total_spots - len(spot_table), total_spots, filter.lifetime_min, filter.lifetime_max))
-                    
 
     # average cenroids
     if consolidate_spots is True:
