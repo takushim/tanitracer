@@ -2,11 +2,12 @@
 
 import os, platform, sys, glob, argparse
 import numpy, pandas
+from taniext import poc
 from taniclass import alignsift
 from PIL import Image
 from skimage.external import tifffile
 
-# prepare aligner
+# prepare aligner (used for image processing only)
 aligner = alignsift.AlignSift()
 
 # defaults
@@ -17,10 +18,10 @@ output_image_filename = None
 reference_image_filename = None
 invert_image = False
 
-parser = argparse.ArgumentParser(description='Calculate misalignment using SIFT algorithm', \
+parser = argparse.ArgumentParser(description='Calculate misalignment using POC algorithm', \
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-f', '--output-tsv-file', nargs=1, default = [output_tsv_filename], \
-                    help='output tsv file name (align.txt if not specified)')
+                    help='output tsv file name (alignment.txt if not specified)')
 
 parser.add_argument('-r', '--reference-image', nargs=1, default = [reference_image_filename], \
                     help='reference image file name (first plane is used)')
@@ -28,7 +29,7 @@ parser.add_argument('-r', '--reference-image', nargs=1, default = [reference_ima
 parser.add_argument('-O', '--output-image', action='store_true', default=output_image, \
                     help='output image tiff')
 parser.add_argument('-o', '--output-image-file', nargs=1, default = None, \
-                    help='output image file name([basename]_sift.tif if not specified)')
+                    help='output image file name([basename]_poc.tif if not specified)')
 
 parser.add_argument('-i', '--invert-image', action='store_true', default=invert_image, \
                     help='invert image LUT')
@@ -52,7 +53,7 @@ reference_image_filename = args.reference_image[0]
 
 output_image = args.output_image
 if args.output_image_file is None:
-    output_image_filename = os.path.splitext(os.path.basename(input_filenames[0]))[0] + '_sift.tif'
+    output_image_filename = os.path.splitext(os.path.basename(input_filenames[0]))[0] + '_poc.tif'
     if output_image_filename in args.input_file:
         raise Exception('input_filename == output_filename')
 else:
@@ -69,23 +70,25 @@ for input_filename in input_filenames:
 
 orig_images = numpy.asarray(image_list)
 
-# make 8bit image (required for sift algorithm)
-images_uint8 = aligner.convert_to_uint8(orig_images)
-if invert_image is True:
-    images_uint8 = 255 - images_uint8
-
 # read reference image
-reference_uint8 = None
 if reference_image_filename is not None:
-    image = tifffile.imread(reference_image_filename)
-    if len(image.shape) > 2:
-        image = image[0]
-    reference_uint8 = aligner.convert_to_uint8(image)
-    if invert_image is True:
-        reference_uint8 = 255 - reference_uint8
+    reference_image = tifffile.imread(reference_image_filename)
+    if len(reference_image.shape) > 2:
+        reference_image = reference_image[0]
+else:
+    reference_image = orig_images[0]
 
-# alignment
-results = aligner.calculate_alignments(images_uint8, reference_uint8)
+# array for results
+move_x = numpy.zeros(len(orig_images))
+move_y = numpy.zeros(len(orig_images))
+for index in range(len(orig_images)):
+    corr, move_y[index], move_x[index] = poc.poc(reference_image, orig_images[index])
+    print("Plane %d, dislocation = (%f, %f)." % (index, move_x[index], move_y[index]))
+    
+# make pandas dataframe
+results = pandas.DataFrame({'align_plane' : numpy.arange(len(orig_images)), \
+                            'align_x' : move_x, \
+                            'align_y' : move_y})
 
 # open tsv file and write header
 output_tsv_file = open(output_tsv_filename, 'w', newline='')
@@ -100,6 +103,11 @@ print("Output alignment tsv file to %s." % (output_tsv_filename))
 
 # output image
 if output_image is True:
+    # make 8bit image (required for output)
+    images_uint8 = aligner.convert_to_uint8(orig_images)
+    if invert_image is True:
+        images_uint8 = 255 - images_uint8
+
     output_image_array = numpy.zeros(images_uint8.shape, dtype=numpy.uint8)
     
     for row, align in results.iterrows():
