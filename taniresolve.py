@@ -30,7 +30,8 @@ sf, fsc = resolver.fourier_spin_correlation(image1, image2)
 smooth_fsc = resolver.smoothing_fsc(sf, fsc)
 
 sf_fix17 = resolver.intersection_threshold(sf, smooth_fsc)
-print("resolution candidates: ", sf_fix17)
+resolutions = 2.0 / sf_fix17
+print("resolution (px): ", resolutions)
 
 pyplot.plot(sf, fsc, label = 'fsc')
 pyplot.plot(sf, smooth_fsc, label = 'sm_fsc')
@@ -39,6 +40,7 @@ pyplot.ylim(0, 1.2)
 pyplot.vlines(sf_fix17, 0, 1.2)
 pyplot.hlines(0.1427, 0, 1)
 pyplot.xlabel('Spatial Frequency')
+
+pyplot.savefig('firefrc.tif')
 pyplot.show()
 
-#pyplot.savefig('output.tif')

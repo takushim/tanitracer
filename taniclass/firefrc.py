@@ -42,9 +42,9 @@ class FireFRC:
         image_fft2 = numpy.fft.fftshift(numpy.fft.fft2(image_array2))
 
         #I1 and I2 store the DFT of the images to be used in the calcuation for the FSC
-        spin_12 = self.spin_average(numpy.multiply(image_fft1,numpy.conj(image_fft2)))
-        spin_11 = self.spin_average(numpy.multiply(image_fft1,numpy.conj(image_fft1)))
-        spin_22 = self.spin_average(numpy.multiply(image_fft2,numpy.conj(image_fft2)))
+        spin_12 = self.spin_average(numpy.multiply(image_fft1, numpy.conj(image_fft2)))
+        spin_11 = self.spin_average(numpy.multiply(image_fft1, numpy.conj(image_fft1)))
+        spin_22 = self.spin_average(numpy.multiply(image_fft2, numpy.conj(image_fft2)))
         
         fsc = numpy.abs(spin_12) / numpy.sqrt(numpy.abs(spin_11 * spin_22))
         sf = 2 * numpy.arange(numpy.shape(spin_12)[0]) / numpy.shape(image_array1)[0]
