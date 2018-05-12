@@ -16,7 +16,7 @@ input_filename2 = None
 parser = argparse.ArgumentParser(description='Calculate FRC between 2 images', \
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('input_file', nargs=2, default=None, \
-                    help='input SQUARE multpage-tiff files (image1, image2)')
+                    help='input SQUARE single-page tiff files (image1, image2)')
 args = parser.parse_args()
 
 input_filename1 = args.input_file[0]
