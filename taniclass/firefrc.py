@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys, numpy
+import statsmodels.nonparametric.smoothers_lowess as smoothers_lowess
 
 class FireFRC:
     def __init__ (self):
@@ -41,12 +42,31 @@ class FireFRC:
         image_fft2 = numpy.fft.fftshift(numpy.fft.fft2(image_array2))
 
         #I1 and I2 store the DFT of the images to be used in the calcuation for the FSC
-        spin_averages_12  = self.spin_average(numpy.multiply(image_fft1,numpy.conj(image_fft2)))
-        spin_averages_11 = self.spin_average(numpy.multiply(image_fft1,numpy.conj(image_fft1)))
-        spin_averages_22 = self.spin_average(numpy.multiply(image_fft2,numpy.conj(image_fft2)))
+        spin_12 = self.spin_average(numpy.multiply(image_fft1,numpy.conj(image_fft2)))
+        spin_11 = self.spin_average(numpy.multiply(image_fft1,numpy.conj(image_fft1)))
+        spin_22 = self.spin_average(numpy.multiply(image_fft2,numpy.conj(image_fft2)))
         
-        fsc = numpy.abs(spin_averages_12) / numpy.sqrt(numpy.abs(numpy.multiply(spin_averages_11, spin_averages_22)))
-        sf_nyq = 2 * numpy.arange(numpy.shape(spin_averages_12)[0]) / numpy.shape(image_array1)[0]
+        fsc = numpy.abs(spin_12) / numpy.sqrt(numpy.abs(spin_11 * spin_22))
+        sf = 2 * numpy.arange(numpy.shape(spin_12)[0]) / numpy.shape(image_array1)[0]
 
-        return sf_nyq, fsc
+        return sf, fsc
 
+    def smoothing_fsc (self, sf, fsc):
+        return smoothers_lowess.lowess(fsc, sf, frac = 0.1, return_sorted = False)
+        
+    def intersection_threshold (self, sf, smooth_fsc, threshold = 0.1427):
+        fsc_sub = smooth_fsc - threshold        
+        cross_indexes = numpy.where(numpy.diff(numpy.sign(fsc_sub)) != 0)[0]
+        
+        sf_sections = numpy.array([[sf[i], sf[i+1]] for i in cross_indexes])
+        fsc_sub_sections = numpy.array([[fsc_sub[i], fsc_sub[i+1]] for i in cross_indexes])
+        
+        sf_crosses = []
+        for index in range(len(sf_sections)):
+            sf_cross = sf_sections[index][0] - fsc_sub_sections[index][0] * \
+                      (sf_sections[index][1] - sf_sections[index][0]) / \
+                      (fsc_sub_sections[index][1] - fsc_sub_sections[index][0])
+            sf_crosses.append(sf_cross)
+        
+        return numpy.array(sf_crosses)
+    

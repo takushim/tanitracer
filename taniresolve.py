@@ -25,11 +25,20 @@ input_filename2 = args.input_file[1]
 image1 = tifffile.imread(input_filename1)
 image2 = tifffile.imread(input_filename2)
 
-sf_nyq, fsc = resolver.fourier_spin_correlation(image1, image2)
+sf, fsc = resolver.fourier_spin_correlation(image1, image2)
 
-pyplot.plot(sf_nyq, fsc, label = 'FSC')
-pyplot.xlim(0,1)
-pyplot.xlabel('Spatial Frequency/Nyquist')
+smooth_fsc = resolver.smoothing_fsc(sf, fsc)
+
+sf_fix17 = resolver.intersection_threshold(sf, smooth_fsc)
+print("resolution candidates: ", sf_fix17)
+
+pyplot.plot(sf, fsc, label = 'fsc')
+pyplot.plot(sf, smooth_fsc, label = 'sm_fsc')
+pyplot.xlim(0, 1.0)
+pyplot.ylim(0, 1.2)
+pyplot.vlines(sf_fix17, 0, 1.2)
+pyplot.hlines(0.1427, 0, 1)
+pyplot.xlabel('Spatial Frequency')
 pyplot.show()
 
 #pyplot.savefig('output.tif')
