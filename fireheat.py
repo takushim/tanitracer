@@ -12,6 +12,7 @@ resolver = firefrc.FireFRC()
 input_filename1 = None
 input_filename2 = None
 output_image_filename = 'heatmap.tif'
+output_tsv_filename = 'heatmap.txt'
 output_histgram_filename = 'histgram.tif'
 output_histgram = False
 mask_image_filename = None
@@ -21,12 +22,15 @@ parser = argparse.ArgumentParser(description='Make FIRE/FRC heatmap using 2 spli
 parser.add_argument('-o', '--output-image', nargs=1, default = [output_image_filename], \
                     help='output image file name(heatmap.tif if not specified)')
 
+parser.add_argument('-t', '--output-tsv', nargs=1, default = [output_tsv_filename], \
+                    help='output tsv file name(heatmap.txt if not specified)')
+
 parser.add_argument('-G', '--output-histgram', action='store_true', default=output_histgram, \
                     help='output histgram image tiff')
 parser.add_argument('-g', '--output-histgram-file', nargs=1, default = [output_histgram_filename], \
                     help='output histgram image file name (histgram.tif if not specified)')
 
-parser.add_argument('-m', '--mask-image', nargs=1, default = None, \
+parser.add_argument('-m', '--mask-image', nargs=1, default = [mask_image_filename], \
                     help='mask image file name')
 
 parser.add_argument('input_file', nargs=2, default=None, \
@@ -36,6 +40,7 @@ args = parser.parse_args()
 input_filename1 = args.input_file[0]
 input_filename2 = args.input_file[1]
 output_image_filename = args.output_image[0]
+output_tsv_filename = args.output_tsv[0]
 
 output_histgram = args.output_histgram
 output_histgram_filename = args.output_histgram_file[0]
@@ -95,9 +100,18 @@ for index_y in range(size_y):
             sf, fsc = resolver.fourier_spin_correlation(image1_128px, image2_128px)
             smooth_fsc = resolver.smoothing_fsc(sf, fsc)
             sf_fix17 = resolver.intersection_threshold(sf, smooth_fsc)
-            fire_array[index_y, index_x] = 2.0 / sf_fix17[0]
+            
+            if len(sf_fix17) > 0:
+                fire_array[index_y, index_x] = 2.0 / sf_fix17[0]
+            else:
+                print("fire not determined at index = (%d, %d)" % (index_x, index_y))
+                print(smooth_fsc)
+                fire_array[index_y, index_x] = numpy.nan
 
 print("mean fire: %f (min: %f, max %f)" % (numpy.nanmean(fire_array), numpy.nanmin(fire_array), numpy.nanmax(fire_array)))
+
+# output tsv
+numpy.savetxt(output_tsv_filename, fire_array, delimiter='\t')
 
 # output heatmap
 output_image = numpy.zeros(image1.shape, numpy.uint8)
