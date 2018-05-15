@@ -84,20 +84,22 @@ class Gaussian8:
         diameter = 2 * numpy.sqrt(- (0.5/c20 + 0.5/c02) / 2)
         intensity = input_image[xy[:,0], xy[:,1]]
         
-        total_spots = len(xy)
+        error_dict = {}
+
+        last_spots = len(xy)
         indexes = numpy.ones(len(xy), dtype=numpy.bool)
         indexes = indexes & (x >= 0) & (x <= float_image.shape[1])
         indexes = indexes & (y >= 0) & (y <= float_image.shape[0])
-        drop_by_nan = total_spots - numpy.sum(indexes)
+        error_dict['nan'] = last_spots - numpy.sum(indexes)
         last_spots = numpy.sum(indexes)
         
         indexes = indexes & ((0.5 * (c10/c20)) < 1)
         indexes = indexes & ((0.5 * (c01/c02)) < 1)
-        drop_by_shift = last_spots - numpy.sum(indexes)
+        error_dict['large_shift'] = last_spots - numpy.sum(indexes)
         last_spots = numpy.sum(indexes)
         
         indexes = indexes & (diameter <= self.max_diameter)
-        drop_by_diameter = last_spots - numpy.sum(indexes)
+        error_dict['diameter'] = last_spots - numpy.sum(indexes)
         last_spots = numpy.sum(indexes)
         
         x = x[indexes]
@@ -106,11 +108,9 @@ class Gaussian8:
         diameter = diameter[indexes]
         intensity = intensity[indexes]
         
-        if total_spots - last_spots > 0:
-            print("Dropped %d of %d spots (nan: %d, shift: %d, diameter: %d)." % \
-                  (total_spots - last_spots, total_spots, drop_by_nan, drop_by_shift, drop_by_diameter))
+        result_dict = {'x': x, 'y': y, 'fit_error': fit_error, 'diameter': diameter, 'intensity': intensity}
 
-        return {'x': x, 'y': y, 'fit_error': fit_error, 'diameter': diameter, 'intensity': intensity}
+        return result_dict, error_dict
 
     def clip_array (self, float_array):
         return float_array.clip(self.image_clip_min, self.image_clip_max)
@@ -131,7 +131,11 @@ class Gaussian8:
         float_image = self.standardize_and_filter_image(float_image)
         
         # fitting
-        result = self.gaussian_fitting(input_image, float_image)
+        result, error = self.gaussian_fitting(input_image, float_image)
+        
+        # report error
+        print("Dropped spots: %d by nan, %d by large_shift, %d by diameter" % \
+              (error['nan'], error['large_shift'], error['diameter']))
 
         # Make Pandas dataframe
         length = max([len(item) for item in result.values()])
@@ -147,11 +151,12 @@ class Gaussian8:
         
         # arrays to store results
         result_array = []
+        error_array = []
 
         for index in range(len(input_stack)):
             # filter and fitting            
             float_stack[index] = self.standardize_and_filter_image(float_stack[index])
-            result = self.gaussian_fitting(input_stack[index], float_stack[index])
+            result, error = self.gaussian_fitting(input_stack[index], float_stack[index])
             
             # add plane and index
             length = max([len(item) for item in result.values()])
@@ -159,11 +164,19 @@ class Gaussian8:
             
             # append to arrays
             result_array.append(result)
+            error_array.append(error)
 
         # accumulate result
         result_concat = {}
         for key in result_array[0].keys():
             result_concat[key] = numpy.concatenate([result[key] for result in result_array])
+
+        # sum error spots
+        error_sum = {}
+        for key in error_array[0].keys():
+            error_sum[key] = numpy.sum([error[key] for error in error_array])
+        print("Dropped spots: %d by nan, %d by large_shift, %d by diameter" % \
+              (error_sum['nan'], error_sum['large_shift'], error_sum['diameter']))
 
         # make pandas table
         spot_table = self.convert_to_pandas(result_concat)
