@@ -125,6 +125,8 @@ class Gaussian8:
         return pandas.DataFrame(result, columns = self.columns)
 
     def fitting_image_array (self, input_image):
+        numpy.seterr(divide='ignore', invalid='ignore')
+
         # get float image anf filter
         float_image = numpy.array(input_image, 'f')
         float_image = self.clip_array(float_image)
@@ -145,6 +147,8 @@ class Gaussian8:
         return spot_table
         
     def fitting_image_stack (self, input_stack):
+        numpy.seterr(divide='ignore', invalid='ignore')
+
         # get float image anf filter
         float_stack = numpy.array(input_stack, 'f')
         float_stack = self.clip_array(float_stack)
