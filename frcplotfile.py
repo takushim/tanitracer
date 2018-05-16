@@ -16,6 +16,8 @@ align_spots = True
 align_filename = 'align.txt'
 output_prefix = 'plot'
 consolidate_spots = False
+divide = 8
+lifetime_range = [1, 0]
 
 # parse arguments
 parser = argparse.ArgumentParser(description='make split super-resolution image for frc using WT files', \
@@ -23,6 +25,10 @@ parser = argparse.ArgumentParser(description='make split super-resolution image 
 
 parser.add_argument('-o', '--output-prefix', nargs=1, default=[output_prefix], \
                     help='prefix of output tif file [prefix]_1.tif [prefix]_2.tif')
+
+parser.add_argument('-l', '--lifetime-range', nargs=2, type=int, default=lifetime_range, \
+                    metavar=('MIN', 'MAX'), \
+                    help='range of spot lifetime (set MAX = 0 for numpy.inf)')
 
 parser.add_argument('-n', '--no-align', action='store_true', default=(align_spots is False), \
                     help='plot without alignment')
@@ -33,6 +39,9 @@ parser.add_argument('-e', '--align-each', nargs=1, type=int, default=[plotter.al
                     
 parser.add_argument('-c', '--consolidate-spots', action='store_true', default=consolidate_spots, \
                     help='collapse spots')
+
+parser.add_argument('-d', '--divide', nargs=1, type=int, default=[divide], \
+                    help='span of dividing (if 8, dividev into 4 + 4)')
 
 parser.add_argument('-X', '--image-scale', nargs=1, type=int, default=[plotter.image_scale], \
                     help='scale factor to original image')
@@ -56,9 +65,12 @@ else:
     input_filenames = args.input_file
 
 # devide input files
-max_range = (len(input_filenames) // 2) * 2
-input_filenames1 = input_filenames[0:max_range:2]
-input_filenames2 = input_filenames[1:max_range:2]
+divide = args.divide[0]
+max_range = len(input_filenames)
+indexes = numpy.arange(max_range)[(numpy.arange(max_range) % divide) < (divide / 2)]
+input_filenames1 = numpy.array(input_filenames)[indexes]
+indexes = numpy.arange(max_range)[(numpy.arange(max_range) % divide) >= (divide / 2)]
+input_filenames2 = numpy.array(input_filenames)[indexes]
 #print("input_filenames1", input_filenames1)
 #print("input_filenames2", input_filenames2)
 
@@ -73,6 +85,7 @@ image_size = args.image_size
 plotter.align_each = args.align_each[0]
 plotter.image_scale = args.image_scale[0]
 consolidate_spots = args.consolidate_spots
+lifetime_range = args.lifetime_range
 
 # read align table
 if align_spots is True:
@@ -100,6 +113,18 @@ for index, input_filename in enumerate(input_filenames):
     spot_table = pandas.read_csv(input_filename, sep='\t', comment='#')
     print("Total %d spots in %s." % (len(spot_table), input_filename))
     
+    # filter using lifetime of spots
+    if lifetime_range != [1, 0]:
+        total_spots = len(spot_table)
+        filter.lifetime_min = lifetime_range[0]
+        filter.lifetime_max = numpy.inf if lifetime_range[1] == 0 else lifetime_range[1]
+        spot_table = filter.filter_spots_lifetime(spot_table)
+        if lifetime_range[1] == 0:
+            print("Filtered %d of %d spots (%d %f)." % \
+                    (total_spots - len(spot_table), total_spots, filter.lifetime_min, filter.lifetime_max))
+        else:
+            print("Filtered %d of %d spots (%d %d)." % \
+                    (total_spots - len(spot_table), total_spots, filter.lifetime_min, filter.lifetime_max))
     # average spots
     if consolidate_spots is True:
         total_spots = len(spot_table)
@@ -107,17 +132,17 @@ for index, input_filename in enumerate(input_filenames):
         print("Consolidated to %d of %d spots." % (len(spot_table), total_spots))
     
     # split table randomly
-    spot_table['key'] = numpy.random.randint(2, size=len(spot_table))
-    spot_table1 = spot_table[spot_table.key == 0].reset_index(drop=True)
-    spot_table2 = spot_table[spot_table.key == 1].reset_index(drop=True)
-    print("Total %d split into (%d, %d)" % (len(spot_table), len(spot_table1), len(spot_table2)))
+    #spot_table['key'] = numpy.random.randint(2, size=len(spot_table))
+    #spot_table1 = spot_table[spot_table.key == 0].reset_index(drop=True)
+    #spot_table2 = spot_table[spot_table.key == 1].reset_index(drop=True)
+    #print("Total %d split into (%d, %d)" % (len(spot_table), len(spot_table1), len(spot_table2)))
     
     # plot
     if input_filename in input_filenames1:
-        output_image1 = plotter.plot_spots(output_image1, last_plane, spot_table1, align_table)
+        output_image1 = plotter.plot_spots(output_image1, last_plane, spot_table, align_table)
         print("1: Plot %d spots (%d planes) from %s." % (len(spot_table), params['total_planes'], input_filename))
     else:
-        output_image2 = plotter.plot_spots(output_image2, last_plane, spot_table2, align_table)
+        output_image2 = plotter.plot_spots(output_image2, last_plane, spot_table, align_table)
         print("2: Plot %d spots (%d planes) from %s." % (len(spot_table), params['total_planes'], input_filename))
     
     last_plane += params['total_planes']
