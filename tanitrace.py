@@ -173,3 +173,6 @@ if output_image is True:
     tifffile.imsave(output_image_filename, image_color)
     print("Output image file to %s." % (output_image_filename))
 
+# spacer to next processing
+print(".")
+

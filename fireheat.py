@@ -20,7 +20,7 @@ mask_image_filename = None
 parser = argparse.ArgumentParser(description='Make FIRE/FRC heatmap using 2 split images', \
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-o', '--output-image', nargs=1, default = [output_image_filename], \
-                    help='output image file name(heatmap.tif if not specified)')
+                    help='output image file name (heatmap.tif if not specified)')
 
 parser.add_argument('-t', '--output-tsv', nargs=1, default = [output_tsv_filename], \
                     help='output tsv file name(heatmap.txt if not specified)')

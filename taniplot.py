@@ -110,6 +110,8 @@ omit_lastplane_spots = args.omit_lastplane_spots
 
 # read align table
 if align_spots is True:
+    if os.path.isfile(align_filename) is False:
+        raise Exception('alignment table (%s) does not exist' % (align_filename))
     align_table = pandas.read_table(align_filename, comment = '#')
     print("Using %s for alignment." % (align_filename))
 else:

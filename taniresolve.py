@@ -13,9 +13,13 @@ resolver = firefrc.FireFRC()
 input_filename1 = None
 input_filename2 = None
 mask_image_filename = None
+output_graph_filename = 'firefrc.tif'
 
 parser = argparse.ArgumentParser(description='Calculate FRC between 2 images', \
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+parser.add_argument('-o', '--output-graph', nargs=1, default = [output_graph_filename], \
+                    help='output graph file name (firefrc.tif if not specified)')
 
 parser.add_argument('-m', '--mask-image', nargs=1, default = [mask_image_filename], \
                     help='mask image file name')
@@ -27,6 +31,7 @@ args = parser.parse_args()
 input_filename1 = args.input_file[0]
 input_filename2 = args.input_file[1]
 mask_image_filename = args.mask_image[0]
+output_graph_filename = args.output_graph[0]
 
 image1 = tifffile.imread(input_filename1)
 image2 = tifffile.imread(input_filename2)
@@ -57,6 +62,6 @@ pyplot.vlines(sf_fix17, 0, 1.2)
 pyplot.hlines(0.1427, 0, 1)
 pyplot.xlabel('Spatial Frequency')
 
-pyplot.savefig('firefrc.tif')
+pyplot.savefig(output_graph_filename)
 pyplot.show()
 
