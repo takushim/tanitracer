@@ -137,12 +137,12 @@ for index, condition in enumerate(conditions):
     draw.text((0, 0), "M %d, L %.2f, T %.5f" % (min_distance, laplace, threshold_abs), font = font, fill = font_color)
     font_images[index] = numpy.asarray(image)
     
-    # diameters
-    diameters = numpy.array(results['diameter'].dropna().tolist())
-    rel95 = 2.262 * numpy.sqrt(numpy.var(diameters, ddof=1) / len(diameters))
+    # radius (= laplacian)
+    radii = numpy.array(results['diameter'].dropna().tolist()) / 2.0
+    rel95 = 2.262 * numpy.sqrt(numpy.var(radii, ddof=1) / len(radii))
     
-    print("Plot %d spots with: M = %d, L = %f, T = %f. Diameter = %f +/- %f." % \
-            (len(results), min_distance, laplace, threshold_abs, numpy.average(diameters), rel95))
+    print("Plot %d spots with: M = %d, L = %f, T = %f. Radius = %f +/- %f." % \
+            (len(results), min_distance, laplace, threshold_abs, numpy.average(radii), rel95))
 
 # combine images and output
 output_images = numpy.hstack((output_images, font_images))
