@@ -14,13 +14,16 @@ input_filenames = None
 image_size = None
 align_spots = True
 align_filename = 'align.txt'
-output_filename1 = 'plot1.tif'
-output_filename2 = 'plot2.tif'
+output_prefix = 'plot'
 consolidate_spots = False
+lifetime_range = [1, 0]
 
 # parse arguments
 parser = argparse.ArgumentParser(description='make split super-resolution image for frc using WT files', \
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+parser.add_argument('-o', '--output-prefix', nargs=1, default=[output_prefix], \
+                    help='prefix of output tif file [prefix]_1.tif [prefix]_2.tif')
 
 parser.add_argument('-n', '--no-align', action='store_true', default=(align_spots is False), \
                     help='plot without alignment')
@@ -29,7 +32,7 @@ parser.add_argument('-a', '--align-file', nargs=1, default=[align_filename], \
 parser.add_argument('-e', '--align-each', nargs=1, type=int, default=[plotter.align_each], \
                     help='alignment correction every X plane')
                     
-parser.add_argument('-c', '--consolidate-spots', action='store_true', default=consolidate_spots, \
+parser.add_argument('-s', '--consolidate-spots', action='store_true', default=consolidate_spots, \
                     help='collapse spots')
 
 parser.add_argument('-X', '--image-scale', nargs=1, type=int, default=[plotter.image_scale], \
@@ -52,6 +55,11 @@ if (platform.system() == "Windows"):
         raise Exception('no input filename')
 else:
     input_filenames = args.input_file
+
+# make output filename
+output_prefix = args.output_prefix[0]
+output_filename1 = output_prefix + '_1.tif'
+output_filename2 = output_prefix + '_2.tif'
 
 # set arguments
 align_spots = (args.no_align is False)

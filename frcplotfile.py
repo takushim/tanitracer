@@ -24,7 +24,7 @@ parser = argparse.ArgumentParser(description='make split super-resolution image 
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 parser.add_argument('-o', '--output-prefix', nargs=1, default=[output_prefix], \
-                    help='prefix of output tif file [prefix]_1.tif [prefix]_2.tif')
+                    help='prefix of output tif file [prefix]_eachXX_1.tif [prefix]_eachXX_2.tif')
 
 parser.add_argument('-l', '--lifetime-range', nargs=2, type=int, default=lifetime_range, \
                     metavar=('MIN', 'MAX'), \
@@ -37,7 +37,7 @@ parser.add_argument('-a', '--align-file', nargs=1, default=[align_filename], \
 parser.add_argument('-e', '--align-each', nargs=1, type=int, default=[plotter.align_each], \
                     help='alignment correction every X plane')
                     
-parser.add_argument('-c', '--consolidate-spots', action='store_true', default=consolidate_spots, \
+parser.add_argument('-s', '--consolidate-spots', action='store_true', default=consolidate_spots, \
                     help='collapse spots')
 
 parser.add_argument('-d', '--divide', nargs=1, type=int, default=[divide], \
@@ -75,8 +75,9 @@ input_filenames2 = numpy.array(input_filenames)[indexes]
 #print("input_filenames2", input_filenames2)
 
 # make output filename
-output_filename1 = args.output_prefix[0] + '_1.tif'
-output_filename2 = args.output_prefix[0] + '_2.tif'
+output_prefix = args.output_prefix[0] + ('_each%d' % (divide))
+output_filename1 = output_prefix + '_1.tif'
+output_filename2 = output_prefix + '_2.tif'
 
 # set arguments
 align_spots = (args.no_align is False)
