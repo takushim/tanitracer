@@ -11,22 +11,22 @@ class Gaussian8:
         self.min_distance = 1 # Pixel area (int) to find local max (usually 1)
         self.threshold_abs = 0.006 # Threshold to find local max
         self.max_diameter = 10.0
-        self.columns = ['total_index', 'plane', 'index', 'x', 'y', 'diameter', 'intensity', 'fit_error']
+        self.columns = ['total_index', 'plane', 'index', 'x', 'y', 'diameter', 'intensity', 'fit_error', 'chi_square']
         self.image_clip_min = 0.0
         self.image_clip_max = numpy.iinfo(numpy.int32).max
-                
+
     def output_header (self, output_file, input_filename, image_array):
         filename = os.path.basename(input_filename)
         planes = image_array.shape[0]
         if len(image_array.shape) == 2:
             planes = 1
-            
+
         #params = {'input_file': filename, 'total_planes': planes, \
         #          'width': image_array.shape[2], 'height': image_array.shape[1], \
         #          'laplace': self.laplace. 'min_distance': self.min_distance, \
         #          'threshold_abs': self.threshold_abs, \
         #          'image_clip_min': self.image_clip_min, 'image_clip_max': self.image_clip_max}
-        
+
         output_file.write('## Traced by TaniTracer at %s for %s\n' % (time.ctime(), filename))
         output_file.write('#   total_planes = %d; width = %d; height = %d\n' %\
                           (planes, image_array.shape[2], image_array.shape[1]))
@@ -36,11 +36,11 @@ class Gaussian8:
                           (self.max_diameter))
         output_file.write('#   image_clip_min = %f; image_clip_max = %f\n' %\
                           (self.image_clip_min, self.image_clip_max))
-    
+
     def set_image_clip (self, image_array):
         self.image_clip_min = stats.scoreatpercentile(image_array, 0.1)
         self.image_clip_max = stats.scoreatpercentile(image_array, 99.9)
-    
+
     def gaussian_fitting (self, input_image, float_image):
         # Find local max at 1-pixel resolution (order: [y, x])
         xy = peak_local_max(float_image, min_distance = self.min_distance,\
@@ -78,12 +78,22 @@ class Gaussian8:
             + ( c00 + c10 + c20 - c01 + c02 - numpy.log(float_image[xy[:,0] - 1, xy[:,1] + 1]) )**2 \
             + ( c00 + c10 + c20 - numpy.log(float_image[xy[:,0], xy[:,1] + 1]) )**2 \
             + ( c00 + c10 + c20 + c01 + c02 - numpy.log(float_image[xy[:,0] + 1, xy[:,1] + 1]) )**2
-        
+
+        chi_square = ( c00 - c10 + c20 - c01 + c02 - numpy.log(float_image[xy[:,0] - 1, xy[:,1] - 1]) )**2 / numpy.abs(numpy.log(float_image[xy[:,0] - 1, xy[:,1] - 1])) \
+                   + ( c00 - c10 + c20 - numpy.log(float_image[xy[:,0], xy[:,1] - 1]) )**2 / numpy.abs(numpy.log(float_image[xy[:,0], xy[:,1] - 1])) \
+                   + ( c00 - c10 + c20 + c01 + c02 - numpy.log(float_image[xy[:,0] + 1, xy[:,1] - 1]) )**2  / numpy.abs(numpy.log(float_image[xy[:,0] + 1, xy[:,1] - 1])) \
+                   + ( c00 - c01 + c02 - numpy.log(float_image[xy[:,0] - 1, xy[:,1]]) )**2  / numpy.abs(numpy.log(float_image[xy[:,0] - 1, xy[:,1]])) \
+                   + ( c00 - numpy.log(float_image[xy[:,0], xy[:,1]]) )**2  / numpy.abs(numpy.log(float_image[xy[:,0], xy[:,1]])) \
+                   + ( c00 + c01 + c02 - numpy.log(float_image[xy[:,0] + 1, xy[:,1]]) )**2  / numpy.abs(numpy.log(float_image[xy[:,0] + 1, xy[:,1]])) \
+                   + ( c00 + c10 + c20 - c01 + c02 - numpy.log(float_image[xy[:,0] - 1, xy[:,1] + 1]) )**2  / numpy.abs(numpy.log(float_image[xy[:,0] - 1, xy[:,1] + 1])) \
+                   + ( c00 + c10 + c20 - numpy.log(float_image[xy[:,0], xy[:,1] + 1]) )**2  / numpy.abs(numpy.log(float_image[xy[:,0], xy[:,1] + 1])) \
+                   + ( c00 + c10 + c20 + c01 + c02 - numpy.log(float_image[xy[:,0] + 1, xy[:,1] + 1]) )**2  / numpy.abs(numpy.log(float_image[xy[:,0] + 1, xy[:,1] + 1]))
+
         x = xy[:,1] - 0.5 * (c10/c20)
         y = xy[:,0] - 0.5 * (c01/c02)
         diameter = 2 * numpy.sqrt(- (0.5/c20 + 0.5/c02) / 2)
         intensity = input_image[xy[:,0], xy[:,1]]
-        
+
         error_dict = {}
 
         last_spots = len(xy)
@@ -92,23 +102,24 @@ class Gaussian8:
         indexes = indexes & (y >= 0) & (y <= float_image.shape[0])
         error_dict['nan'] = last_spots - numpy.sum(indexes)
         last_spots = numpy.sum(indexes)
-        
+
         indexes = indexes & ((0.5 * (c10/c20)) < 1)
         indexes = indexes & ((0.5 * (c01/c02)) < 1)
         error_dict['large_shift'] = last_spots - numpy.sum(indexes)
         last_spots = numpy.sum(indexes)
-        
+
         indexes = indexes & (diameter <= self.max_diameter)
         error_dict['diameter'] = last_spots - numpy.sum(indexes)
         last_spots = numpy.sum(indexes)
-        
+
         x = x[indexes]
         y = y[indexes]
         fit_error = fit_error[indexes]
+        chi_square = chi_square[indexes]
         diameter = diameter[indexes]
         intensity = intensity[indexes]
-        
-        result_dict = {'x': x, 'y': y, 'fit_error': fit_error, 'diameter': diameter, 'intensity': intensity}
+
+        result_dict = {'x': x, 'y': y, 'fit_error': fit_error, 'chi_square': chi_square, 'diameter': diameter, 'intensity': intensity}
 
         return result_dict, error_dict
 
@@ -118,7 +129,7 @@ class Gaussian8:
     def standardize_and_filter_image (self, float_image):
         float_image = - (float_image - numpy.max(float_image)) / numpy.ptp(float_image)
         return ndimage.gaussian_laplace(float_image, self.laplace)
-    
+
     def convert_to_pandas (self, result):
         length = max([len(item) for item in result.values()])
         result.update({'total_index' : numpy.arange(length)})
@@ -131,10 +142,10 @@ class Gaussian8:
         float_image = numpy.array(input_image, 'f')
         float_image = self.clip_array(float_image)
         float_image = self.standardize_and_filter_image(float_image)
-        
+
         # fitting
         result, error = self.gaussian_fitting(input_image, float_image)
-        
+
         # report error
         print("Dropped spots: %d by nan, %d by large_shift, %d by diameter" % \
               (error['nan'], error['large_shift'], error['diameter']))
@@ -145,27 +156,27 @@ class Gaussian8:
         spot_table = self.convert_to_pandas(result)
 
         return spot_table
-        
+
     def fitting_image_stack (self, input_stack):
         numpy.seterr(divide='ignore', invalid='ignore')
 
         # get float image anf filter
         float_stack = numpy.array(input_stack, 'f')
         float_stack = self.clip_array(float_stack)
-        
+
         # arrays to store results
         result_array = []
         error_array = []
 
         for index in range(len(input_stack)):
-            # filter and fitting            
+            # filter and fitting
             float_stack[index] = self.standardize_and_filter_image(float_stack[index])
             result, error = self.gaussian_fitting(input_stack[index], float_stack[index])
-            
+
             # add plane and index
             length = max([len(item) for item in result.values()])
             result.update({'plane': numpy.full(length, index), 'index': numpy.arange(length)})
-            
+
             # append to arrays
             result_array.append(result)
             error_array.append(error)
@@ -186,4 +197,3 @@ class Gaussian8:
         spot_table = self.convert_to_pandas(result_concat)
         spot_table['total_index'] = numpy.arange(len(spot_table))
         return spot_table
-
