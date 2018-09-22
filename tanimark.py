@@ -30,6 +30,12 @@ parser.add_argument('-c', '--marker-colors', nargs=3, type=str, default=marker.m
 parser.add_argument('-r', '--rainbow-colors', action='store_true', default=rainbow_colors, \
                     help='use rainbow colors')
 
+parser.add_argument('-e', '--mark-emerge', action='store_true', default=marker.mark_emerge, \
+                    help='use large marks for emerging spots')
+parser.add_argument('-d', '--drop-new-in-first', action='store_true', default=marker.drop_new_in_first, \
+                    help='do not mark spots of the first plane as new spots')
+
+
 parser.add_argument('-i', '--invert-image', action='store_true', default=invert_image, \
                     help='invert image look-up table')
 
@@ -42,6 +48,8 @@ args = parser.parse_args()
 input_filename = args.input_file[0]
 marker.marker_size = args.marker_size[0]
 marker.marker_colors = args.marker_colors
+marker.mark_emerge = args.mark_emerge
+marker.drop_new_in_first = args.drop_new_in_first
 invert_image = args.invert_image
 rainbow_colors = args.rainbow_colors
 
@@ -75,11 +83,10 @@ spot_table = pandas.read_table(marker_filename, comment = '#')
 # mark tracking status
 print("Marked %d spots on %s." % (len(spot_table), input_filename))
 if rainbow_colors is True:
-    image_color = marker.mark_rainbow_spots(image_color, spot_table)    
+    image_color = marker.mark_rainbow_spots(image_color, spot_table)
 else:
     image_color = marker.mark_spots(image_color, spot_table)
 
 # output multipage tiff
 print("Output image file to %s." % (output_filename))
 tifffile.imsave(output_filename, image_color)
-
