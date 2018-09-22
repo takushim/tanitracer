@@ -84,12 +84,13 @@ class SpotMarker:
                               (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
                               fill = None, outline = self.rainbow_colors[spot.total_index % len(self.rainbow_colors)])
                 # mark emerging spot
-                if spot['status'] == 'new' or spot['status'] == 'one':
-                    if self.drop_new_in_first is False or spot['plane'] > 0:
-                        marker_size = int(self.marker_size * 1.5)
-                        draw.ellipse(((spot.int_x - marker_size, spot.int_y - marker_size),\
-                                      (spot.int_x + marker_size, spot.int_y + marker_size)),\
-                                      fill = None, outline = self.rainbow_colors[spot.total_index % len(self.rainbow_colors)])
+                if self.mark_emerge is True:
+                    if spot['status'] == 'new' or spot['status'] == 'one':
+                        if self.drop_new_in_first is False or spot['plane'] > 0:
+                            marker_size = int(self.marker_size * 1.5)
+                            draw.ellipse(((spot.int_x - marker_size, spot.int_y - marker_size),\
+                                          (spot.int_x + marker_size, spot.int_y + marker_size)),\
+                                          fill = None, outline = self.rainbow_colors[spot.total_index % len(self.rainbow_colors)])
 
             # save image
             image_color[index] = numpy.asarray(image)
@@ -157,7 +158,7 @@ class SpotMarker:
                               315, 135, fill = marker_color_end)
 
                 # draw new spots
-                if self.drop_new_in_first is False:
+                if self.mark_emerge is True and self.drop_new_in_first is False:
                     if spot['status'] == 'new' or spot['status'] == 'one':
                         marker_size = int(self.marker_size * 1.5)
                         draw.ellipse(((spot.int_x - marker_size, spot.int_y - marker_size),\
