@@ -158,12 +158,13 @@ class SpotMarker:
                               315, 135, fill = marker_color_end)
 
                 # draw new spots
-                if self.mark_emerge is True and self.drop_new_in_first is False:
-                    if spot['status'] == 'new' or spot['status'] == 'one':
-                        marker_size = int(self.marker_size * 1.5)
-                        draw.ellipse(((spot.int_x - marker_size, spot.int_y - marker_size),\
-                                      (spot.int_x + marker_size, spot.int_y + marker_size)),\
-                                      fill = None, outline = self.marker_colors[0])
+                if self.mark_emerge is True:
+                    if self.drop_new_in_first is False or spot['plane'] > 0:
+                        if spot['status'] == 'new' or spot['status'] == 'one':
+                            marker_size = int(self.marker_size * 1.5)
+                            draw.ellipse(((spot.int_x - marker_size, spot.int_y - marker_size),\
+                                          (spot.int_x + marker_size, spot.int_y + marker_size)),\
+                                          fill = None, outline = self.marker_colors[0])
 
                 # mark duplicated spot
                 if spot['duplicated'] is True:
