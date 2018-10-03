@@ -16,7 +16,7 @@ align_spots = True
 align_filename = 'align.txt'
 output_prefix = 'plot'
 consolidate_spots = False
-divide = 8
+divide = 80
 lifetime_range = [1, 0]
 
 # parse arguments
@@ -150,14 +150,11 @@ for index, input_filename in enumerate(input_filenames):
 
     print("--")
 
-# output (multipage) tiff
-desc_text = 'output by %s (Daisuke Taniguchi and Takushi Miyoshi)' % (os.path.basename(__file__))
-
 # clip output.tif to 32bit and output
 print("Output image file to %s." % (output_filename1))
 output_image_32bit = output_image1.clip(0, numpy.iinfo(numpy.int32).max).astype(numpy.int32)
-tifffile.imsave(output_filename1, output_image_32bit, description = desc_text)
+tifffile.imsave(output_filename1, output_image_32bit)
 
 print("Output image file to %s." % (output_filename2))
 output_image_32bit = output_image2.clip(0, numpy.iinfo(numpy.int32).max).astype(numpy.int32)
-tifffile.imsave(output_filename2, output_image_32bit, description = desc_text)
+tifffile.imsave(output_filename2, output_image_32bit)

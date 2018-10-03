@@ -35,7 +35,7 @@ parser.add_argument('-z', '--marker-size', nargs=1, type=int, default=[marker.ma
                     help='marker size to plot')
 parser.add_argument('-c', '--marker-colors', nargs=2, type=str, \
                     metavar = ('NORMAL', 'ERROR'), \
-                    default=[marker.marker_colors[0], marker.marker_colors[3]], 
+                    default=[marker.marker_colors[0], marker.marker_colors[3]],
                     help='marker colors for normal/error spots')
 
 parser.add_argument('-i', '--invert-image', action='store_true', default=invert_image, \
@@ -114,11 +114,11 @@ conditions = list(itertools.product(min_distances, laplaces, threshold_abses))
 # output images
 output_images = numpy.zeros((len(conditions), orig_image.shape[0], orig_image.shape[1], 3), dtype = numpy.uint8)
 font_images = numpy.zeros((len(conditions), font_size, orig_image.shape[1], 3), dtype = numpy.uint8)
-    
+
 for index, condition in enumerate(conditions):
     # parse parameters
     (min_distance, laplace, threshold_abs) = condition
-    
+
     # set tracer, and get results
     tracer.laplace = laplace
     tracer.min_distance = min_distance
@@ -129,22 +129,21 @@ for index, condition in enumerate(conditions):
     image_draw = image_color.copy()
     if len(results) > 0:
         image_draw = marker.mark_spots(numpy.array([image_draw]), results)[0]
-    output_images[index] = image_draw 
-    
+    output_images[index] = image_draw
+
     # draw condition
     image = Image.fromarray(font_images[index])
     draw = ImageDraw.Draw(image)
     draw.text((0, 0), "M %d, L %.2f, T %.5f" % (min_distance, laplace, threshold_abs), font = font, fill = font_color)
     font_images[index] = numpy.asarray(image)
-    
+
     # radius (= laplacian)
     radii = numpy.array(results['diameter'].dropna().tolist()) / 2.0
     rel95 = 2.262 * numpy.sqrt(numpy.var(radii, ddof=1) / len(radii))
-    
+
     print("Plot %d spots with: M = %d, L = %f, T = %f. Radius = %f +/- %f." % \
             (len(results), min_distance, laplace, threshold_abs, numpy.average(radii), rel95))
 
 # combine images and output
 output_images = numpy.hstack((output_images, font_images))
 tifffile.imsave(output_filename, output_images)
-
