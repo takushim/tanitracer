@@ -16,6 +16,9 @@ lifetime_sum_every = 1
 count_plane = 0
 start_regression = 0
 time_scale = 1
+center_quadrant = False
+center_x = [150, 350]
+center_y = [100, 300]
 
 # parse arguments
 parser = argparse.ArgumentParser(description='count lifetime using regression.', \
@@ -33,7 +36,7 @@ group.add_argument('-L', '--lifetime', action='store_const', \
 group.add_argument('-C', '--counting', action='store_const', \
                     dest='selected_mode', const=count_modes[2], \
                     help='count spots withoug tracking')
-                    
+
 parser.add_argument('-x', '--time-scale', nargs = 1, type = float, \
                     metavar = ('SCALE'), default=[time_scale], \
                     help='interval of time-lapse (in seconds)')
@@ -50,6 +53,9 @@ parser.add_argument('-r', '--start-regression', nargs = 1, type = int, \
 parser.add_argument('-c', '--count-plane', nargs = 1, type = int, \
                     metavar = ('PLANE'), default=[count_plane], \
                     help='specify the plane to count spots')
+
+parser.add_argument('-Q', '--center-quadrant', action = 'store_true', default = center_quadrant, \
+                    help = 'use spots of center area')
 
 parser.add_argument('input_file', nargs=1, default=input_filename, \
                     help='input multpage-tiff file to plot markers')
@@ -70,6 +76,7 @@ start_regression = args.start_regression[0]
 lifetime_span = args.lifetime_span
 lifetime_sum_every = args.lifetime_sum_every[0]
 time_scale = args.time_scale[0]
+center_quadrant = args.center_quadrant
 
 if lifetime_span[0] < 1:
     raise Exception('lifetime starting plane must be >= 1')
@@ -78,7 +85,7 @@ if args.output_file is None:
     if selected_mode == 'lifetime':
         output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_liftime.txt'
     elif selected_mode == 'regression':
-        output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_regression.txt' 
+        output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_regression.txt'
     elif selected_mode == 'counting':
         output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_counting.txt'
     else:
@@ -96,7 +103,13 @@ spot_table = spot_table.sort_values(by = ['total_index', 'plane']).reset_index(d
 # lifetime or regression
 if selected_mode == 'regression':
     # spots to be counted
-    index_set = set(spot_table[spot_table.plane == start_regression].total_index.tolist())
+    if center_quadrant is True:
+        index_set = set(spot_table[spot_table.plane == start_regression & \
+                                   (center_x[0] <= spot_table.x) & (spot_table.x < center_x[1]) & \
+                                   (center_y[0] <= spot_table.y) & (spot_table.y < center_y[1])].total_index.tolist())
+        print(index_set)
+    else:
+        index_set = set(spot_table[spot_table.plane == start_regression].total_index.tolist())
 
     # regression
     output_indexes = []
@@ -118,7 +131,12 @@ elif selected_mode == 'lifetime':
     spot_table = filter.keep_first_spots(spot_table)
     spot_table = spot_table[(lifetime_span[0] <= spot_table.plane) & \
                             (spot_table.plane <= lifetime_span[1])].reset_index(drop=True)
-    
+
+    if center_quadrant is True:
+        spot_table = spot_table[(center_x[0] <= spot_table.x) & (spot_table.x < center_x[1]) & \
+                                (center_y[0] <= spot_table.y) & (spot_table.y < center_y[1])].reset_index(drop=True)
+        print(spot_table)
+
     # prepare data
     output_columns = ['lifecount', 'lifetime', 'spotcount']
     lifecount_max = spot_table.lifetime.max()
@@ -151,4 +169,3 @@ output_table = pandas.DataFrame({ \
 
 output_table.to_csv(output_filename, sep='\t', index=False)
 print(output_table)
-
