@@ -2,12 +2,12 @@
 
 import os, platform, sys, glob, argparse
 import numpy, pandas
-from taniclass import alignsift
+from taniclass import akaze
 from PIL import Image
 from skimage.external import tifffile
 
 # prepare aligner
-aligner = alignsift.AlignSift()
+aligner = akaze.Akaze()
 
 # defaults
 input_filenames = None
@@ -17,7 +17,7 @@ output_image_filename = None
 reference_image_filename = None
 invert_image = False
 
-parser = argparse.ArgumentParser(description='Calculate misalignment using SIFT algorithm', \
+parser = argparse.ArgumentParser(description='Calculate misalignment using AKAZE algorithm', \
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-f', '--output-tsv-file', nargs=1, default = [output_tsv_filename], \
                     help='output tsv file name (align.txt if not specified)')
@@ -52,7 +52,7 @@ reference_image_filename = args.reference_image[0]
 
 output_image = args.output_image
 if args.output_image_file is None:
-    output_image_filename = os.path.splitext(os.path.basename(input_filenames[0]))[0] + '_sift.tif'
+    output_image_filename = os.path.splitext(os.path.basename(input_filenames[0]))[0] + '_akaze.tif'
     if output_image_filename in args.input_file:
         raise Exception('input_filename == output_filename')
 else:
@@ -69,23 +69,15 @@ for input_filename in input_filenames:
 
 orig_images = numpy.asarray(image_list)
 
-# make 8bit image (required for sift algorithm)
-images_uint8 = aligner.convert_to_uint8(orig_images)
-if invert_image is True:
-    images_uint8 = 255 - images_uint8
-
 # read reference image
-reference_uint8 = None
+reference_image = None
 if reference_image_filename is not None:
     image = tifffile.imread(reference_image_filename)
     if len(image.shape) > 2:
         image = image[0]
-    reference_uint8 = aligner.convert_to_uint8(image)
-    if invert_image is True:
-        reference_uint8 = 255 - reference_uint8
 
 # alignment
-results = aligner.calculate_alignments(images_uint8, reference_uint8)
+results = aligner.calculate_alignments(orig_images, reference_image)
 
 # open tsv file and write header
 output_tsv_file = open(output_tsv_filename, 'w', newline='')
@@ -100,8 +92,12 @@ print("Output alignment tsv file to %s." % (output_tsv_filename))
 
 # output image
 if output_image is True:
+    images_uint8 = aligner.convert_to_uint8(orig_images)
+    if invert_image is True:
+        images_uint8 = 255 - images_uint8
+
     output_image_array = numpy.zeros(images_uint8.shape, dtype=numpy.uint8)
-    
+
     for row, align in results.iterrows():
         plane = results.align_plane[row]
         if plane not in range(len(images_uint8)):
@@ -115,4 +111,3 @@ if output_image is True:
     # output multipage tiff
     print("Output image file to %s." % (output_image_filename))
     tifffile.imsave(output_image_filename, output_image_array)
-
