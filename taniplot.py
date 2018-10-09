@@ -51,7 +51,7 @@ parser.add_argument('-a', '--align-file', nargs=1, default=[align_filename], \
                     help='tsv file with alignment (align.txt if not specified)')
 parser.add_argument('-e', '--align-each', nargs=1, type=int, default=[plotter.align_each], \
                     help='alignment correction every X plane')
-                    
+
 parser.add_argument('-X', '--image-scale', nargs=1, type=int, default=[plotter.image_scale], \
                     help='scale factor to original image')
 parser.add_argument('-Z', '--image-size', nargs=2, type=int, default=image_size, \
@@ -143,7 +143,7 @@ for index, input_filename in enumerate(input_filenames):
     params = plotter.read_image_params(input_filename)
     spot_table = pandas.read_csv(input_filename, sep='\t', comment='#')
     print("Total %d spots in %s." % (len(spot_table), input_filename))
-    
+
     # chase if necessary
     if chase_spots is True:
         if 'distance' in spot_table.columns:
@@ -157,7 +157,7 @@ for index, input_filename in enumerate(input_filenames):
         total_spots = len(spot_table)
         spot_table = filter.omit_lastplane_spots(spot_table, params['total_planes'] - 1)
         print("Omitted %d spots contained in the last plane." % (total_spots - len(spot_table)))
-    
+
     # filter using lifetime of spots
     if lifetime_range != [1, 0]:
         total_spots = len(spot_table)
@@ -187,14 +187,14 @@ for index, input_filename in enumerate(input_filenames):
     # plot
     #print(spot_table)
     output_image = plotter.plot_spots(output_image, last_plane, spot_table, align_table)
-    
+
     # save into stack
     if output_stackmode is not None:
         if index % output_stackeach == 0:
             output_stack[index // output_stackeach] = output_image
-    
+
     last_plane += params['total_planes']
-    
+
     print("Plot %d spots (%d planes) from %s." % (len(spot_table), params['total_planes'], input_filename))
     print("--")
 
@@ -217,4 +217,3 @@ else:
     print("Output %s stack image file to %s." % (output_stackmode, output_filename))
     output_image_32bit = output_stack.clip(0, numpy.iinfo(numpy.int32).max).astype(numpy.int32)
     tifffile.imsave(output_filename, output_image_32bit, description = desc_text)
-

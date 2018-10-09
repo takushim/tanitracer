@@ -27,7 +27,7 @@ parser.add_argument('-a', '--align-file', nargs=1, default=[align_filename], \
                     help='tsv file with alignment (align.txt if not specified)')
 parser.add_argument('-e', '--align-each', nargs=1, type=int, default=[plotter.align_each], \
                     help='alignment correction every X plane')
-                    
+
 parser.add_argument('-P', '--plane-each', nargs=1, type=int, default=[plane_each], \
                     help='number of planes in each file')
 
@@ -83,19 +83,19 @@ for index, input_filename in enumerate(input_filenames):
     spot_table = spot_table.rename(columns={'Plane': 'plane', 'CentroidX(pix)': 'x', 'CentroidY(pix)': 'y'})
     spot_table['plane'] = spot_table['plane'] - 1
     print("Total %d spots in %s." % (len(spot_table), input_filename))
-    
+
     # split table randomly
     spot_table['key'] = numpy.random.randint(2, size=len(spot_table))
     spot_table1 = spot_table[spot_table.key == 0].reset_index(drop=True)
     spot_table2 = spot_table[spot_table.key == 1].reset_index(drop=True)
     print("Total %d split into (%d, %d)" % (len(spot_table), len(spot_table1), len(spot_table2)))
-    
+
     # plot
     output_image1 = plotter.plot_spots(output_image1, last_plane, spot_table1, align_table)
     output_image2 = plotter.plot_spots(output_image2, last_plane, spot_table2, align_table)
-    
+
     last_plane += plane_each
-    
+
     print("Plot %d spots from %s." % (len(spot_table), input_filename))
     print("--")
 
@@ -110,4 +110,3 @@ tifffile.imsave(output_filename1, output_image_32bit, description = desc_text)
 print("Output image file to %s." % (output_filename2))
 output_image_32bit = output_image2.clip(0, numpy.iinfo(numpy.int32).max).astype(numpy.int32)
 tifffile.imsave(output_filename2, output_image_32bit, description = desc_text)
-

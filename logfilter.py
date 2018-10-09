@@ -74,4 +74,3 @@ output_images[:, :, :] = palette[uint8_images[:, :, :]]
 
 # output image
 tifffile.imsave(output_filename, output_images)
-

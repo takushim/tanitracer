@@ -31,7 +31,7 @@ parser.add_argument('-a', '--align-file', nargs=1, default=[align_filename], \
                     help='tsv file with alignment (align.txt if not specified)')
 parser.add_argument('-e', '--align-each', nargs=1, type=int, default=[plotter.align_each], \
                     help='alignment correction every X plane')
-                    
+
 parser.add_argument('-s', '--consolidate-spots', action='store_true', default=consolidate_spots, \
                     help='collapse spots')
 
@@ -94,25 +94,25 @@ for index, input_filename in enumerate(input_filenames):
     params = plotter.read_image_params(input_filename)
     spot_table = pandas.read_csv(input_filename, sep='\t', comment='#')
     print("Total %d spots in %s." % (len(spot_table), input_filename))
-    
+
     # average spots
     if consolidate_spots is True:
         total_spots = len(spot_table)
         spot_table = filter.keep_first_spots(spot_table)
         print("Consolidated to %d of %d spots." % (len(spot_table), total_spots))
-    
+
     # split table randomly
     spot_table['key'] = numpy.random.randint(2, size=len(spot_table))
     spot_table1 = spot_table[spot_table.key == 0].reset_index(drop=True)
     spot_table2 = spot_table[spot_table.key == 1].reset_index(drop=True)
     print("Total %d split into (%d, %d)" % (len(spot_table), len(spot_table1), len(spot_table2)))
-    
+
     # plot
     output_image1 = plotter.plot_spots(output_image1, last_plane, spot_table1, align_table)
     output_image2 = plotter.plot_spots(output_image2, last_plane, spot_table2, align_table)
-    
+
     last_plane += params['total_planes']
-    
+
     print("Plot %d spots (%d planes) from %s." % (len(spot_table), params['total_planes'], input_filename))
     print("--")
 
@@ -127,4 +127,3 @@ tifffile.imsave(output_filename1, output_image_32bit, description = desc_text)
 print("Output image file to %s." % (output_filename2))
 output_image_32bit = output_image2.clip(0, numpy.iinfo(numpy.int32).max).astype(numpy.int32)
 tifffile.imsave(output_filename2, output_image_32bit, description = desc_text)
-

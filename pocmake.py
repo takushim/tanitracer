@@ -84,7 +84,7 @@ move_y = numpy.zeros(len(orig_images))
 for index in range(len(orig_images)):
     corr, move_y[index], move_x[index] = poc.poc(reference_image, orig_images[index])
     print("Plane %d, dislocation = (%f, %f)." % (index, move_x[index], move_y[index]))
-    
+
 # make pandas dataframe
 results = pandas.DataFrame({'align_plane' : numpy.arange(len(orig_images)), \
                             'align_x' : move_x, \
@@ -109,7 +109,7 @@ if output_image is True:
         images_uint8 = 255 - images_uint8
 
     output_image_array = numpy.zeros(images_uint8.shape, dtype=numpy.uint8)
-    
+
     for row, align in results.iterrows():
         plane = results.align_plane[row]
         if plane not in range(len(images_uint8)):
@@ -123,4 +123,3 @@ if output_image is True:
     # output multipage tiff
     print("Output image file to %s." % (output_image_filename))
     tifffile.imsave(output_image_filename, output_image_array)
-

@@ -165,7 +165,7 @@ if output_image is True:
 
     # mark tracking status
     if rainbow_colors is True:
-        image_color = marker.mark_rainbow_spots(image_color, results)    
+        image_color = marker.mark_rainbow_spots(image_color, results)
     else:
         image_color = marker.mark_spots(image_color, results)
 
@@ -175,4 +175,3 @@ if output_image is True:
 
 # spacer to next processing
 print(".")
-

@@ -35,7 +35,7 @@ def pocfunc(f, g, windowfunc = numpy.hanning, withlpf = True):
     # compute 2d fft
     F = scipy.fftpack.fft2(f)
     G = scipy.fftpack.fft2(g)
-    G_ = numpy.conj(G)    
+    G_ = numpy.conj(G)
     R = F * G_ / numpy.abs(F * G_)
 
     if withlpf == True:
@@ -50,7 +50,7 @@ def pocfunc(f, g, windowfunc = numpy.hanning, withlpf = True):
     return scipy.fftpack.fftshift(numpy.real(scipy.fftpack.ifft2(R)))
 
 
-def poc(f, g, fitting_shape = (9, 9)): 
+def poc(f, g, fitting_shape = (9, 9)):
     # compute phase-only correlation
     center = list(map(lambda x: x / 2.0, f.shape))
     m = numpy.floor(list(map(lambda x: x / 2.0, f.shape)))
@@ -75,4 +75,3 @@ def poc(f, g, fitting_shape = (9, 9)):
     errorfunction = lambda p: numpy.ravel(pocfunc_model(p[0], p[1], p[2], r, u)(y, x) - fitting_area)
     plsq = leastsq(errorfunction, p0)
     return (plsq[0][0], plsq[0][1], plsq[0][2])
-

@@ -46,4 +46,3 @@ result = pandas.DataFrame({'file': input_filenames, \
 
 print("Output tsv file to %s." % (output_filename))
 result.to_csv(output_filename, sep='\t', index=False)
-

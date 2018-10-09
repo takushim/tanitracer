@@ -33,4 +33,3 @@ for y in range(height):
 
 tifffile.imsave(output_image_filename1, output_image1)
 tifffile.imsave(output_image_filename2, output_image2)
-

@@ -29,9 +29,9 @@ def FSC(i1,i2,SNRt=0.1):
     C  = sa.spinavej(np.multiply(I1,np.conj(I2)))
     C1 = sa.spinavej(np.multiply(I1,np.conj(I1)))
     C2 = sa.spinavej(np.multiply(I2,np.conj(I2)))
-    
+
     FSC = abs(C)/np.sqrt(abs(np.multiply(C1,C2)))
-    
+
     #T is the SNR threshold calculated accoring to the input SNRt, if nothing is given
     #a default value of 0.1 is used.
     #x2 contains the normalized spatial frequencies
@@ -45,7 +45,6 @@ def FSC(i1,i2,SNRt=0.1):
     t3 = SNRt + 2*np.sqrt(SNRt)*t1 + 1
     T = np.divide(t2,t3)
     x1 = np.arange(np.shape(C)[0])/(np.shape(i1)[0]/2)
-    x2 = r/(np.shape(i1)[0]/2)    
+    x2 = r/(np.shape(i1)[0]/2)
 
     return x1, FSC, x2, T, SNRt
-    

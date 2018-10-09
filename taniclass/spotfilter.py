@@ -9,20 +9,20 @@ class SpotFilter:
 
     def filter_spots_lifetime (self, spot_table):
         spot_table = spot_table.sort_values(by = ['total_index', 'plane']).reset_index(drop=True)
-        
+
         if ('lifetime' in spot_table.columns) is False:
             spot_table = self.calculate_lifetime(spot_table)
-                
+
         spot_table = spot_table[(self.lifetime_min <= spot_table.lifetime) & \
                                 (spot_table.lifetime <= self.lifetime_max)].reset_index(drop=True)
-        
+
         return spot_table
 
     def omit_lastplane_spots (self, spot_table, lastplane_index):
         total_indexes = spot_table[spot_table.plane == lastplane_index].total_index.tolist()
         total_indexes = list(set(total_indexes))
         #print(total_indexes)
-        
+
         return spot_table[~spot_table.total_index.isin(total_indexes)]
 
     def keep_first_spots (self, spot_table):
@@ -52,4 +52,3 @@ class SpotFilter:
                                       left_on='total_index', right_index=True, how='left')
 
         return spot_table
-
