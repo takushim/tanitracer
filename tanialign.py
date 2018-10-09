@@ -72,9 +72,9 @@ orig_images = numpy.asarray(image_list)
 # read reference image
 reference_image = None
 if reference_image_filename is not None:
-    image = tifffile.imread(reference_image_filename)
-    if len(image.shape) > 2:
-        image = image[0]
+    reference_image = tifffile.imread(reference_image_filename)
+    if len(reference_image.shape) > 2:
+        reference_image = reference_image[0]
 
 # alignment
 results = aligner.calculate_alignments(orig_images, reference_image)
