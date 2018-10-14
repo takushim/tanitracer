@@ -17,8 +17,8 @@ count_plane = 0
 start_regression = 0
 time_scale = 1
 center_quadrant = False
-center_x = [150, 350]
-center_y = [100, 300]
+center_x = [120, 380]
+center_y = [80, 320]
 
 # parse arguments
 parser = argparse.ArgumentParser(description='count lifetime using regression.', \
@@ -104,13 +104,13 @@ spot_table = spot_table.sort_values(by = ['total_index', 'plane']).reset_index(d
 if selected_mode == 'regression':
     # spots to be counted
     if center_quadrant is True:
-        index_set = set(spot_table[spot_table.plane == start_regression & \
+        index_set = set(spot_table[(spot_table.plane == start_regression) & \
                                    (center_x[0] <= spot_table.x) & (spot_table.x < center_x[1]) & \
                                    (center_y[0] <= spot_table.y) & (spot_table.y < center_y[1])].total_index.tolist())
-        print(index_set)
     else:
         index_set = set(spot_table[spot_table.plane == start_regression].total_index.tolist())
 
+    print(index_set)
     # regression
     output_indexes = []
     output_counts = []
