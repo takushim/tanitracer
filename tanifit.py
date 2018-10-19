@@ -114,6 +114,7 @@ conditions = list(itertools.product(min_distances, laplaces, threshold_abses))
 # output images
 output_images = numpy.zeros((len(conditions), orig_image.shape[0], orig_image.shape[1], 3), dtype = numpy.uint8)
 font_images = numpy.zeros((len(conditions), font_size, orig_image.shape[1], 3), dtype = numpy.uint8)
+count_images = numpy.zeros((len(conditions), font_size, orig_image.shape[1], 3), dtype = numpy.uint8)
 
 for index, condition in enumerate(conditions):
     # parse parameters
@@ -137,6 +138,12 @@ for index, condition in enumerate(conditions):
     draw.text((0, 0), "M %d, L %.2f, T %.5f" % (min_distance, laplace, threshold_abs), font = font, fill = font_color)
     font_images[index] = numpy.asarray(image)
 
+    # count spots
+    image = Image.fromarray(count_images[index])
+    draw = ImageDraw.Draw(image)
+    draw.text((0, 0), "C: %d" % (len(results)), font = font, fill = font_color)
+    count_images[index] = numpy.asarray(image)
+
     # radius (= laplacian)
     radii = numpy.array(results['diameter'].dropna().tolist()) / 2.0
     rel95 = 2.262 * numpy.sqrt(numpy.var(radii, ddof=1) / len(radii))
@@ -145,5 +152,5 @@ for index, condition in enumerate(conditions):
             (len(results), min_distance, laplace, threshold_abs, numpy.average(radii), rel95))
 
 # combine images and output
-output_images = numpy.hstack((output_images, font_images))
+output_images = numpy.hstack((output_images, font_images, count_images))
 tifffile.imsave(output_filename, output_images)
