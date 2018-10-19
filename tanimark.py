@@ -46,6 +46,7 @@ args = parser.parse_args()
 
 # set arguments
 input_filename = args.input_file[0]
+
 marker.marker_size = args.marker_size[0]
 marker.marker_colors = args.marker_colors
 marker.mark_emerge = args.mark_emerge
@@ -58,6 +59,10 @@ if args.marker_file is None:
                       os.path.splitext(os.path.basename(input_filename))[0] + '.txt')
 else:
     marker_filename = args.marker_file[0]
+    fileext = os.path.splitext(os.path.basename(marker_filename))[1].lower()
+    if (fileext == '.stk') or (fileext == '.tif'):
+        marker_filename = os.path.splitext(os.path.basename(marker_filename))[0] + '.txt'
+        print("Reading %s instead of %s." % (marker_filename, args.marker_file[0]))
 
 if args.output_file is None:
     output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_marked.tif'
