@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, sys, argparse, pandas, numpy, itertools
+import os, platform, sys, argparse, pandas, numpy, itertools
 from taniclass import gaussian8, spotmarker
 from PIL import Image, ImageDraw, ImageFont
 from skimage.external import tifffile
@@ -18,7 +18,12 @@ min_distances = [tracer.min_distance]
 threshold_abses = [tracer.threshold_abs]
 invert_image = False
 
-font_file = 'C:/Windows/Fonts/Arial.ttf'
+if platform.system() == "Windows":
+    font_file = 'C:/Windows/Fonts/Arial.ttf'
+elif platform.system() == "Linux":
+    font_file = '/usr/share/fonts/dejavu/DejaVuSans.ttf'
+else:
+    raise Exception('font file error.')
 font_size = 40
 font_color = 'white'
 
