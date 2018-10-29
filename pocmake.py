@@ -3,12 +3,12 @@
 import os, platform, sys, glob, argparse
 import numpy, pandas
 from taniext import poc
-from taniclass import alignsift
+from taniclass import akaze
 from PIL import Image
 from skimage.external import tifffile
 
 # prepare aligner (used for image processing only)
-aligner = alignsift.AlignSift()
+aligner = akaze.Akaze()
 
 # defaults
 input_filenames = None
