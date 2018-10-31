@@ -15,6 +15,8 @@ if platform.system() == "Windows":
     font_file = 'C:/Windows/Fonts/Arial.ttf'
 elif platform.system() == "Linux":
     font_file = '/usr/share/fonts/dejavu/DejaVuSans.ttf'
+elif platform.system() == "Darwin":
+    font_file = '/Library/Fonts/Verdana.ttf'
 else:
     raise Exception('font file error.')
 
