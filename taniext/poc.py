@@ -1,5 +1,8 @@
 #! /usr/bin/env python
 # -*- coding: utf-8
+# Modified from the original program by Daisuke Kobayashi (Apache 2.0 license)
+# Downloaded from https://github.com/daisukekobayashi/phase-only-correlation
+
 import numpy
 import scipy, scipy.fftpack
 from numpy import pi, sin, cos
