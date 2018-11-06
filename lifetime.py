@@ -118,7 +118,7 @@ if selected_mode == 'regression':
         spot_count = len(spot_table[(spot_table.total_index.isin(index_set)) & (spot_table.plane == index)])
         if spot_count == 0:
             break
-        output_indexes += [index]
+        output_indexes += [index - start_regression]
         output_counts += [spot_count]
 
     # prepare data
