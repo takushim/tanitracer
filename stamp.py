@@ -67,9 +67,9 @@ output_images = numpy.zeros(orig_images.shape, dtype = numpy.uint8)
 # set format
 digits = math.floor(math.log10(interval))
 if digits >= 0:
-    stamp_format = "%d sec"
+    stamp_format = "%d s"
 else:
-    stamp_format = "%%.%df sec" % (abs(digits))
+    stamp_format = "%%.%df s" % (abs(digits))
 
 # draw time _stamp
 for index in range(len(orig_images)):
