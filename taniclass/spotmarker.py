@@ -5,9 +5,10 @@ from PIL import Image, ImageDraw
 
 class SpotMarker:
     def __init__ (self):
-        self.marker_size = 6
+        self.marker_size = 4
         self.mark_emerge = False
         self.drop_new_in_first = False
+        self.drop_tracking = False
         self.marker_colors = ['red', 'orange', 'blue', 'cyan']
         self.rainbow_colors = ["red", "blue", "lightgreen", "magenta", "purple", "cyan",\
                                "yellow", "orange", "maroon"]
@@ -143,21 +144,33 @@ class SpotMarker:
             for row, spot in spots.iterrows():
                 # draw marker
                 if self.drop_new_in_first is True and spot['plane'] == 0:
-                    draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
-                                  (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
-                                  fill = None, outline = marker_color_cont)
+                    if self.drop_tracking is True:
+                        if spot['status'] == 'one':
+                            draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
+                                          (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
+                                          fill = None, outline = marker_color_end)
+                    else:
+                        draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
+                                      (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
+                                      fill = None, outline = marker_color_cont)
                 else:
-                    draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
-                                  (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
-                                  fill = None, outline = spot.color)
+                    if self.drop_tracking is False or spot['status'] != 'cont':
+                        draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
+                                      (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
+                                      fill = None, outline = spot.color)
 
                 # draw additional marker
                 if spot['status'] == 'one':
-                    draw.arc(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
-                              (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
-                              315, 135, fill = marker_color_end)
+                    if self.drop_new_in_first is True:
+                        draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
+                                      (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
+                                      fill = None, outline = marker_color_end)
+                    else:
+                        draw.arc(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
+                                  (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
+                                  315, 135, fill = marker_color_end)
 
-                # draw new spots
+                # draw additional markers for new spots
                 if self.mark_emerge is True:
                     if self.drop_new_in_first is False or spot['plane'] > 0:
                         if spot['status'] == 'new' or spot['status'] == 'one':
