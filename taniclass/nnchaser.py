@@ -93,4 +93,13 @@ class NNChaser:
         spot_table['total_index'] = numpy.concatenate([result['orig_total_index'] for result in results])
         spot_table['distance'] = numpy.concatenate([result['track_distance'] for result in results])
 
-        return spot_table.sort_values(by = ['total_index', 'plane']).reset_index(drop=True)
+        # sort table
+        spot_table = spot_table.sort_values(by = ['total_index', 'plane']).reset_index(drop=True)
+
+        # add life column
+        spot_table['life_index'] = (spot_table.groupby('total_index').cumcount())
+        lifetime_table = spot_table['total_index'].value_counts().to_frame('life_total')
+        spot_table = pandas.merge(spot_table, lifetime_table, \
+                                    left_on='total_index', right_index=True, how='left')
+
+        return spot_table

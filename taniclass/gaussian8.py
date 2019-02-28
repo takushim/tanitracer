@@ -96,6 +96,7 @@ class Gaussian8:
 
         error_dict = {}
 
+        # omit nan spots
         last_spots = len(xy)
         indexes = numpy.ones(len(xy), dtype=numpy.bool)
         indexes = indexes & (x >= 0) & (x <= float_image.shape[1])
@@ -103,15 +104,23 @@ class Gaussian8:
         error_dict['nan'] = last_spots - numpy.sum(indexes)
         last_spots = numpy.sum(indexes)
 
+        # omit spots of abnormal subpixel correction
         indexes = indexes & ((0.5 * (c10/c20)) < 1)
         indexes = indexes & ((0.5 * (c01/c02)) < 1)
         error_dict['large_shift'] = last_spots - numpy.sum(indexes)
         last_spots = numpy.sum(indexes)
 
+        # omit spots of large diameter
         indexes = indexes & (diameter <= self.max_diameter)
         error_dict['diameter'] = last_spots - numpy.sum(indexes)
         last_spots = numpy.sum(indexes)
 
+        # omit duplicated spots
+        indexes = indexes & (aaaa)
+        error_dict['duplicate'] = last_spots - numpy.sum(indexes)
+        last_spots = numpy.sum(indexes)
+
+        # make result dictionary
         x = x[indexes]
         y = y[indexes]
         fit_error = fit_error[indexes]

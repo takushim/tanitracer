@@ -16,7 +16,6 @@ use_plane = 0
 laplaces = [tracer.laplace]
 min_distances = [tracer.min_distance]
 threshold_abses = [tracer.threshold_abs]
-invert_image = False
 
 if platform.system() == "Windows":
     font_file = 'C:/Windows/Fonts/Arial.ttf'
@@ -45,7 +44,7 @@ parser.add_argument('-c', '--marker-colors', nargs=2, type=str, \
                     default=[marker.marker_colors[0], marker.marker_colors[3]],
                     help='marker colors for normal/error spots')
 
-parser.add_argument('-i', '--invert-image', action='store_true', default=invert_image, \
+parser.add_argument('-i', '--invert-image', action='store_true', default=marker.invert_image, \
                     help='invert image LUT')
 
 group = parser.add_mutually_exclusive_group()
@@ -79,7 +78,7 @@ input_filename = args.input_file[0]
 use_plane = args.use_plane[0]
 marker.marker_colors = [args.marker_colors[0] for i in range(3)] + [args.marker_colors[1]]
 marker.marker_size = args.marker_size[0]
-invert_image = args.invert_image
+marker.invert_image = args.invert_image
 
 if args.output_file is None:
     output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_fit.tif'
@@ -109,8 +108,6 @@ tracer.set_image_clip(orig_image)
 
 # prepare image of 8-bit RGB color (one plane only)
 image_color = marker.convert_to_color(numpy.array([orig_image]))[0]
-if invert_image is True:
-    image_color = 255 - image_color
 
 # prepare font
 font = ImageFont.truetype(font_file, font_size)

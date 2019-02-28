@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 
 import os, sys, argparse, pandas, numpy
-from taniclass import spotfilter
-
-# prepare filter
-filter = spotfilter.SpotFilter()
 
 # defaults
 input_filename = None
@@ -110,7 +106,6 @@ if selected_mode == 'regression':
     else:
         index_set = set(spot_table[spot_table.plane == start_regression].total_index.tolist())
 
-    print(index_set)
     # regression
     output_indexes = []
     output_counts = []
@@ -126,28 +121,25 @@ if selected_mode == 'regression':
     output_times = [i * time_scale for i in output_indexes]
 
 elif selected_mode == 'lifetime':
-    # calculate lifetime
-    spot_table = filter.calculate_lifetime(spot_table)
-    spot_table = filter.keep_first_spots(spot_table)
+    # should limit emerging planes
     spot_table = spot_table[(lifetime_span[0] <= spot_table.plane) & \
                             (spot_table.plane <= lifetime_span[1])].reset_index(drop=True)
 
     if center_quadrant is True:
         spot_table = spot_table[(center_x[0] <= spot_table.x) & (spot_table.x < center_x[1]) & \
                                 (center_y[0] <= spot_table.y) & (spot_table.y < center_y[1])].reset_index(drop=True)
-        print(spot_table)
 
     # prepare data
     output_columns = ['lifecount', 'lifetime', 'spotcount']
-    lifecount_max = spot_table.lifetime.max()
+    lifecount_max = spot_table.life_total.max()
     if lifetime_sum_every == 1:
         output_indexes = [i for i in range(1, lifecount_max + 1)]
         output_times = [i * time_scale for i in output_indexes]
-        output_counts = [len(spot_table[spot_table.lifetime == i]) for i in output_indexes]
+        output_counts = [len(spot_table[spot_table.life_total == i]) for i in output_indexes]
     else:
         output_indexes = [i * lifetime_sum_every for i in range(1, ((lifecount_max - 1) // lifetime_sum_every) + 2)]
         output_times = [i * time_scale for i in output_indexes]
-        output_counts = [len(spot_table[((i - lifetime_sum_every) < spot_table.lifetime) & (spot_table.lifetime <= i)]) \
+        output_counts = [len(spot_table[((i - lifetime_sum_every) < spot_table.life_total) & (spot_table.life_total <= i)]) \
                          for i in output_indexes]
 
 elif selected_mode == 'counting':

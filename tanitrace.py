@@ -18,8 +18,6 @@ output_histgram_filename = None
 chase_spots = False
 output_histgram = False
 output_image = False
-invert_image = False
-rainbow_colors = False
 
 # parse arguments
 parser = argparse.ArgumentParser(description='trace spots using gaussian fitting.', \
@@ -56,10 +54,9 @@ parser.add_argument('-z', '--marker-size', nargs=1, type=int, default=[marker.ma
 parser.add_argument('-c', '--marker-colors', nargs=4, type=str, \
                     default=marker.marker_colors, metavar=('NEW', 'CONT', 'END', 'ERROR'), \
                     help='marker colors for new/continued/end spots')
-parser.add_argument('-r', '--rainbow-colors', action='store_true', default=rainbow_colors, \
-                    help='use rainbow colors')
-
-parser.add_argument('-i', '--invert-image', action='store_true', default=invert_image, \
+parser.add_argument('-r', '--marker-rainbow', action='store_true', default=marker.marker_rainbow, \
+                    help='set rainbow marker colors')
+parser.add_argument('-i', '--invert-image', action='store_true', default=marker.invert_image, \
                     help='invert image LUT')
 
 parser.add_argument('input_file', nargs=1, default=input_filename, \
@@ -86,6 +83,8 @@ chaser.chase_distance = args.chase_distance[0]
 
 marker.marker_colors = args.marker_colors
 marker.marker_size = args.marker_size[0]
+marker.marker_rainbow = args.marker_rainbow
+marker.invert_image = args.invert_image
 
 output_histgram = args.output_histgram
 if args.output_histgram_file is None:
@@ -102,9 +101,6 @@ if args.output_image_file is None:
         raise Exception('input_filename == output_image_filename')
 else:
     output_image_filename = args.output_image_file[0]
-
-invert_image = args.invert_image
-rainbow_colors = args.rainbow_colors
 
 # read image
 orig_image = tifffile.imread(input_filename)
@@ -160,14 +156,9 @@ if output_histgram is True:
 if output_image is True:
     # prepare image of 8-bit RGB color
     image_color = marker.convert_to_color(orig_image)
-    if invert_image is True:
-        image_color = 255 - image_color
 
     # mark tracking status
-    if rainbow_colors is True:
-        image_color = marker.mark_rainbow_spots(image_color, results)
-    else:
-        image_color = marker.mark_spots(image_color, results)
+    image_color = marker.mark_spots(image_color, results)
 
     # output multipage tiff
     tifffile.imsave(output_image_filename, image_color)

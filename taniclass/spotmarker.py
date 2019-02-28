@@ -5,16 +5,16 @@ from PIL import Image, ImageDraw
 
 class SpotMarker:
     def __init__ (self):
-        self.marker_size = 4
-        self.mark_emerge = False
-        self.drop_new_in_first = False
-        self.drop_tracking = False
+        self.marker_size = 6
+        self.mark_regression = False
+        self.force_mark_emerge = False
+        self.invert_image = False
         self.marker_colors = ['red', 'orange', 'blue', 'cyan']
-        self.rainbow_colors = ["red", "blue", "lightgreen", "magenta", "purple", "cyan",\
-                               "yellow", "orange", "maroon"]
+        self.marker_rainbow = False
+        self.rainbow_colors = numpy.array(["red", "blue", "lightgreen", "magenta", "purple", "cyan",\
+                                           "yellow", "orange", "maroon"])
 
     def convert_to_color (self, orig_image):
-
         image_color = numpy.zeros(orig_image.shape + (3,), dtype = numpy.uint8)
 
         image_type = orig_image.dtype.name
@@ -29,6 +29,9 @@ class SpotMarker:
             image_color[:,:,:,0] = image_color[:,:,:,1] = image_color[:,:,:,2] = orig_image
         else:
             raise Exception('invalid image file format')
+        
+        if self.invert_image is True:
+            image_color = 255 - image_color
 
         return image_color
 
@@ -52,11 +55,43 @@ class SpotMarker:
 
         return status
 
-    def mark_rainbow_spots (self, image_color, spot_table):
+    def mark_spots (self, image_color, spot_table):
         # copy for working
         work_table = spot_table.copy()
-        statuses = self.tracking_status(work_table)
-        work_table['status'] = statuses
+
+        # set colors
+        if self.marker_rainbow is True:
+            work_table['status'] = 'none'
+            work_table['color'] = self.rainbow_colors[work_table.total_index % len(self.rainbow_colors)]
+        else:
+            # mark new, cont, end
+            marker_color_new = self.marker_colors[0]
+            marker_color_cont = self.marker_colors[1]
+            marker_color_end = self.marker_colors[2]
+
+            work_table['status'] = self.tracking_status(work_table)
+
+            # make color list
+            work_table['color'] = marker_color_cont
+            work_table.loc[work_table['status'] == 'new', 'color'] = marker_color_new
+            work_table.loc[work_table['status'] == 'end', 'color'] = marker_color_end
+            work_table.loc[work_table['status'] == 'one', 'color'] = marker_color_new
+
+            # modify spot colors in the first plane
+            work_table.loc[(work_table['plane'] == 0) & (work_table['status'] == 'new'), 'color'] = marker_color_cont
+            work_table.loc[(work_table['plane'] == 0) & (work_table['status'] == 'one'), 'color'] = marker_color_end
+            #print(work_table)
+
+        # use _regression
+        if self.mark_regression is True:
+            index_set = set(work_table[work_table.plane == 0].total_index)
+            if self.force_mark_emerge is True:
+                emerge_set = set(work_table[(work_table.life_index == 0) & (work_table.plane > 0)].total_index)
+                index_set = index_set | emerge_set
+            work_table = work_table[work_table.total_index.isin(index_set)].reset_index(drop=True)                
+            if self.force_mark_emerge is True:
+                work_table.loc[(work_table.life_index == 0) & (work_table.plane > 0), 'status'] = 'new'
+                work_table.loc[(work_table.life_index == 0) & (work_table.plane > 0), 'color'] = marker_color_new
 
         # draw markers
         for index in range(len(image_color)):
@@ -83,107 +118,19 @@ class SpotMarker:
                 # draw marker
                 draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
                               (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
-                              fill = None, outline = self.rainbow_colors[spot.total_index % len(self.rainbow_colors)])
-                # mark emerging spot
-                if self.mark_emerge is True:
-                    if spot['status'] == 'new' or spot['status'] == 'one':
-                        if self.drop_new_in_first is False or spot['plane'] > 0:
-                            marker_size = int(self.marker_size * 1.5)
-                            draw.ellipse(((spot.int_x - marker_size, spot.int_y - marker_size),\
-                                          (spot.int_x + marker_size, spot.int_y + marker_size)),\
-                                          fill = None, outline = self.rainbow_colors[spot.total_index % len(self.rainbow_colors)])
-
-            # save image
-            image_color[index] = numpy.asarray(image)
-
-        return image_color
-
-    def mark_spots (self, image_color, spot_table):
-        # mark new, cont, end
-        marker_color_new = self.marker_colors[0]
-        marker_color_cont = self.marker_colors[1]
-        marker_color_end = self.marker_colors[2]
-
-        statuses = self.tracking_status(spot_table)
-
-        # make color list
-        if set(statuses) == {'one'}:
-            colors = [marker_color_new for i in range(len(statuses))]
-        else:
-            colors = [marker_color_cont for i in range(len(statuses))]
-            colors = [marker_color_new if statuses[i] == 'new' else colors[i] for i in range(len(colors))]
-            colors = [marker_color_end if statuses[i] == 'end' else colors[i] for i in range(len(colors))]
-            colors = [marker_color_new if statuses[i] == 'one' else colors[i] for i in range(len(colors))]
-
-        # copy for working
-        work_table = spot_table.copy()
-        work_table['status'] = statuses
-        work_table['color'] = colors
-
-        # draw markers
-        for index in range(len(image_color)):
-            spots = work_table[work_table.plane == index].reset_index(drop=True)
-
-            if len(spots) == 0:
-                print("Skipped plane %d with %d spots." % (index, len(spots)))
-                continue
-
-            spots['int_x'] = spots['x'].astype(numpy.int)
-            spots['int_y'] = spots['y'].astype(numpy.int)
-            spots = spots.sort_values(by = ['int_x', 'int_y']).reset_index(drop=True)
-
-            # check possible error spots (duplicated)
-            spots['duplicated'] = spots.duplicated(subset = ['int_x', 'int_y'], keep = False)
-            error_spots = len(spots[spots['duplicated'] == True])
-            if error_spots > 0:
-                print("Possible %d duplicated spots in plane %d." % (error_spots, index))
-
-            image = Image.fromarray(image_color[index])
-            draw = ImageDraw.Draw(image)
-
-            for row, spot in spots.iterrows():
-                # draw marker
-                if self.drop_new_in_first is True and spot['plane'] == 0:
-                    if self.drop_tracking is True:
-                        if spot['status'] == 'one':
-                            draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
-                                          (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
-                                          fill = None, outline = marker_color_end)
-                    else:
-                        draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
-                                      (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
-                                      fill = None, outline = marker_color_cont)
-                else:
-                    if self.drop_tracking is False or spot['status'] != 'cont':
-                        draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
-                                      (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
-                                      fill = None, outline = spot.color)
+                              fill = None, outline = spot.color)
 
                 # draw additional marker
                 if spot['status'] == 'one':
-                    if self.drop_new_in_first is True:
-                        draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
-                                      (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
-                                      fill = None, outline = marker_color_end)
-                    else:
-                        draw.arc(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
-                                  (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
-                                  315, 135, fill = marker_color_end)
-
-                # draw additional markers for new spots
-                if self.mark_emerge is True:
-                    if self.drop_new_in_first is False or spot['plane'] > 0:
-                        if spot['status'] == 'new' or spot['status'] == 'one':
-                            marker_size = int(self.marker_size * 1.5)
-                            draw.ellipse(((spot.int_x - marker_size, spot.int_y - marker_size),\
-                                          (spot.int_x + marker_size, spot.int_y + marker_size)),\
-                                          fill = None, outline = self.marker_colors[0])
+                    draw.arc(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
+                              (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
+                              315, 135, fill = marker_color_end)
 
                 # mark duplicated spot
                 if spot['duplicated'] is True:
                     draw.ellipse(((spot.int_x - self.marker_size + 1, spot.int_y - self.marker_size + 1),\
                                   (spot.int_x + self.marker_size + 1, spot.int_y + self.marker_size + 1)),\
-                                fill = None, outline = self.marker_colors[3])
+                                  fill = None, outline = self.marker_colors[3])
 
             image_color[index] = numpy.asarray(image)
 
