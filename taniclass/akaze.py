@@ -8,6 +8,7 @@ class Akaze:
         self.columns = ['align_plane', 'align_x', 'align_y']
         self.threshold = 0.00005
         self.matching_ratio = 0.15
+        self.invert_image = False
 
     def output_header (self, output_file, input_filename, reference_filename):
         output_file.write('## Alignment by TaniAlign (AKAZE) at %s\n' % (time.ctime()))
@@ -28,6 +29,9 @@ class Akaze:
             images_uint8 = orig_image
         else:
             raise Exception('invalid image file format')
+
+        if self.invert_image is True:
+            image_color = 255 - image_color
 
         return images_uint8
 

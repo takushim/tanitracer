@@ -15,7 +15,6 @@ output_tsv_filename = 'align.txt'
 output_image = False
 output_image_filename = None
 reference_image_filename = None
-invert_image = False
 
 parser = argparse.ArgumentParser(description='Calculate misalignment using AKAZE algorithm', \
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -30,7 +29,7 @@ parser.add_argument('-O', '--output-image', action='store_true', default=output_
 parser.add_argument('-o', '--output-image-file', nargs=1, default = None, \
                     help='output image file name([basename]_sift.tif if not specified)')
 
-parser.add_argument('-i', '--invert-image', action='store_true', default=invert_image, \
+parser.add_argument('-i', '--invert-image', action='store_true', default=aligner.invert_image, \
                     help='invert image LUT')
 
 parser.add_argument('input_file', nargs='+', default=None, \
@@ -46,8 +45,8 @@ else:
     input_filenames = args.input_file
 
 # set arguments
+aligner.invert_image = args.invert_image
 output_tsv_file = args.output_tsv_file[0]
-invert_image = args.invert_image
 reference_image_filename = args.reference_image[0]
 
 output_image = args.output_image
@@ -93,8 +92,6 @@ print("Output alignment tsv file to %s." % (output_tsv_filename))
 # output image
 if output_image is True:
     images_uint8 = aligner.convert_to_uint8(orig_images)
-    if invert_image is True:
-        images_uint8 = 255 - images_uint8
 
     output_image_array = numpy.zeros(images_uint8.shape, dtype=numpy.uint8)
 
