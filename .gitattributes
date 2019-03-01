@@ -2,11 +2,12 @@
 .gitattributes export-ignore
 frcplotspot.py export-ignore
 frcplotwt.py export-ignore
-frcresolve.py export-ignore
 frcsplit.py export-ignore
 lifetime.py export-ignore
-logfilter.py export-ignore
 numspots.py export-ignore
 stamp.py export-ignore
+crop.py export-ignore
+spotalign.py export-ignore
+skipplane.py export-ignore
 thunderplot.py export-ignore
 
