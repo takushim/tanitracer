@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 import os, sys, argparse, pandas, numpy
+from taniclass import spotplotter
+
+plotter = spotplotter.SpotPlotter()
 
 # defaults
 input_filename = None
@@ -12,8 +15,9 @@ count_plane = 0
 start_regression = 0
 time_scale = 1
 center_quadrant = False
-center_x = [120, 380]
-center_y = [80, 320]
+edge_width = 20
+quadrant_x = [120, 380]
+quadrant_y = [80, 320]
 
 # parse arguments
 parser = argparse.ArgumentParser(description='count lifetime using regression.', \
@@ -87,19 +91,25 @@ if args.output_file is None:
 else:
     output_filename = args.output_file[0]
 
+# read parameters
+if center_quadrant is True:
+    center_x, center_y = quadrant_x, quadrant_y
+else:
+    width, height = plotter.read_image_size(input_filename)
+    center_x, center_y = [edge_width, height - edge_width], [edge_width, width - edge_width]
+
 # read results, sort, and RESET index (important)
 spot_table = pandas.read_table(input_filename, comment = '#')
 spot_table = spot_table.sort_values(by = ['total_index', 'plane']).reset_index(drop=True)
 
+print(center_x, center_y)
+
 # lifetime or regression
 if selected_mode == 'regression':
     # spots to be counted
-    if center_quadrant is True:
-        index_set = set(spot_table[(spot_table.plane == start_regression) & \
-                                   (center_x[0] <= spot_table.x) & (spot_table.x < center_x[1]) & \
-                                   (center_y[0] <= spot_table.y) & (spot_table.y < center_y[1])].total_index.tolist())
-    else:
-        index_set = set(spot_table[spot_table.plane == start_regression].total_index.tolist())
+    index_set = set(spot_table[(spot_table.plane == start_regression) & \
+                                (center_x[0] <= spot_table.x) & (spot_table.x < center_x[1]) & \
+                                (center_y[0] <= spot_table.y) & (spot_table.y < center_y[1])].total_index.tolist())
 
     # regression
     output_indexes = []
@@ -116,13 +126,15 @@ if selected_mode == 'regression':
     output_times = [i * time_scale for i in output_indexes]
 
 elif selected_mode == 'lifetime':
+    # lifetime_index = 0
+    spot_table = spot_table[spot_table.life_index == 0].reset_index(drop=True)
+
     # should limit emerging planes
     spot_table = spot_table[(lifetime_span[0] <= spot_table.plane) & \
                             (spot_table.plane <= lifetime_span[1])].reset_index(drop=True)
 
-    if center_quadrant is True:
-        spot_table = spot_table[(center_x[0] <= spot_table.x) & (spot_table.x < center_x[1]) & \
-                                (center_y[0] <= spot_table.y) & (spot_table.y < center_y[1])].reset_index(drop=True)
+    spot_table = spot_table[(center_x[0] <= spot_table.x) & (spot_table.x < center_x[1]) & \
+                            (center_y[0] <= spot_table.y) & (spot_table.y < center_y[1])].reset_index(drop=True)
 
     # prepare data
     output_columns = ['lifecount', 'lifetime', 'spotcount']
