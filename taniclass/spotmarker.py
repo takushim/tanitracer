@@ -88,7 +88,7 @@ class SpotMarker:
             if self.force_mark_emerge is True:
                 work_table = work_table[(work_table.total_index.isin(index_set)) | \
                                         ((work_table.life_index == 0) & (work_table.plane > 0))].reset_index(drop=True)                
-                work_table.loc[(work_table.life_index == 0) & (work_table.plane > 0), 'status'] = 'new'
+                work_table.loc[(work_table.life_index == 0) & (work_table.plane > 0), 'status'] = 'emerge'
                 work_table.loc[(work_table.life_index == 0) & (work_table.plane > 0), 'color'] = marker_color_new
             else:
                 work_table = work_table[work_table.total_index.isin(index_set)].reset_index(drop=True)                
@@ -117,15 +117,20 @@ class SpotMarker:
 
             for row, spot in spots.iterrows():
                 # draw marker
-                draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
-                              (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
-                              fill = None, outline = spot.color)
+                if spot['status'] == 'emerge':
+                    draw.rectangle(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
+                                   (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
+                                   fill = None, outline = spot.color)
+                else:
+                    draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
+                                (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
+                                fill = None, outline = spot.color)
 
-                # draw additional marker
-                if spot['status'] == 'one':
-                    draw.arc(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
-                              (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
-                              315, 135, fill = marker_color_end)
+                    # draw additional marker
+                    if spot['status'] == 'one':
+                        draw.arc(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
+                                (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
+                                315, 135, fill = marker_color_end)
 
                 # mark duplicated spot
                 if spot['duplicated'] is True:
