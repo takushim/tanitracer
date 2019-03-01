@@ -8,7 +8,6 @@ output_filename = None
 count_modes = ['regression', 'lifetime', 'counting']
 selected_mode = count_modes[0]
 lifetime_span = [1, 20]
-lifetime_sum_every = 1
 count_plane = 0
 start_regression = 0
 time_scale = 1
@@ -40,9 +39,6 @@ parser.add_argument('-x', '--time-scale', nargs = 1, type = float, \
 parser.add_argument('-l', '--lifetime-span', nargs = 2, type = int, \
                     metavar = ('START', 'END'), default = lifetime_span, \
                     help='specify the span to coung using lifetime (start >= 1)')
-parser.add_argument('-e', '--lifetime-sum-every', nargs = 1, type = int, \
-                    metavar = ('X'), default = [lifetime_sum_every], \
-                    help='sum lifetime every X plane')
 parser.add_argument('-r', '--start-regression', nargs = 1, type = int, \
                     metavar = ('PLANE'), default=[start_regression], \
                     help='specify the plane to start regression')
@@ -70,7 +66,6 @@ selected_mode = args.selected_mode
 count_plane = args.count_plane[0]
 start_regression = args.start_regression[0]
 lifetime_span = args.lifetime_span
-lifetime_sum_every = args.lifetime_sum_every[0]
 time_scale = args.time_scale[0]
 center_quadrant = args.center_quadrant
 
@@ -132,15 +127,9 @@ elif selected_mode == 'lifetime':
     # prepare data
     output_columns = ['lifecount', 'lifetime', 'spotcount']
     lifecount_max = spot_table.life_total.max()
-    if lifetime_sum_every == 1:
-        output_indexes = [i for i in range(1, lifecount_max + 1)]
-        output_times = [i * time_scale for i in output_indexes]
-        output_counts = [len(spot_table[spot_table.life_total == i]) for i in output_indexes]
-    else:
-        output_indexes = [i * lifetime_sum_every for i in range(1, ((lifecount_max - 1) // lifetime_sum_every) + 2)]
-        output_times = [i * time_scale for i in output_indexes]
-        output_counts = [len(spot_table[((i - lifetime_sum_every) < spot_table.life_total) & (spot_table.life_total <= i)]) \
-                         for i in output_indexes]
+    output_indexes = [i for i in range(1, lifecount_max + 1)]
+    output_times = [i * time_scale for i in output_indexes]
+    output_counts = [len(spot_table[spot_table.life_total == i]) for i in output_indexes]
 
 elif selected_mode == 'counting':
     # prepare data
