@@ -15,7 +15,7 @@ output_filename = None
 parser = argparse.ArgumentParser(description='make LoG-filtered image stack.', \
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-o', '--output-file', nargs=1, default=output_filename, \
-                    help='output multipage-tiff file ([basename]_log.tif if not specified)')
+                    help='output multipage-tiff file ([basename]_log[LOG].tif if not specified)')
 
 parser.add_argument('-l', '--laplace', nargs=1, type=float, default=tracer.laplace, \
                     help='maximum spot diameter to filter noise')
@@ -30,7 +30,7 @@ tracer.laplace = args.laplace[0]
 input_filename = args.input_file[0]
 
 if args.output_file is None:
-    output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_log.tif'
+    output_filename = os.path.splitext(os.path.basename(input_filename))[0] + ("_l%.2f.tif" % tracer.laplace)
     if input_filename == output_filename:
         raise Exception('input_filename == output_filename')
 else:
@@ -50,17 +50,6 @@ for index in range(len(float_images)):
 
 # prepare pseudo-color palette
 palette = numpy.zeros((256, 3), dtype=numpy.uint8)
-#for i in range(256):
-#    step = i // 64
-#    if step == 0:
-#        palette[i, 0], palette[i, 1], palette[i, 2] = 0, 4 * (i + 1) - 1, 255
-#    elif step == 1:
-#        palette[i, 0], palette[i, 1], palette[i, 2] = 0, 255, 256 - 4 * (i - 63)
-#    elif step == 2:
-#        palette[i, 0], palette[i, 1], palette[i, 2] = 4 * (i - 127) - 1, 255, 0
-#    else:
-#        palette[i, 0], palette[i, 1], palette[i, 2] = 255, 256 - 4 * (i - 191), 0
-
 for i in range(256):
     palette[i, 0], palette[i, 1], palette[i, 2] = i, i, i
 
