@@ -31,6 +31,8 @@ parser.add_argument('-t', '--threshold-abs', nargs=1, type=float, default=[trace
                     help='threshold to find local max')
 parser.add_argument('-x', '--max-diameter', nargs=1, type=float, default=[tracer.max_diameter], \
                     help='maximum diameter of spots')
+parser.add_argument('-u', '--dup-threshold', nargs=1, type=float, default=[tracer.dup_threshold], \
+                    help='minimum distance to distinguish two spots')
 
 parser.add_argument('-C', '--chase-spots', action='store_true', default=chase_spots, \
                     help='chase spots before output tsv file')
@@ -69,6 +71,7 @@ tracer.laplace = args.laplace[0]
 tracer.min_distance = args.min_distance[0]
 tracer.threshold_abs = args.threshold_abs[0]
 tracer.max_diameter = args.max_diameter[0]
+tracer.dup_threshold = args.dup_threshold[0]
 
 chase_spots = args.chase_spots
 chaser.chase_distance = args.chase_distance[0]

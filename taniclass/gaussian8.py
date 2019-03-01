@@ -11,7 +11,7 @@ class Gaussian8:
         self.min_distance = 1 # Pixel area (int) to find local max (usually 1)
         self.threshold_abs = 0.006 # Threshold to find local max
         self.max_diameter = 10.0
-        self.min_diameter = 2.0
+        self.dup_threshold = 2.0
         self.columns = ['total_index', 'plane', 'index', 'x', 'y', 'diameter', 'intensity', 'fit_error', 'chi_square']
         self.image_clip_min = 0.0
         self.image_clip_max = numpy.iinfo(numpy.int32).max
@@ -33,8 +33,8 @@ class Gaussian8:
                           (planes, image_array.shape[2], image_array.shape[1]))
         output_file.write('#   laplace = %f; min_distance = %d; threshold_abs = %f\n' %\
                           (self.laplace, self.min_distance, self.threshold_abs))
-        output_file.write('#   max_diameter = %f\n' %\
-                          (self.max_diameter))
+        output_file.write('#   max_diameter = %f; dup_threshold = %f\n' %\
+                          (self.max_diameter, self.dup_threshold))
         output_file.write('#   image_clip_min = %f; image_clip_max = %f\n' %\
                           (self.image_clip_min, self.image_clip_max))
 
@@ -140,7 +140,7 @@ class Gaussian8:
 
             # find duplicated points
             for pair in pairs:
-                if (pair['distance'] <= self.min_diameter) and (pairs[pair['near_index']]['near_index'] == pair['orig_index']):
+                if (pair['distance'] <= self.dup_threshold) and (pairs[pair['near_index']]['near_index'] == pair['orig_index']):
                     if pair['fit_error'] > pairs[pair['near_index']]['fit_error']:
                         pairs[pair['orig_index']]['duplicated'] = True
                     else:
