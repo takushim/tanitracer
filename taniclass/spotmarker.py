@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw
 
 class SpotMarker:
     def __init__ (self):
-        self.marker_size = 6
+        self.marker_size = 4
         self.mark_regression = False
         self.force_mark_emerge = False
         self.invert_image = False
@@ -86,12 +86,12 @@ class SpotMarker:
         if self.mark_regression is True:
             index_set = set(work_table[work_table.plane == 0].total_index)
             if self.force_mark_emerge is True:
-                emerge_set = set(work_table[(work_table.life_index == 0) & (work_table.plane > 0)].total_index)
-                index_set = index_set | emerge_set
-            work_table = work_table[work_table.total_index.isin(index_set)].reset_index(drop=True)                
-            if self.force_mark_emerge is True:
+                work_table = work_table[(work_table.total_index.isin(index_set)) | \
+                                        ((work_table.life_index == 0) & (work_table.plane > 0))].reset_index(drop=True)                
                 work_table.loc[(work_table.life_index == 0) & (work_table.plane > 0), 'status'] = 'new'
                 work_table.loc[(work_table.life_index == 0) & (work_table.plane > 0), 'color'] = marker_color_new
+            else:
+                work_table = work_table[work_table.total_index.isin(index_set)].reset_index(drop=True)                
 
         # draw markers
         skipped_planes = []
