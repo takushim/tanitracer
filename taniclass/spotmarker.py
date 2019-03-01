@@ -94,11 +94,12 @@ class SpotMarker:
                 work_table.loc[(work_table.life_index == 0) & (work_table.plane > 0), 'color'] = marker_color_new
 
         # draw markers
+        skipped_planes = []
         for index in range(len(image_color)):
             spots = work_table[work_table.plane == index].reset_index(drop=True)
 
             if len(spots) == 0:
-                print("Skipped plane %d with %d spots." % (index, len(spots)))
+                skipped_planes.append(index)
                 continue
 
             spots['int_x'] = spots['x'].astype(numpy.int)
@@ -133,5 +134,8 @@ class SpotMarker:
                                   fill = None, outline = self.marker_colors[3])
 
             image_color[index] = numpy.asarray(image)
+
+        if sum(skipped_planes) > 0:
+            print("Skipped planes %s." % (' '.join(map(str, skipped_planes))))
 
         return image_color

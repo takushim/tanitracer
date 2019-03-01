@@ -2,8 +2,8 @@
 
 import os, sys, numpy, pandas, time
 import scipy.ndimage as ndimage
-import scipy.stats as stats
 from skimage.feature import peak_local_max
+from sklearn.neighbors import NearestNeighbors
 
 class Gaussian8:
     def __init__ (self):
@@ -38,8 +38,8 @@ class Gaussian8:
                           (self.image_clip_min, self.image_clip_max))
 
     def set_image_clip (self, image_array):
-        self.image_clip_min = stats.scoreatpercentile(image_array, 0.1)
-        self.image_clip_max = stats.scoreatpercentile(image_array, 99.9)
+        self.image_clip_min = numpy.percentile(image_array, 0.1)
+        self.image_clip_max = numpy.percentile(image_array, 99.9)
 
     def gaussian_fitting (self, input_image, float_image):
         # Find local max at 1-pixel resolution (order: [y, x])
@@ -94,41 +94,63 @@ class Gaussian8:
         diameter = 2 * numpy.sqrt(- (0.5/c20 + 0.5/c02) / 2)
         intensity = input_image[xy[:,0], xy[:,1]]
 
+        # make result dictionary
+        result_dict = {'x': x, 'y': y, 'fit_error': fit_error, 'chi_square': chi_square, 'diameter': diameter, 'intensity': intensity}
         error_dict = {}
 
-        # omit nan spots
-        last_spots = len(xy)
-        indexes = numpy.ones(len(xy), dtype=numpy.bool)
-        indexes = indexes & (x >= 0) & (x <= float_image.shape[1])
-        indexes = indexes & (y >= 0) & (y <= float_image.shape[0])
-        error_dict['nan'] = last_spots - numpy.sum(indexes)
-        last_spots = numpy.sum(indexes)
-
-        # omit spots of abnormal subpixel correction
+        # omit spots of abnormal subpixel correction (this should be run first of all)
+        indexes = numpy.ones(len(result_dict['x']), dtype=numpy.bool)
         indexes = indexes & ((0.5 * (c10/c20)) < 1)
         indexes = indexes & ((0.5 * (c01/c02)) < 1)
-        error_dict['large_shift'] = last_spots - numpy.sum(indexes)
-        last_spots = numpy.sum(indexes)
+        error_dict['large_subpixel_shift'] = len(result_dict['x']) - numpy.sum(indexes)
+        result_dict = {k: result_dict[k][indexes] for k in result_dict}
+
+        # omit nan spots
+        indexes = numpy.ones(len(result_dict['x']), dtype=numpy.bool)
+        indexes = indexes & (result_dict['x'] >= 0) & (result_dict['x'] <= float_image.shape[1])
+        indexes = indexes & (result_dict['y'] >= 0) & (result_dict['y'] <= float_image.shape[0])
+        error_dict['nan_coordinate'] = len(result_dict['x']) - numpy.sum(indexes)
+        result_dict = {k: result_dict[k][indexes] for k in result_dict}
 
         # omit spots of large diameter
-        indexes = indexes & (diameter <= self.max_diameter)
-        error_dict['diameter'] = last_spots - numpy.sum(indexes)
-        last_spots = numpy.sum(indexes)
+        indexes = numpy.ones(len(result_dict['x']), dtype=numpy.bool)
+        indexes = indexes & (result_dict['diameter'] <= self.max_diameter)
+        error_dict['large_diameter'] = len(result_dict['x']) - numpy.sum(indexes)
+        result_dict = {k: result_dict[k][indexes] for k in result_dict}
 
         # omit duplicated spots
-        indexes = indexes & (aaaa)
-        error_dict['duplicate'] = last_spots - numpy.sum(indexes)
-        last_spots = numpy.sum(indexes)
+        if len(result_dict['x']) > 1:
+            indexes = numpy.ones(len(result_dict['x']), dtype=numpy.bool)
 
-        # make result dictionary
-        x = x[indexes]
-        y = y[indexes]
-        fit_error = fit_error[indexes]
-        chi_square = chi_square[indexes]
-        diameter = diameter[indexes]
-        intensity = intensity[indexes]
+            # find nearest spots
+            nn = NearestNeighbors(n_neighbors = 2, metric = 'euclidean').fit(numpy.array([result_dict['x'], result_dict['y']]).T)
+            distances, targets = nn.kneighbors(numpy.array([result_dict['x'], result_dict['y']]).T)
+            distances, targets = distances[:,1], targets[:,1]
+            pairs = numpy.zeros(len(result_dict['x']), dtype=[('orig_index', numpy.int), \
+                                                              ('near_index', numpy.int), \
+                                                              ('distance', numpy.float), \
+                                                              ('fit_error', numpy.float), \
+                                                              ('duplicated', numpy.bool)])
+            pairs['orig_index'] = numpy.arange(len(result_dict['x']))
+            pairs['near_index'] = targets
+            pairs['distance'] = distances
+            pairs['fit_error'] = result_dict['fit_error']
+            pairs['duplicated'] = False
 
-        result_dict = {'x': x, 'y': y, 'fit_error': fit_error, 'chi_square': chi_square, 'diameter': diameter, 'intensity': intensity}
+            # find duplicated points
+            for pair in pairs:
+                if (pair['distance'] <= self.min_distance) and (pairs[pair['near_index']]['near_index'] == pair['orig_index']):
+                    if pair['fit_error'] > pairs[pair['near_index']]['fit_error']:
+                        pairs[pair['orig_index']]['duplicated'] = True
+                    else:
+                        pairs[pair['near_index']]['duplicated'] = True
+
+            # update result_dict
+            indexes = (pairs['duplicated'] == False)
+            error_dict['duplicated'] = len(result_dict['x']) - numpy.sum(indexes)
+            result_dict = {k: result_dict[k][indexes] for k in result_dict}
+        else:
+            error_dict['duplicated'] = 0
 
         return result_dict, error_dict
 
@@ -156,8 +178,7 @@ class Gaussian8:
         result, error = self.gaussian_fitting(input_image, float_image)
 
         # report error
-        print("Dropped spots: %d by nan, %d by large_shift, %d by diameter" % \
-              (error['nan'], error['large_shift'], error['diameter']))
+        print("Dropped spots: %s" % (str(error)))
 
         # Make Pandas dataframe
         length = max([len(item) for item in result.values()])
@@ -199,8 +220,7 @@ class Gaussian8:
         error_sum = {}
         for key in error_array[0].keys():
             error_sum[key] = numpy.sum([error[key] for error in error_array])
-        print("Dropped spots: %d by nan, %d by large_shift, %d by diameter" % \
-              (error_sum['nan'], error_sum['large_shift'], error_sum['diameter']))
+        print("Dropped spots: %s" % (str(error_sum)))
 
         # make pandas table
         spot_table = self.convert_to_pandas(result_concat)
