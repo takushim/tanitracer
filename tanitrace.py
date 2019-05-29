@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, sys, argparse, pandas, numpy
+import os, sys, argparse, pandas, numpy, matplotlib
 from taniclass import gaussian8, nnchaser, spotmarker, spotplotter
 from skimage.external import tifffile
 
@@ -82,8 +82,8 @@ if args.rerun is True:
     args.import_settings_file = os.path.splitext(os.path.basename(input_filename))[0] + '.txt'
 
 if args.import_settings_file is not None:
-    import_settings_filename = args.import_settings_file[0]
-    print("Importing settings: %s (ignoring other options)" % (import_settings_filename))
+    import_settings_filename = args.import_settings_file
+    print("Importing settings: %s (can be overwritten by options)" % (import_settings_filename))
     fileext = os.path.splitext(os.path.basename(import_settings_filename))[1].lower()
     if (fileext == '.stk') or (fileext == '.tif'):
         import_settings_filename = os.path.splitext(os.path.basename(import_settings_filename))[0] + '.txt'
@@ -92,19 +92,24 @@ if args.import_settings_file is not None:
     params = plotter.read_image_params(import_settings_filename)
     # pretend as if options are set
     for key in params:
-        if hasattr(args, key) and len(getattr(args, key)) > 1:
-            getattr(args, key).append(params[key])
+        if hasattr(args, key):
+            if len(getattr(args, key)) > 1:
+                print("Parameter %s was overwritten by options as %f" % (key, list(matplotlib.cbook.flatten(getattr(args, key)))[-1]))
+            else:
+                getattr(args, key).append(params[key])
+                print("Read parameter %s as %f" % (key, params[key]))
         if key == 'chase_distance':
             chase_spots = True
+            print("Spot chaser ON.")
 
-tracer.laplace = args.laplace[-1]
-tracer.min_distance = args.min_distance[-1]
-tracer.threshold_abs = args.threshold_abs[-1]
-tracer.max_diameter = args.max_diameter[-1]
-tracer.dup_threshold = args.dup_threshold[-1]
+tracer.laplace = list(matplotlib.cbook.flatten(args.laplace))[-1]
+tracer.min_distance = list(matplotlib.cbook.flatten(args.min_distance))[-1]
+tracer.threshold_abs = list(matplotlib.cbook.flatten(args.threshold_abs))[-1]
+tracer.max_diameter = list(matplotlib.cbook.flatten(args.max_diameter))[-1]
+tracer.dup_threshold = list(matplotlib.cbook.flatten(args.dup_threshold))[-1]
 
 chase_spots = (args.chase_spots | chase_spots)
-chaser.chase_distance = args.chase_distance[-1]
+chaser.chase_distance = list(matplotlib.cbook.flatten(args.chase_distance))[-1]
 
 marker.marker_colors = args.marker_colors
 marker.marker_size = args.marker_size[0]
