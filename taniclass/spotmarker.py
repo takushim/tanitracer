@@ -15,6 +15,10 @@ class SpotMarker:
                                            "yellow", "orange", "maroon"])
 
     def convert_to_color (self, orig_image):
+        if (len(orig_image.shape) > 3):
+            print("Image with dimension > 3 was passed to conversion to color. Might be colored image. Conversion ignored.")
+            return orig_image
+
         image_color = numpy.zeros(orig_image.shape + (3,), dtype = numpy.uint8)
 
         image_type = orig_image.dtype.name
