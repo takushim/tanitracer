@@ -154,6 +154,7 @@ for index, condition in enumerate(conditions):
 
     print("Plot %d spots with: M = %d, L = %f, T = %f. Radius = %f +/- %f." % \
             (len(results), min_distance, laplace, threshold_abs, numpy.average(radii), rel95))
+    print(".")
 
 # combine images and output
 output_images = numpy.hstack((output_images, font_images, count_images))
