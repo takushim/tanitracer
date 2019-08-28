@@ -36,7 +36,7 @@ parser.add_argument('-z', '--font-size', nargs=1, type=int, default=[font_size],
                     help='font size')
 
 parser.add_argument('input_file', nargs=1, default=input_filename, \
-                    help='input file (multipage-tiff file(s) to trace spots')
+                    help='input file (multipage-tiff file) to trace spots')
 
 args = parser.parse_args()
 
@@ -57,12 +57,14 @@ else:
 orig_images = tifffile.imread(input_filename)
 image_width = orig_images.shape[2]
 image_height = orig_images.shape[1]
+print(orig_images.shape)
 
 # prepare font
 font = ImageFont.truetype(font_file, font_size)
 
 # output image
 output_images = numpy.zeros(orig_images.shape, dtype = numpy.uint8)
+print(output_images.shape)
 
 # set format
 digits = math.floor(math.log10(interval))
@@ -77,7 +79,7 @@ for index in range(len(orig_images)):
     draw = ImageDraw.Draw(image)
 
     text = stamp_format % (index * interval)
-    print(index, text)
+    #print(index, text)
 
     text_width, text_height = draw.textsize(text, font = font)
     x = image_width - font_padding - text_width
