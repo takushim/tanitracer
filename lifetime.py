@@ -99,7 +99,7 @@ else:
     center_x, center_y = [edge_width, height - edge_width], [edge_width, width - edge_width]
 
 # read results, sort, and RESET index (important)
-spot_table = pandas.read_table(input_filename, comment = '#')
+spot_table = pandas.read_csv(input_filename, comment = '#', sep = '\t')
 spot_table = spot_table.sort_values(by = ['total_index', 'plane']).reset_index(drop=True)
 
 print(center_x, center_y)

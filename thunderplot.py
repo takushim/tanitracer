@@ -84,7 +84,7 @@ plotter.image_scale = args.image_scale[0]
 if align_spots is True:
     if os.path.isfile(align_filename) is False:
         raise Exception('alignment table (%s) does not exist' % (align_filename))
-    align_table = pandas.read_table(align_filename, comment = '#')
+    align_table = pandas.read_csv(align_filename, comment = '#', sep = '\t')
     print("Using %s for alignment." % (align_filename))
 else:
     align_table = None

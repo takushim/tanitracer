@@ -62,7 +62,7 @@ plotter.image_scale = args.image_scale[0]
 
 # read align table
 if align_spots is True:
-    align_table = pandas.read_table(align_filename, comment = '#')
+    align_table = pandas.read_csv(align_filename, comment = '#', sep = '\t')
     align_table = align_table.rename(columns = {'slice': 'align_plane', 'shiftX': 'align_x', 'shiftY': 'align_y'})
     align_table['align_plane'] = align_table['align_plane'] - 1
     print("Using %s for alignment." % (align_filename))

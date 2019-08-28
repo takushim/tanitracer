@@ -77,7 +77,7 @@ image_color = marker.convert_to_color(orig_image)
 
 # read results
 print("Read spots from %s." % (marker_filename))
-spot_table = pandas.read_table(marker_filename, comment = '#')
+spot_table = pandas.read_csv(marker_filename, comment = '#', sep = '\t')
 
 # mark tracking status
 print("Marked %d spots on %s." % (len(spot_table), input_filename))

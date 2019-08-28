@@ -59,7 +59,7 @@ orig_images = numpy.asarray(image_list)
 
 # alignment
 if align_spots is True:
-    align_table = pandas.read_table(align_filename, comment = '#')
+    align_table = pandas.read_csv(align_filename, comment = '#', sep = '\t')
     print("Using %s for alignment." % (align_filename))
     align_plane = numpy.array(align_table.align_plane)
     align_x = numpy.array(align_table.align_x)

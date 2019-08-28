@@ -90,7 +90,7 @@ lifetime_range = args.lifetime_range
 
 # read align table
 if align_spots is True:
-    align_table = pandas.read_table(align_filename, comment = '#')
+    align_table = pandas.read_csv(align_filename, comment = '#', sep = '\t')
     print("Using %s for alignment." % (align_filename))
 else:
     align_table = None
