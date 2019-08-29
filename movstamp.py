@@ -14,9 +14,9 @@ bar_length = 10 # in px at scale = 1.0
 bar_width = 8 # in px at the final scale
 interval = 1.0
 crop = [0, 0, -1, -1]
+title = ""
 
 # font settings
-font_padding = 5
 font_size = 24
 font_color = 'black'
 if platform.system() == "Windows":
@@ -37,6 +37,8 @@ parser.add_argument('-o', '--output-file', nargs=1, default=output_filename, \
 parser.add_argument('-c', '--crop', nargs=4, type=int, default=crop, \
                     metavar = ('X', 'Y', 'WIDTH', 'HEIGHT'), \
                     help='cropping of the original image. minus values in w/h use the max w/h')
+parser.add_argument('-t', '--title', nargs=1, default=[title], \
+                    help='title (or caption)')
 parser.add_argument('-x', '--scale', nargs=1, type=int, default=[scale], \
                     help='magnification sacle')
 parser.add_argument('-e', '--extend', nargs=1, type=int, default=[extend], \
@@ -56,7 +58,8 @@ args = parser.parse_args()
 
 # set arguments
 input_filename = args.input_file[0]
-scalae = args.scale[0]
+title = args.title[0]
+scale = args.scale[0]
 extend = args.extend[0]
 maxpage = args.maxpage[0]
 interval = args.interval[0]
@@ -97,9 +100,20 @@ for page in range(pages):
 font = ImageFont.truetype(font_file, font_size)
 digits = math.floor(math.log10(interval))
 if digits >= 0:
-    stamp_format = "%d s"
+    stamp_format = "%d s (%s)"
 else:
-    stamp_format = "%%.%df s" % (abs(digits))
+    stamp_format = "%%.%df s (%%s)" % (abs(digits))
+
+# calculate text size
+image = Image.fromarray(orig_images[0])
+draw = ImageDraw.Draw(image)
+text_height = 0
+text_width = 0
+for page in range(pages):
+    text = stamp_format % (page * interval, title)
+    this_width, this_height = draw.textsize(text, font = font)
+    text_height = max(text_height, this_height)
+    text_width = max(text_height, this_width)
 
 # draw time _stamp
 for page in range(pages):
@@ -108,14 +122,17 @@ for page in range(pages):
     draw = ImageDraw.Draw(image)
 
     # time stamp
-    text = stamp_format % (page * interval)
-    text_width, text_height = draw.textsize(text, font = font)
-    x = width * scale - font_padding - text_width
-    y = height * scale - font_padding - text_height
+    text = stamp_format % (page * interval, title)
+    this_width, this_height = draw.textsize(text, font = font)
+    font_padding = int((extend - text_height) / 2)
+    x = width * scale - font_padding - this_width - int(extend / 4)
+    #x = int(extend / 2) + text_width - this_width
+    y = height * scale + extend - font_padding - this_height
     draw.text((x, y), text, font = font, fill = font_color)
 
     # scale
     x = int(extend / 2)
+    #x = (width - bar_length) * scale - int(extend / 2)
     y = height * scale + int(extend / 2)
     draw.line((x, y, x + bar_length * scale, y), fill = font_color, width = bar_width)
 
