@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 
 import os, platform, sys, argparse, numpy, math
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 from skimage.external import tifffile
 
 # defaults
 input_filename = None
 output_filename = None
 scale = 4
+rotation = 0
 extend = 30
 maxpage = 50
 bar_length = 10 # in px at scale = 1.0
@@ -15,6 +16,8 @@ bar_width = 8 # in px at the final scale
 interval = 1.0
 crop = [0, 0, -1, -1]
 title = ""
+flip = False
+flop = False
 
 # font settings
 font_size = 24
@@ -37,6 +40,12 @@ parser.add_argument('-o', '--output-file', nargs=1, default=output_filename, \
 parser.add_argument('-c', '--crop', nargs=4, type=int, default=crop, \
                     metavar = ('X', 'Y', 'WIDTH', 'HEIGHT'), \
                     help='cropping of the original image. minus values in w/h use the max w/h')
+parser.add_argument('-r', '--rotation', nargs=1, type=int, default=[rotation], \
+                    help='clockwise rotation')
+parser.add_argument('-p', '--flip', action = 'store_true', default=flip, \
+                    help='upside down')
+parser.add_argument('-P', '--flop', action = 'store_true', default=flop, \
+                    help='mirror')
 parser.add_argument('-t', '--title', nargs=1, default=[title], \
                     help='title (or caption)')
 parser.add_argument('-x', '--scale', nargs=1, type=int, default=[scale], \
@@ -66,6 +75,9 @@ interval = args.interval[0]
 bar_length = args.bar_length[0]
 bar_width = args.bar_width[0]
 crop = args.crop
+rotation = args.rotation[0]
+flip = args.flip
+flop = args.flop
 
 if args.output_file is None:
     output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_mov.tif'
@@ -94,6 +106,11 @@ else:
 for page in range(pages):
     image = Image.fromarray(orig_images[page])
     image = image.resize((width * scale, height * scale))
+    image = image.rotate(rotation)
+    if flip is True:
+        image = ImageOps.flip(image)
+    if flop is True:
+        image = ImageOps.mirror(image)
     output_images[page, 0:(height * scale)] = numpy.asarray(image)
 
 # put scale and stamp
