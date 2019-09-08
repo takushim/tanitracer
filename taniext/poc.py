@@ -1,7 +1,19 @@
 #! /usr/bin/env python
-# -*- coding: utf-8
-# Modified from the original program by Daisuke Kobayashi (Apache 2.0 license)
-# Downloaded from https://github.com/daisukekobayashi/phase-only-correlation
+
+# Copyright Daisuke Kobayashi (https://github.com/daisukekobayashi/phase-only-correlation)
+# Modified by Takushi Miyoshi (2019) to work with python 3.6
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import numpy
 import scipy, scipy.fftpack
@@ -10,10 +22,7 @@ from scipy.optimize import leastsq
 
 def zero_padding(src, dstshape, pos = (0, 0)):
     y, x = int(pos[0]), int(pos[1])
-    #print(src.shape)
     dst = numpy.zeros(dstshape)
-    #print(dst.shape)
-    #print(pos)
     dst[y:src.shape[0] + y, x:src.shape[1] + x] = src
     return dst
 
@@ -43,9 +52,7 @@ def pocfunc(f, g, windowfunc = numpy.hanning, withlpf = True):
 
     if withlpf == True:
         R = scipy.fftpack.fftshift(R)
-        #print(m)
         lpf = numpy.ones(list(map(lambda x: int(x + 1.0), m)))
-        #print(lpf.shape)
         lpf = zero_padding(lpf, f.shape, u)
         R = R * lpf
         R = scipy.fftpack.fftshift(R)
@@ -55,7 +62,7 @@ def pocfunc(f, g, windowfunc = numpy.hanning, withlpf = True):
 
 def poc(f, g, fitting_shape = (9, 9)):
     # compute phase-only correlation
-    center = list(map(lambda x: x / 2.0, f.shape))
+    #center = list(map(lambda x: x / 2.0, f.shape))
     m = numpy.floor(list(map(lambda x: x / 2.0, f.shape)))
     u = list(map(lambda x: x / 2.0, m))
 
@@ -64,8 +71,7 @@ def poc(f, g, fitting_shape = (9, 9)):
     # least-square fitting
     max_pos = numpy.argmax(r)
     peak = (max_pos // f.shape[1], max_pos % f.shape[1])
-    #print(peak)
-    max_peak = r[peak[0], peak[1]]
+    #max_peak = r[peak[0], peak[1]]
 
     mf = numpy.floor(list(map(lambda x: x / 2.0, fitting_shape))).astype(int)
     fitting_area = r[peak[0] - mf[0] : peak[0] + mf[0] + 1,\
