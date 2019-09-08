@@ -11,7 +11,7 @@ A python script set for reconstructing and analyzing super-resolution images
 Usual reconstruction process is in the following order:
 1. `tanifit.py` - determining parameters to detect fluorescent spots
 1. `tanitrace.py` - detection and tracking of fluorescent spots
-1. `tanipoc.py` or `tanialign.py` - drift correction using bright field images
+1. `tanipoc.py` or `tanialign.py` - calculatation of sample drift using bright field images
 1. `taniplot.py` - reconstruction of super-resolved images
 
 Other scripts will help process or analyze images:

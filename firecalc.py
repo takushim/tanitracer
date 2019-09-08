@@ -53,7 +53,7 @@ parser.add_argument('-o', '--output-graph', nargs=1, default = [output_graph_fil
                     help='output graph file name (firefrc.tif if not specified)')
 
 parser.add_argument('-m', '--mask-image', nargs=1, default = [mask_image_filename], \
-                    help='mask image file name')
+                    help='masking image file name')
 
 parser.add_argument('input_file', nargs=2, default=None, \
                     help='input SQUARE single-page tiff files (image1, image2)')
