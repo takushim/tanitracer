@@ -1,38 +1,65 @@
-# TaniTracer
+# tanitracer
 
 A python script set for reconstructing and analyzing super-resolution images
 
 ## Introduction
 
-**TaniTracer** is a set of python scripts to detect fluorescent spots in single-molecule microscopy images, and to reconstruct super-resolved images from the centroids of detected spots. Single-molecule microscopy images are pre-processed by Gaussian-Laplacian filter and fluorescent spots are detected by Gaussian fitting with subpixel correction. Tracking is implemented by *k*-nearest neighbor algorhythm, which may not be possible when spots moves largely between frames, but will be sufficient for most tracking in super-resolution usages. TaniTracer also includes scripts for drift correction (phase only correlation and A-KAZE algorhythms) and scripts to calculate Fourier image resolution (FIRE) by
-Fourier ring correlation (FRC) analysis.
+**tanitracer** is a set of python scripts to detect fluorescent spots in single-molecule microscopy images, and to reconstruct super-resolved images from the centroids of detected spots. Single-molecule microscopy images are pre-processed by Gaussian-Laplacian filter and fluorescent spots are detected by Gaussian fitting with subpixel correction. Tracking is implemented by *k*-nearest neighbor algorhythm, which may not be possible when spots moves largely between frames, but will be sufficient for most tracking in super-resolution usages. **tanitracer** also includes scripts for drift correction (phase only correlation and A-KAZE algorhythms) and scripts to calculate Fourier image resolution (FIRE) by Fourier ring correlation (FRC) analysis.
+
+**tanitracer** was named after **Daisuke Taniguchi**, who provided the author many useful scripts describing gaussian fitting, spot tracking, A-KAZE, etc.
 
 Usual reconstruction process is in the following order:
-1. `tanifit.py` (determining parameters to detect fluorescent spots)
-1. `tanitrace.py` (detection and tracking of fluorescent spots)
-1. `tanipoc.py` or `tanialign.py` (drift correction using bright field images)
-1. `taniplot.py` (reconstruction of super-resolved images)
+1. `tanifit.py` - determining parameters to detect fluorescent spots
+1. `tanitrace.py` - detection and tracking of fluorescent spots
+1. `tanipoc.py` or `tanialign.py` - drift correction using bright field images
+1. `taniplot.py` - reconstruction of super-resolved images
 
-Other scripts help to process or analyze images:
-* `tanilacian.py` (checks Gaussian-Laplacian filter pre-processing)
-* `tanimark.py` (plots markers of detected spots, helper for figures)
-* `frcplot.py` (makes two super-resolved images for FRC analysis)
-* `frcresolve.py` (calculates FIRE and FRC curves from two divided images)
-* `fireheat.py` (calculates local FIRE valutes and makes heatmaps)
+Other scripts will help process or analyze images:
+* `tanilacian.py` - checks the effect of Gaussian-Laplacian filter
+* `tanimark.py` - plots markers of detected spots, helper for figures
+* `frcplot.py` - makes two super-resolved images for FRC analysis
+* `firecalc.py` - calculates FRC curves and FIRE values from two images
+* `fireheat.py` - calculates local FIRE values and makes heatmaps
 
-TaniTracer was named after **Daisuke Taniguchi**, who provided the author many useful scripts describing gaussian fitting, spot tracking, A-KAZE, etc.
+Algorhythms are implemented in the library files at `taniclass` and `taniext` folders, which include:
+* `gaussian8.py` - gaussian fitting of fluorescent spots
+* `nnchaser.py` - tracking by *k*-nearest neighbor algorhythm
+* `spotplotter.py` - reconstructin of super-resolved images
+* `spotfilter.py` - filtering and sorting of detected spots
+* `spotmarker.py` - putting markers for detected spots
+* `akaze.py` - drift correction by A-KAZE algorhythm
+* `poc.py` - drift correction by phase only correlation (*)
+* `firefrc.py` - calculation of FRC curves and FIRE values (**)
+
+(*) implemented by Daisuke Kobayashi (https://github.com/daisukekobayashi/phase-only-correlation)
+
+(**) implemented by the author but referring to the codes by Sajid Ari (https://github.com/s-sajid-ali/FRC)
 
 ## Getting Started
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
+**tanitracer** works on Python 3.6 and several libraries for numerical calculation and image processing including:
 
-* 
+* `argparse`
+* `numpy`
+* `pandas`
+* `scipy`
+* `scikit-image`
+* `scikit-learn`
+* `Pillow (PIL)`
+* `matplotlib`
+* `Opencv3-Python` - for A-KAZE
+* `statmodels` - for FRC and FIRE
+
+Installing Anaconda (https://www.anaconda.com/) will provide most of the libraries above except for `Opencv3-Python`. Please make sure to install **64-bit python 3.6 version**. With recent Anaconda, `Opencv3-Python` can be installed by:
+```
+conda install opencv
+```
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
+Download the zip file from GitHub ()
 
 Say what the step will be
 
