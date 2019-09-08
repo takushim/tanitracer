@@ -51,7 +51,7 @@ reference_image_filename = None
 parser = argparse.ArgumentParser(description='Calculate alignment using POC algorithm', \
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-f', '--output-tsv-file', nargs=1, default = [output_tsv_filename], \
-                    help='output tsv file name (alignment.txt if not specified)')
+                    help='output tsv file name (align.txt if not specified)')
 
 parser.add_argument('-r', '--reference-image', nargs=1, default = [reference_image_filename], \
                     help='reference image file name (first plane is used)')

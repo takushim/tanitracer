@@ -51,7 +51,7 @@ output_image = False
 
 # parse arguments
 parser = argparse.ArgumentParser(description='trace spots using gaussian fitting.', \
-                                 epilog='use "ls *.stk | foreach -process{tanitracer [options] $_.fullname}"', \
+                                 epilog='In powershell, you can use "ls *.stk | foreach -process{tanitrace.py [options] $_.fullname}"', \
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-T', '--output-tsv-file', nargs=1, default = None, \
                     help='output tsv file name ([basename].txt if not specified)')
