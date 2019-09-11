@@ -10,20 +10,20 @@ Fluorescent spots are detected by Gaussian fitting with subpixel correction afte
 
 tanitracer was named after **Daisuke Taniguchi**, who provided the core scripts implementing Gaussian fitting with subpixel correction, several candidate algorithms for spot tracking, and A-KAZE feature matching.
 
-Usually, images are processed in the following order:
-1. `tanilacian.py` - test of LoG filter (optional)
-1. `tanifit.py` - determining parameters to detect fluorescent spots
-1. `tanitrace.py` - detection and tracking of fluorescent spots
-1. `tanipoc.py` or `tanialign.py` - calculation of sample drift (optional)
-1. `taniplot.py` - reconstruction of super-resolved images
+Usually, images are processed by the following scripts:
+* `tanilacian.py` - test of LoG filter (optional)
+* `tanifit.py` - determining parameters to detect fluorescent spots
+* `tanitrace.py` - detection and tracking of fluorescent spots
+* `tanipoc.py` or `tanialign.py` - calculation of sample drift (optional)
+* `taniplot.py` - reconstruction of super-resolved images
 
-Other scripts help to process or analyze images:
+Other scripts listed below help to process or analyze images:
 * `tanimark.py` - drawing markers for detected spots (helper for figures)
 * `frcplot.py` - making two divided super-resolved images for FRC analysis
 * `firecalc.py` - calculates FRC curves and FIRE values from two images
 * `fireheat.py` - making heat-maps of local FIRE values from two images
 
-Algorithms are capsuled in the library files in `taniclass` and `taniext` folders, which include:
+Algorithms are capsuled in the module files in `taniclass` and `taniext` folders, which include:
 * `gaussian8.py` - Gaussian fitting of fluorescent spots
 * `nnchaser.py` - spot tracking by *k*-nearest neighbor algorithm
 * `spotplotter.py` - reconstruction of super-resolved images
@@ -37,11 +37,13 @@ Algorithms are capsuled in the library files in `taniclass` and `taniext` folder
 
 (**) implemented by the author, but referred to the codes by [Sajid Ari](https://github.com/s-sajid-ali/FRC)
 
-## Required environment
+## Getting Started
 
-**tanitracer** works on Python 3.6 and several libraries for numerical calculation and image processing. Installing **[Anaconda](https://www.anaconda.com/) (Python 3.6, 64-bit)** is a good choice since it prepares almost all requirements except for OpenCV3-Python.
+### Requirements
 
-* `Python 3.6 (64-bit recommended)`
+**tanitracer** works on Python 3.6 (or later) and several libraries for numerical calculation and image processing. Installing **[Anaconda](https://www.anaconda.com/) (Python 3.6 version, 64-bit)** is a good choice since it prepares almost all requirements except for `OpenCV3-Python`.
+
+* `Python 3.6 or later (64-bit recommended)`
 * `argparse`
 * `numpy`
 * `pandas`
@@ -53,12 +55,12 @@ Algorithms are capsuled in the library files in `taniclass` and `taniext` folder
 * `statmodels` - required for calculating FRC curves and FIRE values
 * `matplotlib` - required for calculating FRC curves and FIRE values
 
-`OpenCv3-Python` is still tricky to install. In recent Anaconda, it can be installed by the following command (often after many messages and time):
+Even with Anaconda, you have to install `OpenCv3-Python`. Recent Anaconda accepts the following command (often after many messages and long time):
 ```
 conda install opencv
 ```
 
-## Installation
+### Installation
 
 Download the zip file from my [GitHub repository](https://github.com/takushim/tanitracer) and place all the files in an appropriate folder, for example, `C:\Users\[username]\tanitracer`. It is recommended to add the installed folder to PATH environment variable because you can run the script easily from the working folder. The library files (in `taniclass` and `taniext) is automatically found by the python interpreter as long as they are located in the folder of script files.
 
@@ -75,9 +77,22 @@ tanitrace.py --help
 
 ## Usage
 
-**NOTE: sample images will be added to this document soon**
+### Overview
 
-The following instruction demonstrates representative usage of **tanitracer**. Scripts have many undescribed options. Please use ``--help`` option to see all options. **Images should be 16-bit or 8-bit (multipage) TIFF files (or MetaMorph stack files)**.
+**NOTE:** sample images will be uploaded after publication
+
+**tanitracer** accepts time-lapse multipage (or single-page) TIFF and MetaMorph stack files. The following procedure is tested with 16-bit grayscale images, but should work with 8-bit and 32-bit grayscale images. RGB images are basically not accepted.
+
+Usually, images are processed in the following order:
+1. Parameter optimization to detect single-molecule fluorescent spots
+1. Detection of fluorescent spots and output to tab-separated (TSV) files
+1. Calculation of sample drift during acquisition
+1. Reconstruction of a super-resolved image
+1. Analysis of resolution by Fourier ring correlation (advanced)
+
+Please see `--help` of each script for options that are not explained below.
+
+### Parameter optimization to detect single-molecule fluorescent spots
 
 First, run `tanifit.py` for a representative (multipage) TIFF file (or MetaMorph stack) of single-molecule microscopy. This script uses the first page of the TIFF file, and try to detect fluorescent spots in the range of specified parameters.
 
@@ -89,6 +104,7 @@ tanifit.py -l 1.4 -T 0.005 0.1 0.001 -z 3 -i spot_images.tif
 ```
 tanilacian.py -l 1.4 spot_images.tif
 ```
+### Detection of fluorescent spots and output to tab-separated (TSV) files
 
 Second, run `tanitracer.py` to detect fluorescent spots. This detect fluorescent spots in the all pages of input image file. Specify the parameters determined above. The result is output to a tab separated (TSV) file.
 ```
@@ -109,6 +125,8 @@ foreach ($file in (get-item [image_folder]/*.tif))
 ```
 Result TSV files are output in the **current** folder, not the folder of images. You can separate the result files from the image files by moving to the different folder to run the command beforehand.
 
+### Calculation of sample drift during acquisition
+
 Third, calculate drift using reference images, such as bright field images taken at certain intervals. If you want to use phase only correlation, use:
 ```
 tanipoc.py [path_to_reference_images]/*.tif
@@ -119,13 +137,15 @@ tanialign.py [path_to_reference_images]/*.tif
 ```
 These commands output the drift (in pixels) "align.txt" in the current folder. You can use wildcards to specify multiple images. Input images can be single-page TIFF, multipage TIFF, or their mixture. Images will be sorted in alphabetical order, and concatenated. You can use your own programs to calculate sample drift, but should be a TSV file containing at least three columns, "align_plane", "align_x", and "align_y". You can specify `-O` to check the alignment of sample drift.
 
+### Reconstruction of a super-resolved image
+
 Finally, reconstruct super-resolved images from the centroids of detected spots considering the drift of samples:
 ```
 taniplot.py -X 8 -o output_image.tif -a align.txt -e 500 [path_to_results]/*.txt
 ```
 `-X` and `-o` are the magnification and the name of output super-resolved image. `-a align.txt` specifies the name of alignment TSV file, and `-e 500` assumes that drift correction images are acquired every 500 frames of single-molecule images (i.e. 500-frame single-molecule image, 1-frame bright-field, 500-frame single-molecule image, 1-frame bright-field, and so on). **You have to use `-n` not to use drift correction**, or `-a align.txt -e 500` is implicitly specified.
 
-## Usage of other scripts
+### Analysis of resolution by Fourier ring correlation (advanced)
 
 Please read the source file beforehand if you want to use `frcplot.py`, `firecalc.py`, `fireheat.py`.
 
@@ -158,9 +178,10 @@ fireheat.py -m mask.tif output_each80_1.tif output_each80_2.tif
 
 * **[Takushi Miyoshi](https://github.com/takushim)**
 
+
 See also the list of [contributors](https://github.com/takushim/tanitracer/contributors) who participated in this project.
 
 ## License
 
-This project is licensed under the BSD 3-clause licence. `poc.py` is originally written by [Daisuke Kobayashi](https://github.com/daisukekobayashi/) and licensed under the Apache 2.0 license. `firefrc.py` is written by [Takushi Miyoshi](https://github.com/takushim) and licensed under the BSD 3-clause licence, but the algorithm was originally implemented by [Sajid Ari](https://github.com/s-sajid-ali/).
+This project is licensed under the BSD 3-clause licence except for phase only correlation script, `poc.py`, which was originally written by [Daisuke Kobayashi](https://github.com/daisukekobayashi/) and licensed under the Apache 2.0 license. The algorithm of `firefrc.py` was implemented referring to two scripts, `fourier_ring_corr.py` and `spin_average.py`, written by [Sajid Ari](https://github.com/s-sajid-ali/).
 
