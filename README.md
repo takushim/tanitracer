@@ -51,9 +51,9 @@ Algorithms are capsuled in the module files in `taniclass` and `taniext` folders
 * `scikit-image`
 * `scikit-learn`
 * `Pillow (PIL)`
+* `matplotlib`
 * `OpenCv3-Python` - required for A-KAZE feature matching
 * `statmodels` - required for calculating FRC curves and FIRE values
-* `matplotlib` - required for calculating FRC curves and FIRE values
 
 Even with Anaconda, you have to install `OpenCv3-Python`. Recent Anaconda accepts the following command (often after many messages and long time):
 ```
@@ -81,49 +81,53 @@ tanitrace.py --help
 
 **NOTE:** sample images will be uploaded after publication
 
-**tanitracer** accepts time-lapse multipage (or single-page) TIFF and MetaMorph stack files. The following procedure is tested with 16-bit grayscale images, but should work with 8-bit and 32-bit grayscale images. RGB images are basically not accepted.
+**tanitracer** accepts time-lapse multipage (or single-page) TIFF and MetaMorph stack files. The following procedure is tested with 16-bit grayscale images, but should work with 8-bit and 32-bit grayscale images. RGB images are not basically accepted. The results of spot detection and drift calculation are saved in tab separated values (TSV) files.
 
 Usually, images are processed in the following order:
 1. Parameter optimization to detect single-molecule fluorescent spots
-1. Detection of fluorescent spots and output to tab-separated (TSV) files
+1. Detection of fluorescent spots and output to TSV files
 1. Calculation of sample drift during acquisition
 1. Reconstruction of a super-resolved image
 1. Analysis of resolution by Fourier ring correlation (advanced)
 
-Please see `--help` of each script for options that are not explained below.
+Please see `--help` for options not explained in this document.
 
 ### Parameter optimization to detect single-molecule fluorescent spots
 
-First, run `tanifit.py` for a representative (multipage) TIFF file (or MetaMorph stack) of single-molecule microscopy. This script uses the first page of the TIFF file, and try to detect fluorescent spots in the range of specified parameters.
+Appropriate detection of single-molecule fluorescent spots requires optimization of two parameters, sigma of LoG filter and threshold in Gaussian fitting. `tanifit.py` helps to optimize these parameters by processing the input image with different parameters. The output is a multipage TIFF, which is consisted of the first (or specified) frame from the input image, but markers are drawn to indicate the detection result with the given parameters.
 
-For example:
+`tanifit.py` is usually used in the following style:
 ```
-tanifit.py -l 1.4 -T 0.005 0.1 0.001 -z 3 -i spot_images.tif
+tanifit.py -l 1.4 -T 0.005 0.1 0.001 input_images.tif
 ```
-`-l 1.4` option applies Gaussian-Laplacian filter at sigma = 1.4. You will need to adjust sigma near the average pixel diameter of fluorescent spots. Fitting seems to be better if sigma is slightly smaller than the average pixel diameter. `-T 0.001 0.1 0.001` increase the threshold in gaussian fitting from 0.005 to 0.1 by 0.001 interval. `-z 3` specify the size of markers. `-i` invert the image intensity. You can use `tanilacian.py` to check the effect of Gaussian-Laplacian filter as:
-```
-tanilacian.py -l 1.4 spot_images.tif
-```
-### Detection of fluorescent spots and output to tab-separated (TSV) files
+`-l 1.4` sets the sigma of LoG filter. The sigma is usually adjusted slightly smaller than the average diameter (in pixel) of fluorescent spots. `-T 0.005 0.1 0.001` steps up the threshold in Gaussian fitting from 0.005 to 0.1 by 0.001. If the output image is difficult to see, you can invert the lookup table (of output image) by `-i` option.
 
-Second, run `tanitracer.py` to detect fluorescent spots. This detect fluorescent spots in the all pages of input image file. Specify the parameters determined above. The result is output to a tab separated (TSV) file.
+The effect of LoG filter can be checked by:
 ```
-tanitrace.py -l 1.4 -t 0.03 -C spot_images.tif
+tanilacian.py -l 1.4 input_images.tif
 ```
-`-l 1.4` and `-t 0.03` specify the parameters in Gaussian-Laplacian filter and gaussian fitting, respectively. Please make sure to use `-t` in small letter. `-C` turns on tracking of fluorescent spots between frames. The name of result file is automatically assigned by replacing the ".tif" or ".stk" of the image file to ".txt" ("spot_images.txt" in this case) unless specified. You can output the image with markers on the detected spots by `-O` option (the name of output image is automatically assigned to "spot_images_marked.tif" unless specified).
+which outputs the image processed by LoG filter at sigma = 1.4.
 
-If you are using PowerShell, you can apply the command to all files as:
+### Detection of fluorescent spots and output to TSV files
+
+After optimizing the parameters, `tanitrace.py` processes the entire time-lapse image with given parameters. The result is output to a TSV file.
+
+Given that sigma = 1.4 and threshold = 0.03, the command line should be:
 ```
-ls [image_folder]/*.tif | foreach {tanitrace.py -l 1.4 -t 0.03 -C $_.fullname}
+tanitrace.py -l 1.4 -t 0.03 -C input_images.tif
 ```
-or
+which process the entire time-lapse image, and output the results to a TSV file. The filename of TSV file is automatically assigned replacing the extension of image file to ".txt" ("input_images.txt" in this case) unless otherwise specified. `-C` turns on tracking by *k*-nearest neighbor algorithm.
+
+Under PowerShell, multiple files can be processed by:
+
 ```
-foreach ($file in (get-item [image_folder]/*.tif))
+foreach ($file in (get-item images/*.tif))
 {
     tanitrace.py -l 1.4 -t 0.03 -C $file
 }
 ```
-Result TSV files are output in the **current** folder, not the folder of images. You can separate the result files from the image files by moving to the different folder to run the command beforehand.
+
+**Note:** The result TSV files is output in the **current** folder, not the folder of images. Thus, you can output the result TSV files in a different folder from the image files by moving to another folder before running the command.
 
 ### Calculation of sample drift during acquisition
 
