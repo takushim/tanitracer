@@ -14,7 +14,7 @@ Usually, images are processed by the following scripts:
 * `tanilacian.py` - test of LoG filter (optional)
 * `tanifit.py` - determining parameters to detect fluorescent spots
 * `tanitrace.py` - detection and tracking of fluorescent spots
-* `tanipoc.py` or `tanialign.py` - calculation of sample drift (optional)
+* `tanipoc.py` or `taniakaze.py` - calculation of sample drift (optional)
 * `taniplot.py` - reconstruction of super-resolved images
 
 Other scripts listed below help to process or analyze images:
@@ -86,7 +86,7 @@ tanitrace.py --help
 Usually, images are processed in the following order:
 1. Parameter optimization to detect single-molecule fluorescent spots
 1. Detection of fluorescent spots and output to TSV files
-1. Calculation of sample drift during acquisition
+1. Calculation of sample drift during acquisition (optional)
 1. Reconstruction of a super-resolved image
 1. Analysis of resolution by Fourier ring correlation (advanced)
 
@@ -102,11 +102,11 @@ tanifit.py -l 1.4 -T 0.005 0.1 0.001 input_images.tif
 ```
 `-l 1.4` sets the sigma of LoG filter. The sigma is usually adjusted slightly smaller than the average diameter (in pixel) of fluorescent spots. `-T 0.005 0.1 0.001` steps up the threshold in Gaussian fitting from 0.005 to 0.1 by 0.001. If the output image is difficult to see, you can invert the lookup table (of output image) by `-i` option.
 
-The effect of LoG filter can be checked by:
+**Optional:** The effect of LoG filter can be checked by:
 ```
 tanilacian.py -l 1.4 input_images.tif
 ```
-which outputs the image processed by LoG filter at sigma = 1.4.
+which outputs the image processed by LoG filter at sigma = 1.4. The output filename is `[basename]_log.tif` ("input_images_log.tif" in this case).
 
 ### Detection of fluorescent spots and output to TSV files
 
@@ -116,9 +116,11 @@ Given that sigma = 1.4 and threshold = 0.03, the command line should be:
 ```
 tanitrace.py -l 1.4 -t 0.03 -C input_images.tif
 ```
-which process the entire time-lapse image, and output the results to a TSV file. The filename of TSV file is automatically assigned replacing the extension of image file to ".txt" ("input_images.txt" in this case) unless otherwise specified. `-C` turns on tracking by *k*-nearest neighbor algorithm.
+which process the entire time-lapse image, and output the results to a TSV file. The filename of TSV file is automatically assigned replacing the extension of image file to `.txt` ("input_images.txt" in this case) unless otherwise specified. `-C` turns on tracking by *k*-nearest neighbor algorithm, which is useful for calculating lifetimes of spots or for detecting spots that remain for several frames.
 
-Under PowerShell, multiple files can be processed by:
+**Note:** You can check the detection using `-O` option. It outputs an RGB (multipage) TIFF file which is consisted of original single-molecule images with markers of detected spots. The output filename is `[basename]_marked.tif` ("input_images_marked.tif" in this case). The original images are converted to 8-bit images to make RGB images. If you want to mark the spots on other images (for example, images converted to 8-bit or RGB by yourself), use `tanimark.py`.
+
+This script accepts one image file. Thus, processing multiple files requires help from shells. For example, PowerShell can process multiple files by:
 
 ```
 foreach ($file in (get-item images/*.tif))
@@ -127,51 +129,63 @@ foreach ($file in (get-item images/*.tif))
 }
 ```
 
-**Note:** The result TSV files is output in the **current** folder, not the folder of images. Thus, you can output the result TSV files in a different folder from the image files by moving to another folder before running the command.
+**Note:** The result TSV files are output in the **current** folder. You can prepare a folder for analysis, move to the folder, and then output TSV files into the folder.
 
-### Calculation of sample drift during acquisition
+### Calculation of sample drift during acquisition (optional)
 
-Third, calculate drift using reference images, such as bright field images taken at certain intervals. If you want to use phase only correlation, use:
+**Note:** The step can be skipped if sample drift is ignorable.
+
+`tanipoc.py` and `taniakaze.py` calculate the drift of samples using a series of reference images by comparing the each frame to the first frame. These scripts were used with time-lapse bright-field images. If the bright field images contain some bright structures (such as nucleoli), `tanipoc.py` is better with its phase-only correlation. If the bright-field images are a complex structure (such as frozen tissue sections), `taniakaze.py` is better with its A-KAZE feature matching. These scripts were tested with bright-field images, but can accept fluorescent images.
+
+The input images are a series of single-page TIFF files, multipage TIFF, files, MetaMorph stacks, or their mixtures. Wild-card characters (`*`, `?`, or other expressions that your shell accepts) are available to specify multiple files. The files are sorted in the lexical order, and concatenated before processing.
+
+Usual commands are:
 ```
 tanipoc.py [path_to_reference_images]/*.tif
 ```
-If you want A-KAZE feature matching, use:
+or
 ```
 tanialign.py [path_to_reference_images]/*.tif
 ```
-These commands output the drift (in pixels) "align.txt" in the current folder. You can use wildcards to specify multiple images. Input images can be single-page TIFF, multipage TIFF, or their mixture. Images will be sorted in alphabetical order, and concatenated. You can use your own programs to calculate sample drift, but should be a TSV file containing at least three columns, "align_plane", "align_x", and "align_y". You can specify `-O` to check the alignment of sample drift.
+The output is a TSV file with a name of `align.txt` if not specified. You can output the aligned images with `-O` option. The output filename is `[basename_of_the_first_file]_poc.tif` or `[basename_of_the_first_file]_akaze.tif` (for example, "ref_image_00_poc.tif"). A external image can be specified as the origin using `-r` option.
 
-### Reconstruction of a super-resolved image
+**Note:** You can use your own programs to calculate sample drift, but the result should be a TSV file containing three columns, `align_plane`, `align_x`, and `align_y`.
 
-Finally, reconstruct super-resolved images from the centroids of detected spots considering the drift of samples:
+### Reconstruction of a super-resolved images
+
+`taniplot.py` reads the TSV files listing the centroids of detected fluorescent spots, and plot them in a one-frame image (histogram binning method). Wild-card characters (`*`, `?`, or other expressions that your shell accepts) to specify multiple TSV files, which were sorted in the lexical order before reconstructing the image.
+
+**Important note:** This script _automatically_ reads `align.txt` for drift correction, and assumes that each reference images is for each _500 frames_ of time-lapse single-molecule images. Use `-n` option to turn off drift correction. `-e` can change the interval to apply drift correction.
+
+Typical command lines are:
 ```
-taniplot.py -X 8 -o output_image.tif -a align.txt -e 500 [path_to_results]/*.txt
+taniplot.py -X 8 [path_to_tsv_files]/*.txt
 ```
-`-X` and `-o` are the magnification and the name of output super-resolved image. `-a align.txt` specifies the name of alignment TSV file, and `-e 500` assumes that drift correction images are acquired every 500 frames of single-molecule images (i.e. 500-frame single-molecule image, 1-frame bright-field, 500-frame single-molecule image, 1-frame bright-field, and so on). **You have to use `-n` not to use drift correction**, or `-a align.txt -e 500` is implicitly specified.
+or
+```
+taniplot.py -X 8 -a drift.txt -e 1000 [path_to_tsv_files]/*.txt
+```
+or
+```
+taniplot.py -X 8 -n [path_to_tsv_files]/*.txt
+```
+The output file name is given as `plot_2019-09-01_09-30-00.tif` using the current date and time if not specified. `-X` specifies the magnification to the original single-molecule images. The first command automatically read `align.txt` to apply drift correction every 500 frames. The second line reads the TSV file, `drift.txt`, and applies drift correction every 1000 frames. The third command does not use drift correction.
 
 ### Analysis of resolution by Fourier ring correlation (advanced)
 
-Please read the source file beforehand if you want to use `frcplot.py`, `firecalc.py`, `fireheat.py`.
-
-`tanimark.py` puts markers of detected spots listed in the TSV file. This script is useful to adjust the contrast of single-molecule images beforehand (**and output to 8-bit**), and put markers on it. Helpful when you make figure images.
-
-For example:
-```
-tanimark.py -f result.txt -z 4 -i -r images_8bit.tif
-```
-`-z 4` set the marker diameter to 4 pixels. `-i` invert the gray scale. `-r` uses rainbow colors for each set of tracking. If `-r` is not specified, beginning and end of tracking are drawn by red and blue circles, respectively. Other spots are drawn by orange circles.
+**Note:** The analysis in this section is not required for reconstructing super-resolution images. Usages are explained very briefly. Please read the source files before you run the scripts.
 
 `frcplot.py` reconstruct two super-resolved images dividing the TSV files into two groups.
 ```
-frcplot.py -d 80 -X 8 -o output -a align.txt -e 500 [path_to_results]/*.txt
+frcplot.py -d 80 -X 8 [path_to_results]/*.txt
 ```
-plots the first image from files #1-#40, #81-#120, #161-#200,... into "output_each80_1.tif" and the second image from files #41-#80, #121-#160, #201-#240,... into "output_each80_2.tif".
+`-d` specifies the size of grouping. In this case, files are divided into groups of 80 files, and then each group is divided into two groups (40 files to group #1 and 40 files to group #2). Two super-resolved images are reconstructed from the files divided into group #1 and those divided into group #2, respectively. The filenames of two images are `plot_eachXX_1.tif` and `plot_eachXX_2.tif`.
 
 `firecalc.py` calculate the FRC curve and determine FIRE value from the two super-resolved files.
 ```
 firecalc.py -m mask.tif output_each80_1.tif output_each80_2.tif
 ```
-displays a FRC curve calculated from the two images. `-m` specifies the masking image. The masking image is converted to an array of TRUE and FALSE, and multiplied to the super-resolved images. Thus, the area of value 0 in the masking image is excluded from the calculation.
+displays a FRC curve calculated from the two divided images. `-m` specifies the masking image. The masking image is converted to an array of TRUE and FALSE, and multiplied to the super-resolved images. Thus, the area of value 0 in the masking image is excluded from the calculation.
 
 `fireheat.py` calculate local FIRE value from the two super-resolved files, and makes a heat map.
 ```

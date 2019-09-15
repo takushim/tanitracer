@@ -46,7 +46,7 @@ output_filename = None
 parser = argparse.ArgumentParser(description='make LoG-filtered image stack.', \
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-o', '--output-file', nargs=1, default=output_filename, \
-                    help='output multipage-tiff file ([basename]_lap[LOG].tif if not specified)')
+                    help='output multipage-tiff file ([basename]_log.tif if not specified)')
 
 parser.add_argument('-l', '--laplace', nargs=1, type=float, default=tracer.laplace, \
                     help='maximum spot diameter to filter noise')
@@ -61,7 +61,8 @@ tracer.laplace = args.laplace[0]
 input_filename = args.input_file[0]
 
 if args.output_file is None:
-    output_filename = os.path.splitext(os.path.basename(input_filename))[0] + ("_l%.2f.tif" % tracer.laplace)
+    #output_filename = os.path.splitext(os.path.basename(input_filename))[0] + ("_l%.2f.tif" % tracer.laplace)
+    output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_log.tif'
     if input_filename == output_filename:
         raise Exception('input_filename == output_filename')
 else:
