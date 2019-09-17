@@ -60,47 +60,47 @@ font_size = 40
 font_color = 'white'
 
 # parse arguments
-parser = argparse.ArgumentParser(description='trace centroids with various parameters.', \
+parser = argparse.ArgumentParser(description='Detect fluorescent spots with varying parameters', \
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-o', '--output-file', nargs=1, default=output_filename, \
-                    help='output multipage-tiff file ([basename]_adjusted.tif if not specified)')
+                    help='output multipage TIFF file ([basename]_fit.tif if not specified)')
 
 parser.add_argument('-p', '--use-plane', nargs=1, type=int, default=[use_plane], \
-                    help='maximum spot diameter to filter noise')
+                    help='frame to detect spots (the first frame if not specified)')
 
 parser.add_argument('-z', '--marker-size', nargs=1, type=int, default=[marker.marker_size], \
-                    help='marker size to plot')
+                    help='marker size to draw detected spots')
 parser.add_argument('-c', '--marker-colors', nargs=2, type=str, \
                     metavar = ('NORMAL', 'ERROR'), \
                     default=[marker.marker_colors[0], marker.marker_colors[3]],
-                    help='marker colors for normal/error spots')
+                    help='marker colors to draw spots detected normally and with errors')
 
 parser.add_argument('-i', '--invert-image', action='store_true', default=marker.invert_image, \
-                    help='invert image LUT')
+                    help='invert the LUT of output image')
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-m', '--min-distance', nargs=1, type=int, default=min_distances, \
-                    help='pixel area to find local max (usually 1)')
+                    help='pixel area to find local max (usually use default)')
 group.add_argument('-M', '--min-distance-range', nargs=3, type=int,\
                     metavar=('BEGIN', 'END', 'STEP'), \
-                    help='range of pixel area to find local max (int)')
+                    help='range of "min distance" to try (specify by integers)')
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-l', '--laplace', nargs=1, type=float, default=laplaces, \
-                    help='maximum spot diameter to filter noise')
+                    help='sigma of LoG filter (try near the pixel diameter of spots)')
 group.add_argument('-L', '--laplace-range', nargs=3, type=float,\
                     metavar=('BEGIN', 'END', 'STEP'), \
-                    help='range of maximum spot diameter to filter noise')
+                    help='range of "laplace" to try (specify by floats)')
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-t', '--threshold-abs', nargs=1, type=float, default=threshold_abses, \
-                    help='threshold to find local max')
+                    help='threshold of Gaussian fitting')
 group.add_argument('-T', '--threshold-abs-range', nargs=3, type=float, \
                     metavar=('BEGIN', 'END', 'STEP'), \
-                    help='range of threshold to find local max')
+                    help='range of "threshod abs" to tru (specify by floats)')
 
 parser.add_argument('input_file', nargs=1, default=input_filename, \
-                    help='input file (multipage-tiff file(s) to trace spots')
+                    help='input (multipage) TIFF file to detect fluorescent spots')
 
 args = parser.parse_args()
 

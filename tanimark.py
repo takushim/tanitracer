@@ -44,18 +44,18 @@ marker_filename = None
 output_filename = None
 
 # parse arguments
-parser = argparse.ArgumentParser(description='plot centroids to check gaussian fitting.', \
+parser = argparse.ArgumentParser(description='Read TSV file and draw markers on input images', \
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-o', '--output-file', nargs=1, default=output_filename, \
-                    help='output multipage-tiff file ([basename]_marked.tif if not specified)')
+                    help='output multipage TIFF file ([basename]_marked.tif if not specified)')
 
 parser.add_argument('-f', '--marker-file', nargs=1, default=marker_filename, \
-                    help='read marker tsv file ([basename].txt if not specified)')
+                    help='name of TSV file (read [basename].txt if not specified)')
 parser.add_argument('-z', '--marker-size', nargs=1, type=int, default=[marker.marker_size], \
-                    help='marker size to plot')
+                    help='marker size to draw')
 parser.add_argument('-c', '--marker-colors', nargs=3, type=str, default=marker.marker_colors, \
                     metavar=('NEW', 'CONT', 'END'), \
-                    help='marker colors for new/continued/end spots')
+                    help='use colors for new, tracking, end of spots')
 parser.add_argument('-r', '--rainbow-colors', action='store_true', default=marker.rainbow_colors, \
                     help='use rainbow colors')
 
@@ -65,17 +65,17 @@ parser.add_argument('-E', '--force-mark-emerge', action='store_true', default=ma
                     help='force marking emerging spots in regression')
 
 parser.add_argument('-i', '--invert-image', action='store_true', default=marker.invert_image, \
-                    help='invert image look-up table')
+                    help='invert the LUT of output image')
 
 parser.add_argument('input_file', nargs=1, default=input_filename, \
-                    help='input multpage-tiff file to plot markers')
+                    help='input (multpage) TIFF file to draw markers')
 
 args = parser.parse_args()
 
 # set arguments
 input_filename = args.input_file[0]
 marker.marker_size = args.marker_size[0]
-marker.marker_colors = args.marker_colors
+marker.marker_colors = args.marker_colors + marker.marker_colors[3]
 marker.marker_rainbow = args.rainbow_colors
 marker.invert_image = args.invert_image
 marker.mark_regression = args.mark_regression

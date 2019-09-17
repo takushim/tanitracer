@@ -43,16 +43,16 @@ input_filename = None
 output_filename = None
 
 # parse arguments
-parser = argparse.ArgumentParser(description='make LoG-filtered image stack.', \
+parser = argparse.ArgumentParser(description='Check the effect of LoG filter', \
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-o', '--output-file', nargs=1, default=output_filename, \
-                    help='output multipage-tiff file ([basename]_log.tif if not specified)')
+                    help='output multipage TIFF file ([basename]_log.tif if not specified)')
 
 parser.add_argument('-l', '--laplace', nargs=1, type=float, default=tracer.laplace, \
-                    help='maximum spot diameter to filter noise')
+                    help='sigma of LoG filter (try near the pixel diameter of spots)')
 
 parser.add_argument('input_file', nargs=1, default=input_filename, \
-                    help='input file (multipage-tiff file to apply filter')
+                    help='input (multipage) TIFF file to apply filter')
 
 args = parser.parse_args()
 

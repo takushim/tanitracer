@@ -90,8 +90,9 @@ parser.add_argument('-c', '--marker-colors', nargs=4, type=str, \
                     help='marker colors for new/continued/end spots')
 parser.add_argument('-r', '--marker-rainbow', action='store_true', default=marker.marker_rainbow, \
                     help='set rainbow marker colors')
+
 parser.add_argument('-i', '--invert-image', action='store_true', default=marker.invert_image, \
-                    help='invert image LUT')
+                    help='invert the LUT of output image')
 
 parser.add_argument('input_file', nargs=1, default=input_filename, \
                     help='input multpage-tiff file to chase spots')

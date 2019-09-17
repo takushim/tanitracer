@@ -47,24 +47,24 @@ output_image = False
 output_image_filename = None
 reference_image_filename = None
 
-parser = argparse.ArgumentParser(description='Calculate misalignment using AKAZE algorithm', \
+parser = argparse.ArgumentParser(description='Calculate sample drift using A-KAZE feature matching', \
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-f', '--output-tsv-file', nargs=1, default = [output_tsv_filename], \
-                    help='output tsv file name (align.txt if not specified)')
+                    help='output TSV file name (align.txt if not specified)')
 
 parser.add_argument('-r', '--reference-image', nargs=1, default = [reference_image_filename], \
-                    help='reference image file name (first plane is used)')
+                    help='specify an external reference image')
 
 parser.add_argument('-O', '--output-image', action='store_true', default=output_image, \
-                    help='output image tiff')
+                    help='output image after drift correction')
 parser.add_argument('-o', '--output-image-file', nargs=1, default = None, \
-                    help='output image file name([basename]_sift.tif if not specified)')
+                    help='output image file name ([basename]_akaze.tif if not specified)')
 
 parser.add_argument('-i', '--invert-image', action='store_true', default=aligner.invert_image, \
-                    help='invert image LUT')
+                    help='invert the LUT of output image')
 
 parser.add_argument('input_file', nargs='+', default=None, \
-                    help='input multpage-tiff file(s) to align')
+                    help='input multpage TIFF file(s) to align')
 args = parser.parse_args()
 
 # collect input filenames
