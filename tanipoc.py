@@ -54,7 +54,7 @@ parser.add_argument('-f', '--output-tsv-file', nargs=1, default = [output_tsv_fi
                     help='output TSV file name (align.txt if not specified)')
 
 parser.add_argument('-r', '--reference-image', nargs=1, default = [reference_image_filename], \
-                    help='specify an external reference image')
+                    help='use an external reference image')
 
 parser.add_argument('-O', '--output-image', action='store_true', default=output_image, \
                     help='output image after drift correction')
@@ -65,7 +65,7 @@ parser.add_argument('-i', '--invert-image', action='store_true', default=aligner
                     help='invert the LUT of output image')
 
 parser.add_argument('input_file', nargs='+', default=None, \
-                    help='input multpage TIFF file(s) to align')
+                    help='series of multipage TIFF file(s) to align')
 args = parser.parse_args()
 
 # collect input filenames

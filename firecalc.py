@@ -46,17 +46,17 @@ input_filename2 = None
 mask_image_filename = None
 output_graph_filename = 'firefrc.tif'
 
-parser = argparse.ArgumentParser(description='Calculate FRC between 2 images', \
+parser = argparse.ArgumentParser(description='Calculate FIRE value from two super-resolved images', \
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 parser.add_argument('-o', '--output-graph', nargs=1, default = [output_graph_filename], \
                     help='output graph file name (firefrc.tif if not specified)')
 
 parser.add_argument('-m', '--mask-image', nargs=1, default = [mask_image_filename], \
-                    help='masking image file name')
+                    help='read masking image to omit unnecessary area')
 
 parser.add_argument('input_file', nargs=2, default=None, \
-                    help='input SQUARE single-page tiff files (image1, image2)')
+                    help='input TWO SQUARE single-page TIFF files (image1, image2)')
 args = parser.parse_args()
 
 input_filename1 = args.input_file[0]

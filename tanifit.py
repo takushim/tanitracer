@@ -60,7 +60,7 @@ font_size = 40
 font_color = 'white'
 
 # parse arguments
-parser = argparse.ArgumentParser(description='Detect fluorescent spots with varying parameters', \
+parser = argparse.ArgumentParser(description='Try detecting fluorescent spots changing parameters', \
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-o', '--output-file', nargs=1, default=output_filename, \
                     help='output multipage TIFF file ([basename]_fit.tif if not specified)')
@@ -71,9 +71,9 @@ parser.add_argument('-p', '--use-plane', nargs=1, type=int, default=[use_plane],
 parser.add_argument('-z', '--marker-size', nargs=1, type=int, default=[marker.marker_size], \
                     help='marker size to draw detected spots')
 parser.add_argument('-c', '--marker-colors', nargs=2, type=str, \
-                    metavar = ('NORMAL', 'ERROR'), \
+                    metavar = ('NORMAL', 'REDUNDANT'), \
                     default=[marker.marker_colors[0], marker.marker_colors[3]],
-                    help='marker colors to draw spots detected normally and with errors')
+                    help='marker colors to draw spots detected normally and redundantly')
 
 parser.add_argument('-i', '--invert-image', action='store_true', default=marker.invert_image, \
                     help='invert the LUT of output image')
@@ -100,7 +100,7 @@ group.add_argument('-T', '--threshold-abs-range', nargs=3, type=float, \
                     help='range of "threshod abs" to tru (specify by floats)')
 
 parser.add_argument('input_file', nargs=1, default=input_filename, \
-                    help='input (multipage) TIFF file to detect fluorescent spots')
+                    help='input (multipage) TIFF file')
 
 args = parser.parse_args()
 

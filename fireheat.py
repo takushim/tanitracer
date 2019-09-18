@@ -50,31 +50,31 @@ mask_image_filename = None
 box_size = 256
 fire_clip = [2, 20]
 
-parser = argparse.ArgumentParser(description='Make FIRE/FRC heatmap using 2 split images', \
+parser = argparse.ArgumentParser(description='Make heatmap of local FIRE value from two super-resolved images', \
                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-o', '--output-image', nargs=1, default = [output_image_filename], \
-                    help='output image file name (heatmap.tif if not specified)')
+                    help='output heatmap TIFF file name (heatmap.tif if not specified)')
 
 parser.add_argument('-t', '--output-tsv', nargs=1, default = [output_tsv_filename], \
-                    help='output tsv file name (heatmap.txt if not specified)')
-
-parser.add_argument('-G', '--output-histogram', action='store_true', default=output_histogram, \
-                    help='output histogram image tiff')
-parser.add_argument('-g', '--output-histogram-file', nargs=1, default = [output_histogram_filename], \
-                    help='output histogram image file name (histogram.tif if not specified)')
+                    help='output TSV file name (heatmap.txt if not specified)')
 
 parser.add_argument('-b', '--box-size', nargs=1, default = [box_size], type=int,\
-                    help='box size (must be divided by 4)')
-
-parser.add_argument('-m', '--mask-image', nargs=1, default = [mask_image_filename], \
-                    help='mask image file name')
+                    help='box size (must be a multiple of 4)')
 
 parser.add_argument('-c', '--fire-clip', nargs=2, type=int, default=fire_clip, \
                     metavar=('MIN', 'MAX'), \
-                    help='clipping of fire in heatmap')
+                    help='clipping of loca FIRE values in heatmap')
+
+parser.add_argument('-m', '--mask-image', nargs=1, default = [mask_image_filename], \
+                    help='read masking image to omit unnecessary area')
+
+parser.add_argument('-G', '--output-histogram', action='store_true', default=output_histogram, \
+                    help='output histogram TIFF image')
+parser.add_argument('-g', '--output-histogram-file', nargs=1, default = [output_histogram_filename], \
+                    help='output histogram TIFF file name (histogram.tif if not specified)')
 
 parser.add_argument('input_file', nargs=2, default=None, \
-                    help='input SQUARE tiff files (image1, image2)')
+                    help='input TWO SQUARE single-page TIFF files (image1, image2)')
 args = parser.parse_args()
 
 input_filename1 = args.input_file[0]

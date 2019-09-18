@@ -53,16 +53,16 @@ parser.add_argument('-f', '--marker-file', nargs=1, default=marker_filename, \
                     help='name of TSV file (read [basename].txt if not specified)')
 parser.add_argument('-z', '--marker-size', nargs=1, type=int, default=[marker.marker_size], \
                     help='marker size to draw')
-parser.add_argument('-c', '--marker-colors', nargs=3, type=str, default=marker.marker_colors, \
-                    metavar=('NEW', 'CONT', 'END'), \
-                    help='use colors for new, tracking, end of spots')
-parser.add_argument('-r', '--rainbow-colors', action='store_true', default=marker.rainbow_colors, \
-                    help='use rainbow colors')
+parser.add_argument('-c', '--marker-colors', nargs=4, type=str, default=marker.marker_colors, \
+                    metavar=('NEW', 'CONT', 'END', 'REDUN'), \
+                    help='marker colors for new, tracked, disappearing, and redundant spots')
+parser.add_argument('-r', '--rainbow-colors', action='store_true', default=marker.marker_rainbow, \
+                    help='use rainbow colors to distinguish each tracking')
 
 parser.add_argument('-R', '--mark-regression', action='store_true', default=marker.mark_regression, \
-                    help='mark in regression')
+                    help='regression mode (draw spots that can be tracked from the first frame)')
 parser.add_argument('-E', '--force-mark-emerge', action='store_true', default=marker.force_mark_emerge, \
-                    help='force marking emerging spots in regression')
+                    help='force marking emerging spots in regression mode')
 
 parser.add_argument('-i', '--invert-image', action='store_true', default=marker.invert_image, \
                     help='invert the LUT of output image')
@@ -75,7 +75,7 @@ args = parser.parse_args()
 # set arguments
 input_filename = args.input_file[0]
 marker.marker_size = args.marker_size[0]
-marker.marker_colors = args.marker_colors + marker.marker_colors[3]
+marker.marker_colors = args.marker_colors
 marker.marker_rainbow = args.rainbow_colors
 marker.invert_image = args.invert_image
 marker.mark_regression = args.mark_regression

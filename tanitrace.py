@@ -50,7 +50,7 @@ chase_spots = False
 output_image = False
 
 # parse arguments
-parser = argparse.ArgumentParser(description='trace spots using gaussian fitting.', \
+parser = argparse.ArgumentParser(description='Detect fluorescent spots with Gaussian fitting.', \
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-T', '--output-tsv-file', nargs=1, default = None, \
                     help='output tsv file name ([basename].txt if not specified)')
@@ -58,44 +58,44 @@ parser.add_argument('-T', '--output-tsv-file', nargs=1, default = None, \
 # import settings
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-R', '--rerun', action='store_true', default=False, \
-                   help='import settings finding [basename].txt')
+                   help='import settings from [basename].txt and rerun calculation')
 group.add_argument('-I', '--import-settings-file', nargs=1, default = None, \
-                   help='import settings from other results (overwritten by options)')
+                   help='import settings from other results (can be overwritten by options)')
 
 # append are used to judge whether or not options are set
-parser.add_argument('-l', '--laplace', nargs=1, type=float, default=[tracer.laplace], action='append',\
-                    help='maximum spot diameter to filter noise')
 parser.add_argument('-m', '--min-distance', nargs=1, type=int, default=[tracer.min_distance], action='append',\
-                    help='pixel area to find local max (usually 1.0)')
+                    help='pixel area to find local max (usually use default)')
+parser.add_argument('-l', '--laplace', nargs=1, type=float, default=[tracer.laplace], action='append',\
+                    help='sigma of LoG filter (try near the pixel diameter of spots)')
 parser.add_argument('-t', '--threshold-abs', nargs=1, type=float, default=[tracer.threshold_abs], action='append',\
-                    help='threshold to find local max')
+                    help='threshold of Gaussian fitting')
 parser.add_argument('-x', '--max-diameter', nargs=1, type=float, default=[tracer.max_diameter], action='append',\
-                    help='maximum diameter of spots')
+                    help='limit the maximum diameter of spots (to avoid abnormal fitting)')
 parser.add_argument('-u', '--dup-threshold', nargs=1, type=float, default=[tracer.dup_threshold], action='append',\
-                    help='minimum distance to distinguish two spots')
+                    help='minimum distance to distinguish two spots (to avoid redundant detection)')
 
 parser.add_argument('-C', '--chase-spots', action='store_true', default=chase_spots, \
-                    help='chase spots before output tsv file')
+                    help='chase spots using k-Nearest Neighbor algorithm')
 parser.add_argument('-d', '--chase-distance', nargs=1, type=float, default = [chaser.chase_distance], action='append',\
                     help='maximum distance to assume as identical spots (pixel)')
 
 parser.add_argument('-O', '--output-image', action='store_true', default=output_image, \
-                    help='output image tiff')
+                    help='output TIFF file with markers of detected spots')
 parser.add_argument('-o', '--output-image-file', nargs=1, default = None, \
-                    help='output image file name([basename]_tracer.tif if not specified)')
+                    help='output TIFF file name([basename]_marked.tif if not specified)')
 parser.add_argument('-z', '--marker-size', nargs=1, type=int, default=[marker.marker_size], \
-                    help='marker size to plot')
+                    help='marker size to draw detected spots')
 parser.add_argument('-c', '--marker-colors', nargs=4, type=str, \
-                    default=marker.marker_colors, metavar=('NEW', 'CONT', 'END', 'ERROR'), \
-                    help='marker colors for new/continued/end spots')
+                    default=marker.marker_colors, metavar=('NEW', 'CONT', 'END', 'REDUN'), \
+                    help='marker colors for new, tracked, disappearing, and redundant spots')
 parser.add_argument('-r', '--marker-rainbow', action='store_true', default=marker.marker_rainbow, \
-                    help='set rainbow marker colors')
+                    help='use rainbow colors to distinguish each tracking')
 
 parser.add_argument('-i', '--invert-image', action='store_true', default=marker.invert_image, \
                     help='invert the LUT of output image')
 
 parser.add_argument('input_file', nargs=1, default=input_filename, \
-                    help='input multpage-tiff file to chase spots')
+                    help='input (multpage) TIFF file')
 
 args = parser.parse_args()
 

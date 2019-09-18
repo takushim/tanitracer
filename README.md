@@ -6,12 +6,12 @@ A python toolbox for reconstructing and analyzing super-resolution images
 
 **tanitracer** is a set of python scripts that accepts time-lapse multipage (or single-page) TIFF files and MetaMorph stack files acquired by single-molecule microscopy. Scripts can detect fluorescent spots and reconstruct super-resolved images using the centroids of detected spots.
 
-Fluorescent spots are detected by Gaussian fitting with subpixel correction after applying Gaussian-Laplacian (LoG) filter to enhance the contours of spots. Spots can be tracked by *k*-nearest neighbor algorithm if necessary. It should be noted that this algorithm is not suitable when spots move long distances between frames. However, we assume that it should be enough for most super-resolution usages. Sample drift can be detected by phase only correlation (POC) or A-KAZE feature matching, which were tested with bright-field reference images. Super-resolved images are reconstructed by histogram binning method (plotting centroids on a blank image of magnified size).
+Fluorescent spots are detected by Gaussian fitting with subpixel correction after applying Gaussian-Laplacian (LoG) filter to enhance the contours of spots. Spots can be tracked by *k*-nearest neighbor algorithm if necessary. It should be noted that this algorithm is not suitable when spots move long distances between frames. However, we assume that it should be enough for most super-resolution usages. Sample drift can be detected by applying phase only correlation (POC) or A-KAZE feature matching to bright-field images (or some other images that look similar during the entire acquisition) inserted periodically during single-molecule acquisition. Super-resolved images are reconstructed by histogram binning method (plotting centroids on a blank image of magnified size).
 
 tanitracer was named after **Daisuke Taniguchi**, who provided the core scripts implementing Gaussian fitting with subpixel correction, several candidate algorithms for spot tracking, and A-KAZE feature matching.
 
 Usually, images are processed by the following scripts:
-* `tanilacian.py` - test of LoG filter (optional)
+* `tanilacian.py` - testing the pre-processing by LoG filter (optional)
 * `tanifit.py` - determining parameters to detect fluorescent spots
 * `tanitrace.py` - detection and tracking of fluorescent spots
 * `tanipoc.py` or `taniakaze.py` - calculation of sample drift (optional)
@@ -102,7 +102,7 @@ tanifit.py -l 1.4 -T 0.005 0.1 0.001 input_images.tif
 ```
 `-l 1.4` sets the sigma of LoG filter. The sigma is usually adjusted slightly smaller than the average diameter (in pixel) of fluorescent spots. `-T 0.005 0.1 0.001` steps up the threshold in Gaussian fitting from 0.005 to 0.1 by 0.001. If the output image is difficult to see, you can invert the lookup table (of output image) by `-i` option.
 
-**Optional:** The effect of LoG filter can be checked by:
+**Optional:** The effect of pre-processing by LoG filter can be checked as:
 ```
 tanilacian.py -l 1.4 input_images.tif
 ```
@@ -135,19 +135,19 @@ foreach ($file in (get-item images/*.tif))
 
 **Note:** The step can be skipped if sample drift is ignorable.
 
-`tanipoc.py` and `taniakaze.py` calculate the drift of samples using a series of reference images by comparing the each frame to the first frame. These scripts were used with time-lapse bright-field images. If the bright field images contain some bright structures (such as nucleoli), `tanipoc.py` is better with its phase-only correlation. If the bright-field images are a complex structure (such as frozen tissue sections), `taniakaze.py` is better with its A-KAZE feature matching. These scripts were tested with bright-field images, but can accept fluorescent images.
+`tanipoc.py` and `taniakaze.py` calculate the drift of samples using a series of bright-firld images inserted periodically during the acquisition of single-molecule images. Each frame is compared to the first frame to detect the drift. Although these script were tested with bright-field images, they may work for the images that look similar during the entire acquisition. If the bright field images contain some bright structures (such as nucleoli), `tanipoc.py` is better with its phase-only correlation. If the bright-field images are a complex structure (such as frozen tissue sections), `taniakaze.py` is better with its A-KAZE feature matching. These scripts were tested with bright-field images, but can accept fluorescent images.
 
 The input images are a series of single-page TIFF files, multipage TIFF, files, MetaMorph stacks, or their mixtures. Wild-card characters (`*`, `?`, or other expressions that your shell accepts) are available to specify multiple files. The files are sorted in the lexical order, and concatenated before processing.
 
 Usual commands are:
 ```
-tanipoc.py [path_to_reference_images]/*.tif
+tanipoc.py [path_to_bright_field_images]/*.tif
 ```
 or
 ```
-tanialign.py [path_to_reference_images]/*.tif
+tanialign.py [path_to_bright_field_images]/*.tif
 ```
-The output is a TSV file with a name of `align.txt` if not specified. You can output the aligned images with `-O` option. The output filename is `[basename_of_the_first_file]_poc.tif` or `[basename_of_the_first_file]_akaze.tif` (for example, "ref_image_00_poc.tif"). A external image can be specified as the origin using `-r` option.
+The output is a TSV file with a name of `align.txt` if not specified. You can output the aligned images with `-O` option. The output filename is `[basename_of_the_first_file]_poc.tif` or `[basename_of_the_first_file]_akaze.tif` (for example, "bright_field_00_poc.tif"). A external image can be specified as the reference using `-r` option.
 
 **Note:** You can use your own programs to calculate sample drift, but the result should be a TSV file containing three columns, `align_plane`, `align_x`, and `align_y`.
 
@@ -155,7 +155,7 @@ The output is a TSV file with a name of `align.txt` if not specified. You can ou
 
 `taniplot.py` reads the TSV files listing the centroids of detected fluorescent spots, and plot them in a one-frame image (histogram binning method). Wild-card characters (`*`, `?`, or other expressions that your shell accepts) to specify multiple TSV files, which were sorted in the lexical order before reconstructing the image.
 
-**Important note:** This script _automatically_ reads `align.txt` for drift correction, and assumes that each reference images is for each _500 frames_ of time-lapse single-molecule images. Use `-n` option to turn off drift correction. `-e` can change the interval to apply drift correction.
+**Important note:** This script _automatically_ reads `align.txt` for drift correction, and assumes that each bright field images is inserted every _500 frames_ of time-lapse single-molecule images. Use `-n` option to turn off drift correction. `-e` can change the interval to apply drift correction.
 
 Typical command lines are:
 ```
@@ -169,7 +169,7 @@ or
 ```
 taniplot.py -X 8 -n [path_to_tsv_files]/*.txt
 ```
-The output file name is given as `plot_2019-09-01_09-30-00.tif` using the current date and time if not specified. `-X` specifies the magnification to the original single-molecule images. The first command automatically read `align.txt` to apply drift correction every 500 frames. The second line reads the TSV file, `drift.txt`, and applies drift correction every 1000 frames. The third command does not use drift correction.
+The output file name is given as `plot_2019-09-01_09-30-00.tif` using the current date and time if not specified. `-X` specifies the magnification to the original single-molecule images. The first command automatically read `align.txt`, and use the drift in each line for each set of 500 frames. The second line reads the TSV file, `drift.txt`, and applies drift correction every 1000 frames. The third command does not use drift correction.
 
 ### Analysis of resolution by Fourier ring correlation (advanced)
 
@@ -179,7 +179,7 @@ The output file name is given as `plot_2019-09-01_09-30-00.tif` using the curren
 ```
 frcplot.py -d 80 -X 8 [path_to_results]/*.txt
 ```
-`-d` specifies the size of grouping. In this case, files are divided into groups of 80 files, and then each group is divided into two groups (40 files to group #1 and 40 files to group #2). Two super-resolved images are reconstructed from the files divided into group #1 and those divided into group #2, respectively. The filenames of two images are `plot_eachXX_1.tif` and `plot_eachXX_2.tif`.
+`-d` specifies the size of grouping. In this case, files are divided into groups of 80 files, and then each group is divided into two groups (40 files to group #1 and 40 files to group #2). Two super-resolved images are reconstructed from the files divided into group #1 and those divided into group #2, respectively. The filenames of two images are `plot_eachXX_1.tif` and `plot_eachXX_2.tif`. Drift correction is performed similarly to `taniplot.py` reading `align.txt` and applying the drift of each line to each set of 500 frames.
 
 `firecalc.py` calculate the FRC curve and determine FIRE value from the two super-resolved files.
 ```

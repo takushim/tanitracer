@@ -57,31 +57,18 @@ consolidate_mode = consolidate_mode_choices[1]
 omit_lastplane_spots = False
 
 # parse arguments
-parser = argparse.ArgumentParser(description='make super-resolution image from spot centroids.', \
+parser = argparse.ArgumentParser(description='Reconstruct a super-resolved image from TSV result files', \
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 parser.add_argument('-o', '--output-file', nargs=1, default=[output_filename], \
-                    help='output super-resolution tiff file')
-
-parser.add_argument('-l', '--lifetime-range', nargs=2, type=int, default=lifetime_range, \
-                    metavar=('MIN', 'MAX'), \
-                    help='range of spot lifetime (set MAX = 0 for numpy.inf)')
-
-parser.add_argument('-s', '--consolidate-spots', action='store_true', default=consolidate_spots, \
-                    help='consolidate centroids for chased spots')
-parser.add_argument('-m', '--consolidate-mode', nargs=1, default=[consolidate_mode], \
-                    choices = consolidate_mode_choices, \
-                    help='consolidation mode for chased spots')
-
-parser.add_argument('-t', '--omit-lastplane-spots', action='store_true', default=omit_lastplane_spots, \
-                    help='omit spots contained in the last plane')
+                    help='output TIFF file name')
 
 parser.add_argument('-n', '--no-align', action='store_true', default=(align_spots is False), \
-                    help='plot without alignment')
+                    help='ignore drift correction TSV file')
 parser.add_argument('-a', '--align-file', nargs=1, default=[align_filename], \
-                    help='tsv file with alignment (align.txt if not specified)')
+                    help='specify TSV file for drift correction (align.txt if not specified)')
 parser.add_argument('-e', '--align-each', nargs=1, type=int, default=[plotter.align_each], \
-                    help='alignment correction every X plane')
+                    help='apply drift correction every X frames')
 
 parser.add_argument('-X', '--image-scale', nargs=1, type=int, default=[plotter.image_scale], \
                     help='scale factor to original image')
@@ -90,23 +77,36 @@ parser.add_argument('-Z', '--image-size', nargs=2, type=int, default=image_size,
                     help='size of original image (read from first file if not specified)')
 
 parser.add_argument('-C', '--chase-spots', action='store_true', default=chase_spots, \
-                    help='chase spots before output tsv file')
+                    help='chase spots before plotting')
 parser.add_argument('-d', '--chase-distance', nargs=1, type=float, default = [chaser.chase_distance], \
                     help='maximum distance to assume as identical spots (pixel)')
 
 group = parser.add_mutually_exclusive_group()
 group.add_argument('-T', '--seperate-stack', action='store_const', \
                     dest='output_stackmode', const='separate', \
-                    help='output using separated stack')
+                    help='reconstruct image for each file')
 group.add_argument('-U', '--cumulative-stack', action='store_const', \
                     dest='output_stackmode', const='cumulative', \
-                    help='output using cumulative stack')
+                    help='reconstruct image for each file, but cumulatively')
 
 parser.add_argument('-E', '--stack-each', nargs=1, type=int, default=[output_stackeach], \
-                    help='stack every X file')
+                    help='reconstruct image for each X file (requires -T or -U)')
+
+parser.add_argument('-l', '--lifetime-range', nargs=2, type=int, default=lifetime_range, \
+                    metavar=('MIN', 'MAX'), \
+                    help='range of spot lifetime (use MAX = 0 for unlimited lifetime)')
+
+parser.add_argument('-s', '--consolidate-spots', action='store_true', default=consolidate_spots, \
+                    help='plot only one spot for each tracking')
+parser.add_argument('-m', '--consolidate-mode', nargs=1, default=[consolidate_mode], \
+                    choices = consolidate_mode_choices, \
+                    help='how to calculate one spot from each tracking')
+
+parser.add_argument('-t', '--omit-lastframe-spots', action='store_true', default=omit_lastplane_spots, \
+                    help='omit spots that is contained in the last frame (omit spots of unclear lifetime)')
 
 parser.add_argument('input_file', nargs='+', default=None, \
-                    help='input tsv file(s) with plotting geometries')
+                    help='input TSV file(s) of fluorescent spots')
 
 args = parser.parse_args()
 
