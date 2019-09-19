@@ -8,7 +8,7 @@ A python toolbox for reconstructing and analyzing super-resolution images
 
 Fluorescent spots are detected by Gaussian fitting with subpixel correction after applying Gaussian-Laplacian (LoG) filter to enhance the contours of spots. Spots can be tracked by *k*-nearest neighbor algorithm if necessary. It should be noted that this algorithm is not suitable when spots move long distances between frames. However, we assume that it should be enough for most super-resolution usages. Sample drift can be detected by applying phase only correlation (POC) or A-KAZE feature matching to bright-field images (or some other images that look similar during the entire acquisition) inserted periodically during single-molecule acquisition. Super-resolved images are reconstructed by histogram binning method (plotting centroids on a blank image of magnified size).
 
-tanitracer was named after **Daisuke Taniguchi**, who provided the core scripts implementing Gaussian fitting with subpixel correction, several candidate algorithms for spot tracking, and A-KAZE feature matching.
+**tanitracer** was named after **Daisuke Taniguchi**, who provided the core scripts implementing Gaussian fitting with subpixel correction, several candidate algorithms for spot tracking, and A-KAZE feature matching.
 
 Usually, images are processed by the following scripts:
 * `tanilacian.py` - testing the pre-processing by LoG filter (optional)
@@ -62,7 +62,7 @@ conda install opencv
 
 ### Installation
 
-Download the zip file from my [GitHub repository](https://github.com/takushim/tanitracer) and place all the files in an appropriate folder, for example, `C:\Users\[username]\tanitracer`. It is recommended to add the installed folder to PATH environment variable because you can run the script easily from the working folder. The library files (in `taniclass` and `taniext) is automatically found by the python interpreter as long as they are located in the folder of script files.
+Download the zip file from my [GitHub repository](https://github.com/takushim/tanitracer) and place all the files in an appropriate folder, for example, `C:\Users\[username]\tanitracer`. It is recommended to add the installed folder to PATH environment variable because you can run the script easily from the working folder. The library files (in `taniclass` and `taniext`) are automatically found by the python interpreter as long as they are located in the folder of script files.
 
 If you have installed [git](https://git-scm.com/), you can clone from my [GitHub repository](https://github.com/takushim/tanitracer) by:
 
