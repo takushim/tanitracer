@@ -94,7 +94,7 @@ parser.add_argument('-E', '--stack-each', nargs=1, type=int, default=[output_sta
 
 parser.add_argument('-l', '--lifetime-range', nargs=2, type=int, default=lifetime_range, \
                     metavar=('MIN', 'MAX'), \
-                    help='range of spot lifetime (use MAX = 0 for unlimited lifetime)')
+                    help='range of spot lifetime (use MAX = 0 for no maximum limit)')
 
 parser.add_argument('-s', '--consolidate-spots', action='store_true', default=consolidate_spots, \
                     help='plot only one spot for each tracking')
