@@ -62,7 +62,7 @@ conda install opencv
 
 ### Installation
 
-Download the zip file from my [GitHub repository](https://github.com/takushim/tanitracer) and place all the files in an appropriate folder, for example, `C:\Users\[username]\tanitracer`. It is recommended to add the installed folder to PATH environment variable because you can run the script easily from the working folder. The library files (in `taniclass` and `taniext`) are automatically found by the python interpreter as long as they are located in the folder of script files.
+Download the zip file from my [GitHub repository](https://github.com/takushim/tanitracer) and place all the files in an appropriate folder, for example, `C:\Users\[username]\tanitracer`. It is recommended to add the installed folder to PATH environment variable because you can run the script easily from the working folders. The library files (in `taniclass` and `taniext`) are automatically found by the python interpreter as long as they are located in the folder of script files.
 
 If you have installed [git](https://git-scm.com/), you can clone from my [GitHub repository](https://github.com/takushim/tanitracer) by:
 
@@ -135,7 +135,7 @@ foreach ($file in (get-item images/*.tif))
 
 **Note:** The step can be skipped if sample drift is ignorable.
 
-`tanipoc.py` and `taniakaze.py` calculate the drift of samples using a series of bright-firld images inserted periodically during the acquisition of single-molecule images. Each frame is compared to the first frame to detect the drift. Although these script were tested with bright-field images, they may work for the images that look similar during the entire acquisition. If the bright field images contain some bright structures (such as nucleoli), `tanipoc.py` is better with its phase-only correlation. If the bright-field images are a complex structure (such as frozen tissue sections), `taniakaze.py` is better with its A-KAZE feature matching. These scripts were tested with bright-field images, but can accept fluorescent images.
+`tanipoc.py` and `taniakaze.py` calculate the drift of samples using a series of bright-field images inserted periodically during the acquisition of single-molecule images. Each frame is compared to the first frame to detect the drift. Although these scripts were tested with bright-field images, they may work with grayscale fluorescent images. If the bright field images contain some bright structures (such as nucleoli), `tanipoc.py` is better with its phase-only correlation. If the bright-field images are a complex structure (such as frozen tissue sections), `taniakaze.py` is better with its A-KAZE feature matching. These scripts were tested with bright-field images, but can accept fluorescent images.
 
 The input images are a series of single-page TIFF files, multipage TIFF, files, MetaMorph stacks, or their mixtures. Wild-card characters (`*`, `?`, or other expressions that your shell accepts) are available to specify multiple files. The files are sorted in the lexical order, and concatenated before processing.
 
