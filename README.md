@@ -6,7 +6,7 @@ A python toolbox for reconstructing and analyzing super-resolution images
 
 **tanitracer** is a set of python scripts that accepts time-lapse multipage (or single-page) TIFF files and MetaMorph stack files acquired by single-molecule microscopy. Scripts can detect fluorescent spots and reconstruct super-resolved images using the centroids of detected spots.
 
-Fluorescent spots are detected by Gaussian fitting with subpixel correction after applying Gaussian-Laplacian (LoG) filter to enhance the contours of spots. Spots can be tracked by *k*-nearest neighbor algorithm if necessary. It should be noted that this algorithm is not suitable when spots move long distances between frames. However, we assume that it should be enough for most super-resolution usages. Sample drift can be detected by applying phase only correlation (POC) or A-KAZE feature matching to bright-field images (or some other images that look similar during the entire acquisition) inserted periodically during single-molecule acquisition. Super-resolved images are reconstructed by histogram binning method (plotting centroids on a blank image of magnified size).
+Fluorescent spots are detected by Gaussian fitting with subpixel correction after applying Gaussian-Laplacian (LoG) filter to enhance the contours of spots. Spots can be tracked by *k*-nearest neighbor algorithm if necessary. It should be noted that this algorithm is not suitable when spots move long distances between frames. However, we assume that it should be enough for most super-resolution usages. Sample drift can be detected by applying phase only correlation (POC) or A-KAZE feature matching to bright-field images (or some other images that look similar during the entire acquisition) inserted periodically during single-molecule acquisition. Super-resolved images are reconstructed by a histogram binning method (plotting centroids on a blank image of magnified size).
 
 **tanitracer** was named after **Daisuke Taniguchi**, who provided the core scripts implementing Gaussian fitting with subpixel correction, several candidate algorithms for spot tracking, and A-KAZE feature matching.
 
@@ -41,7 +41,7 @@ Algorithms are capsuled in the module files in `taniclass` and `taniext` folders
 
 ### Requirements
 
-**tanitracer** works on Python 3.6 (or later) and several libraries for numerical calculation and image processing. Installing **[Anaconda](https://www.anaconda.com/) (Python 3.6 version, 64-bit)** is a good choice since it prepares almost all requirements except for `OpenCV3-Python`.
+**tanitracer** works on Python 3.6 (or later) and several libraries for numerical calculation and image processing. Installing **[Anaconda](https://www.anaconda.com/) (Python 3.6 version, 64-bit)** is a good choice since it contains almost all requirements except for `OpenCV3-Python`.
 
 * `Python 3.6 or later (64-bit recommended)`
 * `argparse`

@@ -137,7 +137,7 @@ lifetime_range = args.lifetime_range
 consolidate_spots = args.consolidate_spots
 consolidate_mode = args.consolidate_mode[0]
 
-omit_lastplane_spots = args.omit_lastplane_spots
+omit_lastplane_spots = args.omit_lastframe_spots
 
 # read align table
 if align_spots is True:
