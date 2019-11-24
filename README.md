@@ -53,7 +53,7 @@ Algorithms are capsuled in the module files in `taniclass` and `taniext` folders
 * `Pillow (PIL)`
 * `matplotlib`
 * `OpenCv3-Python` - required for A-KAZE feature matching
-* `statmodels` - required for calculating FRC curves and FIRE values
+* `statsmodels` - required for calculating FRC curves and FIRE values
 
 Even with Anaconda, you have to install `OpenCv3-Python`. Recent Anaconda accepts the following command (often after many messages and long time):
 ```
