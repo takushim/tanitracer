@@ -68,7 +68,7 @@ parser.add_argument('-i', '--invert-image', action='store_true', default=marker.
                     help='invert the LUT of output image')
 
 parser.add_argument('input_file', nargs=1, default=input_filename, \
-                    help='input (multpage) TIFF file to draw markers')
+                    help='input (multipage) TIFF file to draw markers')
 
 args = parser.parse_args()
 

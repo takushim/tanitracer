@@ -42,7 +42,7 @@ class Gaussian8:
         self.min_distance = 1 # Pixel area (int) to find local max (usually 1)
         self.threshold_abs = 0.006 # Threshold to find local max
         self.max_diameter = 10.0
-        self.dup_threshold = 2.0
+        self.dup_threshold = 3.0
         self.columns = ['total_index', 'plane', 'index', 'x', 'y', 'diameter', 'intensity', 'fit_error', 'chi_square']
         self.image_clip_min = 0.0
         self.image_clip_max = numpy.iinfo(numpy.int32).max
