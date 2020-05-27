@@ -37,13 +37,14 @@ from PIL import Image, ImageDraw
 class SpotMarker:
     def __init__ (self):
         self.marker_size = 4
+        self.marker_width = 1
         self.mark_regression = False
         self.force_mark_emerge = False
         self.invert_image = False
         self.marker_colors = ['red', 'orange', 'blue', 'cyan']
         self.marker_rainbow = False
-        self.rainbow_colors = numpy.array(["red", "blue", "lightgreen", "magenta", "purple", "cyan",\
-                                           "yellow", "orange", "maroon"])
+        self.rainbow_colors = numpy.array(["red", "blue", "green", "magenta", "purple", "cyan",\
+                                           "orange", "maroon"])
 
     def convert_to_color (self, orig_image):
         if (len(orig_image.shape) > 3):
@@ -155,23 +156,23 @@ class SpotMarker:
                 if spot['status'] == 'emerge':
                     draw.rectangle(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
                                    (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
-                                   fill = None, outline = spot.color)
+                                   fill = None, width = self.marker_width, outline = spot.color)
                 else:
                     draw.ellipse(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
                                 (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
-                                fill = None, outline = spot.color)
+                                fill = None, width = self.marker_width, outline = spot.color)
 
                     # draw additional marker
                     if spot['status'] == 'one':
                         draw.arc(((spot.int_x - self.marker_size, spot.int_y - self.marker_size),\
                                 (spot.int_x + self.marker_size, spot.int_y + self.marker_size)),\
-                                315, 135, fill = marker_color_end)
+                                315, 135, width = self.marker_width, fill = marker_color_end)
 
                 # mark duplicated spot
                 if spot['duplicated'] is True:
                     draw.ellipse(((spot.int_x - self.marker_size + 1, spot.int_y - self.marker_size + 1),\
                                   (spot.int_x + self.marker_size + 1, spot.int_y + self.marker_size + 1)),\
-                                  fill = None, outline = self.marker_colors[3])
+                                  fill = None, width = self.marker_width, outline = self.marker_colors[3])
 
             image_color[index] = numpy.asarray(image)
 

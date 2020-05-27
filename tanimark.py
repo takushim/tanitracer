@@ -53,6 +53,8 @@ parser.add_argument('-f', '--marker-file', nargs=1, default=marker_filename, \
                     help='name of TSV file (read [basename].txt if not specified)')
 parser.add_argument('-z', '--marker-size', nargs=1, type=int, default=[marker.marker_size], \
                     help='marker size to draw')
+parser.add_argument('-w', '--marker-width', nargs=1, type=int, default=[marker.marker_width], \
+                    help='marker line width to draw')
 parser.add_argument('-c', '--marker-colors', nargs=4, type=str, default=marker.marker_colors, \
                     metavar=('NEW', 'CONT', 'END', 'REDUN'), \
                     help='marker colors for new, tracked, disappearing, and redundant spots')
@@ -75,6 +77,7 @@ args = parser.parse_args()
 # set arguments
 input_filename = args.input_file[0]
 marker.marker_size = args.marker_size[0]
+marker.marker_width = args.marker_width[0]
 marker.marker_colors = args.marker_colors
 marker.marker_rainbow = args.rainbow_colors
 marker.invert_image = args.invert_image
