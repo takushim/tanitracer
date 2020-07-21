@@ -67,3 +67,11 @@ class SpotFilter:
         agg_dict['distance'] = numpy.sum
         spot_table = spot_table.groupby('total_index').agg(agg_dict).reset_index(drop=True)
         return spot_table
+
+    def filter_spots_maskimage (self, spot_table, mask_image):
+        first_spot_table = spot_table.drop_duplicates(subset='total_index', keep='first').reset_index(drop=True)
+        first_spot_table['mask'] = mask_image[first_spot_table.y.values.astype(numpy.int), first_spot_table.x.values.astype(numpy.int)]
+        index_set = set(first_spot_table[first_spot_table['mask'] > 0].total_index.to_list())
+        return spot_table[spot_table.total_index.isin(index_set)]
+
+

@@ -32,16 +32,18 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import os, sys, argparse, pandas, numpy
-from taniclass import spotmarker
+from taniclass import spotmarker, spotfilter
 from skimage.external import tifffile
 
 # prepare spot marker
 marker = spotmarker.SpotMarker()
+filter = spotfilter.SpotFilter()
 
 # defaults
 input_filename = None
 marker_filename = None
 output_filename = None
+mask_image_filename = None
 
 # parse arguments
 parser = argparse.ArgumentParser(description='Read TSV file and draw markers on input images', \
@@ -66,6 +68,9 @@ parser.add_argument('-R', '--mark-regression', action='store_true', default=mark
 parser.add_argument('-E', '--force-mark-emerge', action='store_true', default=marker.force_mark_emerge, \
                     help='force marking emerging spots in regression mode')
 
+parser.add_argument('-m', '--mask-image', nargs=1, default = [mask_image_filename], \
+                    help='read masking image to omit unnecessary area')
+
 parser.add_argument('-i', '--invert-image', action='store_true', default=marker.invert_image, \
                     help='invert the LUT of output image')
 
@@ -76,6 +81,7 @@ args = parser.parse_args()
 
 # set arguments
 input_filename = args.input_file[0]
+mask_image_filename = args.mask_image[0]
 marker.marker_size = args.marker_size[0]
 marker.marker_width = args.marker_width[0]
 marker.marker_colors = args.marker_colors
@@ -112,6 +118,14 @@ image_color = marker.convert_to_color(orig_image)
 # read results
 print("Read spots from %s." % (marker_filename))
 spot_table = pandas.read_csv(marker_filename, comment = '#', sep = '\t')
+
+# use mask image to filter spots
+if mask_image_filename is not None:
+    mask_image = tifffile.imread(mask_image_filename)
+    mask_image = mask_image.astype(numpy.bool).astype(numpy.uint8)
+    total_spots = len(spot_table)
+    spot_table = filter.filter_spots_maskimage(spot_table, mask_image)
+    print("Filtered %d spots using a mask image: %s." % (total_spots - len(spot_table), mask_image_filename))
 
 # mark tracking status
 print("Marked %d spots on %s." % (len(spot_table), input_filename))
