@@ -68,6 +68,9 @@ parser.add_argument('-o', '--output-file', nargs=1, default=output_filename, \
 parser.add_argument('-p', '--use-plane', nargs=1, type=int, default=[use_plane], \
                     help='frame to detect spots (the first frame if not specified)')
 
+parser.add_argument('-x', '--max-diameter', nargs=1, type=float, default=[tracer.max_diameter], \
+                    help='limit the maximum diameter of spots (to avoid abnormal fitting)')
+
 parser.add_argument('-z', '--marker-size', nargs=1, type=int, default=[marker.marker_size], \
                     help='marker size to draw detected spots')
 parser.add_argument('-c', '--marker-colors', nargs=2, type=str, \
@@ -110,6 +113,7 @@ use_plane = args.use_plane[0]
 marker.marker_colors = [args.marker_colors[0] for i in range(3)] + [args.marker_colors[1]]
 marker.marker_size = args.marker_size[0]
 marker.invert_image = args.invert_image
+tracer.max_diameter = args.max_diameter[0]
 
 if args.output_file is None:
     output_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_fit.tif'
