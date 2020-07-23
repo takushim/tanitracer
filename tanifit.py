@@ -31,10 +31,9 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os, platform, sys, argparse, pandas, numpy, itertools
+import os, platform, sys, argparse, pandas, numpy, itertools, tifffile
 from taniclass import gaussian8, spotmarker
 from PIL import Image, ImageDraw, ImageFont
-from skimage.external import tifffile
 
 # prepare tracing library
 tracer = gaussian8.Gaussian8()

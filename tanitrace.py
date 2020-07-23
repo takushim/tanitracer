@@ -31,9 +31,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os, sys, argparse, pandas, numpy, matplotlib
+import os, sys, argparse, pandas, numpy, matplotlib, tifffile
 from taniclass import gaussian8, nnchaser, spotmarker, spotplotter
-from skimage.external import tifffile
 
 # prepare library instances
 tracer = gaussian8.Gaussian8()

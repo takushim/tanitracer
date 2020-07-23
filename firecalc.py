@@ -31,11 +31,9 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os, platform, sys, argparse
-import numpy
+import os, platform, sys, argparse, numpy, tifffile
 import matplotlib.pyplot as pyplot
 from taniclass import firefrc
-from skimage.external import tifffile
 
 # prepare resolver
 resolver = firefrc.FireFRC()

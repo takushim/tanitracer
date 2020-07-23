@@ -32,11 +32,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import os, platform, sys, glob, argparse
-import numpy, pandas
+import numpy, pandas, tifffile
 from taniext import poc
 from taniclass import akaze
 from PIL import Image
-from skimage.external import tifffile
 
 # prepare aligner (used for image processing only)
 aligner = akaze.Akaze()
