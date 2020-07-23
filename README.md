@@ -52,6 +52,7 @@ Algorithms are capsuled in the module files in `taniclass` and `taniext` folders
 * `scikit-learn`
 * `Pillow (PIL)`
 * `matplotlib`
+* `tifffile` - Added 07/23/2020 since tifffile module in scikit-image was deplicated 
 * `OpenCv3-Python` - required for A-KAZE feature matching
 * `statsmodels` - required for calculating FRC curves and FIRE values
 

@@ -32,9 +32,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import os, platform, sys, glob, argparse, time
-import pandas, numpy
+import pandas, numpy, tifffile
 from taniclass import spotplotter, spotfilter
-from skimage.external import tifffile
 
 # prepare classes
 plotter = spotplotter.SpotPlotter()

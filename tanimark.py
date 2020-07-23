@@ -31,9 +31,8 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os, sys, argparse, pandas, numpy
+import os, sys, argparse, pandas, numpy, tifffile
 from taniclass import spotmarker, spotfilter
-from skimage.external import tifffile
 
 # prepare spot marker
 marker = spotmarker.SpotMarker()

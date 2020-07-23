@@ -31,8 +31,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import os, sys, argparse, numpy
-from skimage.external import tifffile
+import os, sys, argparse, numpy, tifffile
 from taniclass import gaussian8
 
 # classes
