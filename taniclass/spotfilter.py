@@ -31,12 +31,17 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import sys, numpy, pandas
+import sys, time, numpy, pandas, tifffile
 
 class SpotFilter:
     def __init__ (self):
         self.lifetime_min = 0
         self.lifetime_max = numpy.inf
+        self.mask_image_filename = None
+
+    def output_header (self, output_file):
+        output_file.write('## Filtered by SpotFilter at %s\n' % (time.ctime()))
+        output_file.write('#   mask_image = %s\n' % (self.mask_image_filename))
 
     def filter_spots_lifetime (self, spot_table):
         spot_table = spot_table.sort_values(by = ['total_index', 'plane']).reset_index(drop=True)
@@ -68,10 +73,17 @@ class SpotFilter:
         spot_table = spot_table.groupby('total_index').agg(agg_dict).reset_index(drop=True)
         return spot_table
 
-    def filter_spots_maskimage (self, spot_table, mask_image):
+    def filter_spots_maskimage (self, spot_table):
+        if self.mask_image_filename is None:
+            return spot_table
+
+        mask_image = tifffile.imread(self.mask_image_filename)
+        mask_image = mask_image.astype(numpy.bool).astype(numpy.uint8)
+
         first_spot_table = spot_table.drop_duplicates(subset='total_index', keep='first').reset_index(drop=True)
         first_spot_table['mask'] = mask_image[first_spot_table.y.values.astype(numpy.int), first_spot_table.x.values.astype(numpy.int)]
         index_set = set(first_spot_table[first_spot_table['mask'] > 0].total_index.to_list())
+
         return spot_table[spot_table.total_index.isin(index_set)]
 
 
