@@ -55,7 +55,7 @@ elif platform.system() == "Darwin":
     font_file = '/Library/Fonts/Verdana.ttf'
 else:
     raise Exception('font file error.')
-font_size = 40
+font_size = 20
 font_color = 'white'
 
 # parse arguments
@@ -173,7 +173,7 @@ for index, condition in enumerate(conditions):
     # draw condition
     image = Image.fromarray(font_images[index])
     draw = ImageDraw.Draw(image)
-    draw.text((0, 0), "M %d, L %.2f, T %.5f" % (min_distance, laplace, threshold_abs), font = font, fill = font_color)
+    draw.text((0, 0), "L %.2f T %.5f M %d" % (laplace, threshold_abs, min_distance), font = font, fill = font_color)
     font_images[index] = numpy.asarray(image)
 
     # count spots
