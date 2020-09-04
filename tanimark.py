@@ -42,7 +42,6 @@ filter = spotfilter.SpotFilter()
 input_filename = None
 marker_filename = None
 output_filename = None
-mask_image_filename = None
 
 # parse arguments
 parser = argparse.ArgumentParser(description='Read TSV file and draw markers on input images', \
@@ -67,7 +66,7 @@ parser.add_argument('-R', '--mark-regression', action='store_true', default=mark
 parser.add_argument('-E', '--force-mark-emerge', action='store_true', default=marker.force_mark_emerge, \
                     help='force marking emerging spots in regression mode')
 
-parser.add_argument('-m', '--mask-image', nargs=1, default = [mask_image_filename], \
+parser.add_argument('-M', '--mask-image', nargs=1, default = filter.mask_image_filename, \
                     help='read masking image to omit unnecessary area')
 
 parser.add_argument('-i', '--invert-image', action='store_true', default=marker.invert_image, \
@@ -80,7 +79,6 @@ args = parser.parse_args()
 
 # set arguments
 input_filename = args.input_file[0]
-mask_image_filename = args.mask_image[0]
 marker.marker_size = args.marker_size[0]
 marker.marker_width = args.marker_width[0]
 marker.marker_colors = args.marker_colors
@@ -106,6 +104,9 @@ if args.output_file is None:
 else:
     output_filename = args.output_file[0]
 
+if args.mask_image is not None:
+    filter.mask_image_filename = args.mask_image[0]
+
 # read image
 orig_image = tifffile.imread(input_filename)
 if len(orig_image.shape) == 2:
@@ -119,11 +120,9 @@ print("Read spots from %s." % (marker_filename))
 spot_table = pandas.read_csv(marker_filename, comment = '#', sep = '\t')
 
 # use mask image to filter spots
-if mask_image_filename is not None:
-    mask_image = tifffile.imread(mask_image_filename)
-    mask_image = mask_image.astype(numpy.bool).astype(numpy.uint8)
+if filter.mask_image_filename is not None:
     total_spots = len(spot_table)
-    spot_table = filter.filter_spots_maskimage(spot_table, mask_image)
+    spot_table = filter.filter_spots_maskimage(spot_table)
     print("Filtered %d spots using a mask image: %s." % (total_spots - len(spot_table), mask_image_filename))
 
 # mark tracking status

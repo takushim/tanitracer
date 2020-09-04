@@ -32,13 +32,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import os, sys, argparse, pandas, numpy, matplotlib, tifffile
-from taniclass import gaussian8, nnchaser, spotmarker, spotplotter
+from taniclass import gaussian8, nnchaser, spotmarker, spotplotter, spotfilter
 
 # prepare library instances
 tracer = gaussian8.Gaussian8()
 chaser = nnchaser.NNChaser()
 marker = spotmarker.SpotMarker()
 plotter = spotplotter.SpotPlotter()
+filter = spotfilter.SpotFilter()
 
 # defaults
 input_filename = None
@@ -89,6 +90,10 @@ parser.add_argument('-c', '--marker-colors', nargs=4, type=str, \
                     help='marker colors for new, tracked, disappearing, and redundant spots')
 parser.add_argument('-r', '--marker-rainbow', action='store_true', default=marker.marker_rainbow, \
                     help='use rainbow colors to distinguish each tracking')
+
+# masking image
+parser.add_argument('-M', '--mask-image', nargs=1, default = filter.mask_image_filename, \
+                    help='read masking image to omit unnecessary area')
 
 parser.add_argument('-i', '--invert-image', action='store_true', default=marker.invert_image, \
                     help='invert the LUT of output image')
@@ -146,6 +151,9 @@ marker.marker_size = args.marker_size[0]
 marker.marker_rainbow = args.marker_rainbow
 marker.invert_image = args.invert_image
 
+if args.mask_image is not None:
+    filter.mask_image_filename = args.mask_image[0]
+
 output_image = args.output_image
 if args.output_image_file is None:
     output_image_filename = os.path.splitext(os.path.basename(input_filename))[0] + '_marked.tif'
@@ -178,11 +186,19 @@ if chase_spots is True:
     results = chaser.chase_spots(results)
     print("Chaser detected %d unique spots." % (len(results.total_index.unique())))
 
+# use mask image to filter spots
+if filter.mask_image_filename is not None:
+    total_spots = len(results)
+    results = filter.filter_spots_maskimage(results)
+    print("Filtered %d spots using a mask image: %s." % (total_spots - len(results), filter.mask_image_filename))
+
 # open tsv file and output header
 output_tsv_file = open(output_tsv_filename, 'w', newline='')
 tracer.output_header(output_tsv_file, input_filename, orig_image)
 if chase_spots is True:
     chaser.output_header(output_tsv_file)
+if filter.mask_image_filename is not None:
+    filter.output_header(output_tsv_file)
 output_tsv_file.write('\t'.join(results.columns) + '\n')
 
 # output result table and close
