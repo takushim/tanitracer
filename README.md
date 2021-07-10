@@ -1,14 +1,17 @@
 # tanitracer
 
-A python toolbox for semi-automatic single particle tracking (SPT) and reconstruction of super-resolution images. The python scripts in this toolbox were used in our paper, **Semi-automated single-molecule microscopy screening of fast-dissociating specific antibodies directly from hybridoma cultures**, published in Cell Reports, 2021 ([pubmed link](https://pubmed.ncbi.nlm.nih.gov/33535030/)).
+A python toolbox for semi-automatic single particle tracking (SPT) and reconstruction of super-resolution images. The python scripts in this toolbox were used in our paper, **Semi-automated single-molecule microscopy screening of fast-dissociating specific antibodies directly from hybridoma cultures**, [published in Cell Reports, 2021](https://pubmed.ncbi.nlm.nih.gov/33535030/).
+
+**tanitracer** was named after **Daisuke Taniguchi**, who provided the core scripts implementing Gaussian fitting with subpixel correction and several candidate algorithms for spot tracking and image registration.
 
 ## Introduction
 
-**tanitracer** is a set of python scripts that accepts time-lapse multipage (or single-page) TIFF files and MetaMorph stack files acquired by single-molecule microscopy. Scripts can detect fluorescent spots and reconstruct super-resolved images using the centroids of detected spots.
+**tanitracer** is a set of pytho scripts for single particle tracking and resonstruction of super-resolution images. In this document, basic usages of the scripts are described using a 16-bit multi-page sample TIFF file, [testimage.tif](https://github.com/takushim/tanitracer/raw/master/testdata/testimage.tif). The file contains time-lapse single-molecule microscopy images of fluorescently-labeled anti-FLAG tag Fab fragment probes (Fab probes) recognizing FLAG-tagged actin expressed in a *Xenopus* XTC cell. Bound Fab probes are frequently exchanged since the Fab probes are synthesized from our new reagent, **fast-dissociting, highly-specific antibody**.
 
-Fluorescent spots are detected by Gaussian fitting with subpixel correction after applying Gaussian-Laplacian (LoG) filter to enhance the contours of spots. Spots can be tracked by *k*-nearest neighbor algorithm if necessary. It should be noted that this algorithm is not suitable when spots move long distances between frames. However, we assume that it should be enough for most super-resolution usages. Sample drift can be detected by applying phase only correlation (POC) or A-KAZE feature matching to bright-field images (or some other images that look similar during the entire acquisition) inserted periodically during single-molecule acquisition. Super-resolved images are reconstructed by a histogram binning method (plotting centroids on a blank image of magnified size).
 
-**tanitracer** was named after **Daisuke Taniguchi**, who provided the core scripts implementing Gaussian fitting with subpixel correction, several candidate algorithms for spot tracking, and A-KAZE feature matching.
+![The first frame of testimage.tif](https://github.com/takushim/tanitracer/raw/master/images/testimage_raw.jpg)
+
+
 
 Usually, images are processed by the following scripts:
 * `tanilacian.py` - testing the pre-processing by LoG filter (optional)
