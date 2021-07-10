@@ -1,6 +1,6 @@
 # tanitracer
 
-A python toolbox for reconstructing and analyzing super-resolution images
+A python toolbox for semi-automatic single particle tracking (SPT) and reconstruction of super-resolution images. The python scripts in this toolbox were used in our paper, **Semi-automated single-molecule microscopy screening of fast-dissociating specific antibodies directly from hybridoma cultures**, published in Cell Reports, 2021 ([pubmed link](https://pubmed.ncbi.nlm.nih.gov/33535030/)).
 
 ## Introduction
 
