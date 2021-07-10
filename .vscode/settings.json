@@ -38,5 +38,6 @@
         "tanipoc",
         "tanitrace",
         "tanitracer"
-    ]
+    ],
+    "python.linting.pylintEnabled": true
 }
