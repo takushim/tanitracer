@@ -56,7 +56,8 @@ First of all, install [ImageJ](https://imagej.nih.gov/ij/) or [Fiji](https://fij
 
 All of these libraries can be installed using `pip` by typing:
 ```
-> pip install numpy pandas scipy scikit-image scikit-learn pillow matplotlib tifffile opencv-contrib-python statsmodels
+> pip install numpy pandas scipy scikit-image scikit-learn pillow \
+  matplotlib tifffile opencv-contrib-python statsmodels
 ```
 
 **Note:** It is highly recommended to install these packages in [a virtual environments of python](https://docs.python.org/3/library/venv.html).
