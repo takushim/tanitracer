@@ -6,28 +6,25 @@ A python toolbox for semi-automatic single particle tracking (SPT) and reconstru
 
 ## Introduction
 
-**tanitracer** is a set of pytho scripts for single particle tracking and resonstruction of super-resolution images. In this document, basic usages of the scripts are described using a 16-bit multi-page sample TIFF file, [testimage.tif](https://github.com/takushim/tanitracer/raw/master/testdata/testimage.tif). The file contains time-lapse single-molecule microscopy images of fluorescently-labeled anti-FLAG tag Fab fragment probes (Fab probes) recognizing FLAG-tagged actin expressed in a *Xenopus* XTC cell. Bound Fab probes are frequently exchanged since the Fab probes are synthesized from our new reagent, **fast-dissociting, highly-specific antibody**.
+**tanitracer** is a set of python scripts for single particle tracking (SPT) and reconstruction of super-resolution images. In this document, basic usages of scripts are described using a 16-bit multi-page sample TIFF file, [testimage.tif](https://github.com/takushim/tanitracer/raw/master/testdata/testimage.tif).
 
-The images in testimage.tif appears:
-![The first frame of testimage.tif](https://github.com/takushim/tanitracer/raw/master/images/testimage_raw.jpg) <!-- .element height="50%" width="50%" -->
-
-The following scripts are used for single particle tracking of fluorescent spots:
+These four scripts are for SPT of fluorescent spots:
 * `tanilacian.py` - tests the pre-processing using the LoG filter
 * `tanifit.py` - determines parameters to detect fluorescent spots
 * `tanitrace.py` - tracks fluorescent spots
-* `tanitime.py` - calculates regression rates or distribution of dwell times using
+* `tanitime.py` - calculates regression rates or distribution of dwell times
 
-
+These two scripts are to reconstruct super-resolution images:
 * `tanipoc.py` or `taniakaze.py` - calculation of sample drift (optional)
 * `taniplot.py` - reconstruction of super-resolved images
 
-Other scripts listed below help to process or analyze images:
+Other scripts help to process or analyze images:
 * `tanimark.py` - drawing markers for detected spots (helper for figures)
 * `frcplot.py` - making two divided super-resolved images for FRC analysis
 * `firecalc.py` - calculates FRC curves and FIRE values from two images
 * `fireheat.py` - making heat-maps of local FIRE values from two images
 
-Algorithms are capsuled in the module files in `taniclass` and `taniext` folders, which include:
+Algorithms are capsuled in the module files in `taniclass` and `taniext` folders:
 * `gaussian8.py` - Gaussian fitting of fluorescent spots
 * `nnchaser.py` - spot tracking by *k*-nearest neighbor algorithm
 * `spotplotter.py` - reconstruction of super-resolved images
@@ -45,10 +42,7 @@ Algorithms are capsuled in the module files in `taniclass` and `taniext` folders
 
 ### Requirements
 
-**tanitracer** works on Python 3.6 (or later) and several libraries for numerical calculation and image processing. Installing **[Anaconda](https://www.anaconda.com/) (Python 3.6 version, 64-bit)** is a good choice since it contains almost all requirements except for `OpenCV3-Python`.
-
-* `Python 3.6 or later (64-bit recommended)`
-* `argparse`
+First of all, install [ImageJ](https://imagej.nih.gov/ij/) or [Fiji](https://fiji.sc/) to check output images. Then, install Python 3.6 or later to run the python scripts in **tanitracer**. The 64-bit version is highly recommended. Required libraries are:
 * `numpy`
 * `pandas`
 * `scipy`
@@ -56,146 +50,177 @@ Algorithms are capsuled in the module files in `taniclass` and `taniext` folders
 * `scikit-learn`
 * `Pillow (PIL)`
 * `matplotlib`
-* `tifffile` - Added 07/23/2020 since tifffile module in scikit-image was deplicated 
-* `OpenCv3-Python` - required for A-KAZE feature matching
-* `statsmodels` - required for calculating FRC curves and FIRE values
+* `tifffile`
+* `opencv-contrib-python` - for A-KAZE feature matching
+* `statsmodels` - for calculating FRC curves and FIRE values
 
-Even with Anaconda, you have to install `OpenCv3-Python`. Recent Anaconda accepts the following command (often after many messages and long time):
+All of these libraries can be installed using `pip` by typing:
 ```
-conda install opencv
+> pip install numpy pandas scipy scikit-image scikit-learn pillow matplotlib tifffile opencv-contrib-python statsmodels
 ```
+
+**Note:** It is highly recommended to install these packages in [a virtual environments of python](https://docs.python.org/3/library/venv.html).
 
 ### Installation
 
-Download the zip file from my [GitHub repository](https://github.com/takushim/tanitracer) and place all the files in an appropriate folder, for example, `C:\Users\[username]\tanitracer`. It is recommended to add the installed folder to PATH environment variable because you can run the script easily from the working folders. The library files (in `taniclass` and `taniext`) are automatically found by the python interpreter as long as they are located in the folder of script files.
-
-If you have installed [git](https://git-scm.com/), you can clone from my [GitHub repository](https://github.com/takushim/tanitracer) by:
-
+Download the zip file from my [GitHub repository](https://github.com/takushim/tanitracer) and place all the files in an appropriate folder, for example, `C:\Users\[username]\tanitracer`. Add the installed folder to the `PATH` environment variable. The library files in `taniclass` and `taniext` folders are automatically found by the python interpreter as long as they are located in the folder of script files. If [git](https://git-scm.com/) is installed, my git repository can be cloned using the following commend:
 ```
-git clone https://github.com/takushim/tanitracer.git
+> git clone https://github.com/takushim/tanitracer.git
 ```
 
-You can check the correct installation by showing the help messages:
-```
-tanitrace.py --help
-```
-
-## Usage
+## Single particle tracking (SPT)
 
 ### Overview
 
-**NOTE:** sample images will be uploaded after publication
+Basic usages are described using a 16-bit multi-page sample TIFF file, [testimage.tif](https://github.com/takushim/tanitracer/raw/master/testdata/testimage.tif). The file contains time-lapse single-molecule microscopy images of fluorescently-labeled anti-FLAG tag Fab fragment probes (Fab probes) recognizing FLAG-tagged actin expressed in a *Xenopus* XTC cell. Bound Fab probes are frequently exchanged since the Fab probes are synthesized from our new reagent, **fast-dissociating, highly-specific antibody**.
 
-**tanitracer** accepts time-lapse multipage (or single-page) TIFF and MetaMorph stack files. The following procedure is tested with 16-bit grayscale images, but should work with 8-bit and 32-bit grayscale images. RGB images are not basically accepted. The results of spot detection and drift calculation are saved in tab separated values (TSV) files.
+The first frame of testimage.tif is shown below. Each white spot is an anti-FLAG tag Fab probe molecule recognizing FLAG-actin in the cell and a single particle to be tracked.
 
-Usually, images are processed in the following order:
-1. Parameter optimization to detect single-molecule fluorescent spots
-1. Detection of fluorescent spots and output to TSV files
-1. Calculation of sample drift during acquisition (optional)
-1. Reconstruction of a super-resolved image
-1. Analysis of resolution by Fourier ring correlation (advanced)
+![testimage.tif](https://github.com/takushim/tanitracer/raw/master/images/testimage_raw.jpg)
 
-Please see `--help` for options not explained in this document.
 
-### Parameter optimization to detect single-molecule fluorescent spots
+### Parameter optimization
 
-Appropriate detection of single-molecule fluorescent spots requires optimization of two parameters, sigma of LoG filter and threshold in Gaussian fitting. `tanifit.py` helps to optimize these parameters by processing the input image with different parameters. The output is a multipage TIFF, which is consisted of the first (or specified) frame from the input image, but markers are drawn to indicate the detection result with the given parameters.
+Download [testimage.tif](https://github.com/takushim/tanitracer/raw/master/testdata/testimage.tif) and place in an appropriate folder. In this tutorial, **I assume that we are in the folder where `testimage.tif` is placed**. Please run each script with a `--help` option to see the options not explained in this document.
 
-`tanifit.py` is usually used in the following style:
+First, optimize the parameter of a LoG filter since **tanitracer** pre-process images using a LoG filter and then determine the centroids of fluorescent spots. Type the following command to see how images are pre-processed:
 ```
-tanifit.py -l 1.4 -T 0.005 0.1 0.001 input_images.tif
-```
-`-l 1.4` sets the sigma of LoG filter. The sigma is usually adjusted slightly smaller than the average diameter (in pixel) of fluorescent spots. `-T 0.005 0.1 0.001` steps up the threshold in Gaussian fitting from 0.005 to 0.1 by 0.001. If the output image is difficult to see, you can invert the lookup table (of output image) by `-i` option.
-
-**Optional:** The effect of pre-processing by LoG filter can be checked as:
-```
-tanilacian.py -l 1.4 input_images.tif
-```
-which outputs the image processed by LoG filter at sigma = 1.4. The output filename is `[basename]_log.tif` ("input_images_log.tif" in this case).
-
-### Detection of fluorescent spots and output to TSV files
-
-After optimizing the parameters, `tanitrace.py` processes the entire time-lapse image with given parameters. The result is output to a TSV file.
-
-Given that sigma = 1.4 and threshold = 0.03, the command line should be:
-```
-tanitrace.py -l 1.4 -t 0.03 -C input_images.tif
-```
-which process the entire time-lapse image, and output the results to a TSV file. The filename of TSV file is automatically assigned replacing the extension of image file to `.txt` ("input_images.txt" in this case) unless otherwise specified. `-C` turns on tracking by *k*-nearest neighbor algorithm, which is useful for calculating lifetimes of spots or for detecting spots that remain for several frames.
-
-**Note:** You can check the detection using `-O` option. It outputs an RGB (multipage) TIFF file which is consisted of original single-molecule images with markers of detected spots. The output filename is `[basename]_marked.tif` ("input_images_marked.tif" in this case). The original images are converted to 8-bit images to make RGB images. If you want to mark the spots on other images (for example, images converted to 8-bit or RGB by yourself), use `tanimark.py`.
-
-This script accepts one image file. Thus, processing multiple files requires help from shells. For example, PowerShell can process multiple files by:
-
-```
-foreach ($file in (get-item images/*.tif))
-{
-    tanitrace.py -l 1.4 -t 0.03 -C $file
-}
+> tanilacian.py -l 1.8 testimages.tif
 ```
 
-**Note:** The result TSV files are output in the **current** folder. You can prepare a folder for analysis, move to the folder, and then output TSV files into the folder.
+Processed images are output in `testimages_log.tif` in the current folder. The first frame is shown below. Fluorescent spots are selectively enhanced. The parameter, `1.8`, was determined to be close to the radius of fluorescent spots because the LoG filter enhances objects with the diameters double of the given parameter. Empirically, better tracking can be achieved by setting the parameter slightly smaller than the radius of fluorescent spots. 
 
-### Calculation of sample drift during acquisition (optional)
+![testimage_log.jpg](https://github.com/takushim/tanitracer/raw/master/images/testimage_log.jpg)
 
-**Note:** The step can be skipped if sample drift is ignorable.
+Next, determine the threshold for Gaussian fitting. Type the following command:
+```
+> tanifit.py -l 1.8 -T 0.01 0.1 0.001 -i -z 3 testimages.tif
+```
 
-`tanipoc.py` and `taniakaze.py` calculate the drift of samples using a series of bright-field images inserted periodically during the acquisition of single-molecule images. Each frame is compared to the first frame to detect the drift. Although these scripts were tested with bright-field images, they may work with grayscale fluorescent images. If the bright field images contain some bright structures (such as nucleoli), `tanipoc.py` is better with its phase-only correlation. If the bright-field images are a complex structure (such as frozen tissue sections), `taniakaze.py` is better with its A-KAZE feature matching. These scripts were tested with bright-field images, but can accept fluorescent images.
+For the first frame of `testimages.tif`, this script apply a LoG filter with a parameter, `1.8`, and then try to locate fluorescent spots using a Gaussian fitting algorithm. The option, `-T 0.01 0.1 0.001`, is to step up the threshold in Gaussian fitting from 0.01 to 0.1 by 0.001. The options, `-i` and `-z 3`, are to invert the lookup table of output image and to set the radius of markers, respectively.
 
-The input images are a series of single-page TIFF files, multipage TIFF, files, MetaMorph stacks, or their mixtures. Wild-card characters (`*`, `?`, or other expressions that your shell accepts) are available to specify multiple files. The files are sorted in the lexical order, and concatenated before processing.
+The image below is a montage of three frames chosen from the output, `testimages_fit.tif`. In the left panel (threshold = 0.01), false spots are detected in almost all areas of the image. In the right panel (threshold = 0.1), many fluorescent spots are "missed". **The center panel (threshold = 0.03) seems to be the best.**
 
-Usual commands are:
-```
-tanipoc.py [path_to_bright_field_images]/*.tif
-```
-or
-```
-tanialign.py [path_to_bright_field_images]/*.tif
-```
-The output is a TSV file with a name of `align.txt` if not specified. You can output the aligned images with `-O` option. The output filename is `[basename_of_the_first_file]_poc.tif` or `[basename_of_the_first_file]_akaze.tif` (for example, "bright_field_00_poc.tif"). A external image can be specified as the reference using `-r` option.
+![testimage_fit.jpg](https://github.com/takushim/tanitracer/raw/master/images/testimage_fit.jpg)
 
-**Note:** You can use your own programs to calculate sample drift, but the result should be a TSV file containing three columns, `align_plane`, `align_x`, and `align_y`.
+### Particle tracking 
 
-### Reconstruction of a super-resolved images
+Finally, run the following command to track the fluorescent spots in `testimages.tif`:
+```
+tanitrace.py -l 1.8 -t 0.03 -C -O -z 3 -i -r testimages.tif
+```
 
-`taniplot.py` reads the TSV files listing the centroids of detected fluorescent spots, and plot them in a one-frame image (histogram binning method). Wild-card characters (`*`, `?`, or other expressions that your shell accepts) to specify multiple TSV files, which were sorted in the lexical order before reconstructing the image.
+This script apply the LoG filter with the parameter of `1.8` and perform Gaussian fitting with the threshold of `0.03` for the entire frames of `testimages.tif`. The option, `-C`, turns on the tracking of spots using *k*-nearest neighbor algorithm. The option, `-O`, is to output an image file with markers on detected spots. The effect of options, `-i` and `-z 3`, are to invert the lookup table of output image and to set the radius of markers as described above. The option, `-r`, is to distinguish each tracking of spots using different colors.
 
-**Important note:** This script _automatically_ reads `align.txt` for drift correction, and assumes that each bright field images is inserted every _500 frames_ of time-lapse single-molecule images. Use `-n` option to turn off drift correction. `-e` can change the interval to apply drift correction.
+Here is the first frame of output image:
 
-Typical command lines are:
+![testimage_marked.jpg](https://github.com/takushim/tanitracer/raw/master/images/testimage_marked.jpg)
+
+The list of detected spots (and tracking results) are output into **a TSV (tab separated values) file**. The TSV file for the demonstration above can be downloaded from [testimage.txt](https://github.com/takushim/tanitracer/raw/master/testdata/testimage.txt).
+
+**Note:** The script, `tanitrace.py`, automatically converts input images into 8-bit images and draw markers on them. To improve the contrast of images, convert the input images into 8-bit by yourself and use `tanimark.py` to draw markers.
+
+
+### Determination of "dissociation rates"
+
+The TSV file output above with "tracking on" can be used to determine the dissociation rates of fluorescent probes from their targets. Both `regression from t = 0` and `distribution of dwell-time` can be calculated using the TSV file. Type the following command to output the regression from t = 0:
 ```
-taniplot.py -X 8 [path_to_tsv_files]/*.txt
+> tanitime -x 0.05 testimage.txt
 ```
-or
+
+The option, `-x 0.05`, is set since the time-lapse images were acquired every 50 ms. An output TSV file can be downloaded from  [testimage_regression.txt](https://github.com/takushim/tanitracer/raw/master/testdata/testimage_regression.txt). Using an appropriate software, such as GraphPad Prism, a one-phase decay model can be fit to determine the "dissociation rate" as shown below. **Note that the curve below does not indicate the accurate dissociation rate of our Fab probe from their targets because the intervals of time-lapse images are not optimized.** Determination of dissociation rates require careful optimization of imaging condition and image processing parameters. 
+
+![testimage_regression.jpg](https://github.com/takushim/tanitracer/raw/master/images/regression.jpg)
+
+
+## Reconstruction of super-resolution images
+
+### Preparation of test data
+
+**Note: This section is under construction. Test data (very large) are going to be deposited at [Mendeley](https://www.mendeley.com/)**. 
+
+In [our paper](https://pubmed.ncbi.nlm.nih.gov/33535030/), super-resolution images were reconstructed using the centroids of many fluorescent spots. The test data will be archived in the following tree:
 ```
-taniplot.py -X 8 -a drift.txt -e 1000 [path_to_tsv_files]/*.txt
+testdata/   spots/  image001.stk
+                    image002.stk
+                    image003.stk
+                    ...
+                    image320.stk
+            bf/     bf001.stk
+                    bf002.stk
+                    bf003.stk
+                    ...
+                    bf320.stk
 ```
-or
+
+The files, `image*.stk`, are 500-frame time-lapse single-molecule microscopy images (MetaMorph stacks) of our fast-dissociating anti-FLAG tag Fab fragment probes (Fab probes) recognizing FLAG-tagged actin expressed in a *Xenopus* XTC cell. The files, `bf*.stk`, are single-frame bright-field images acquired for drift correction. Each bright-field image was acquired before starting each time-lapse acquisition.
+
+**Note:** Scheme here?
+
+### Centroid determination for each fluorescent spot
+
+First, open a **PowerShell** window and move to the `testdata` folder. Run the following commands sequentially to determine the centroids of fluorescent spots in the `image*.stk` files:
 ```
-taniplot.py -X 8 -n [path_to_tsv_files]/*.txt
+> mkdir analysis
+> cd analysis
+> foreach ($i in ../spots/image*.stk) {tanitrace.py -l 1.8 -t 0.05 -C $i}
+> cd ..
 ```
+
+These commands will make a folder to store output TSV files, `analysis`, and detect fluorescent spots in each `image*.stk` file. The options, `-l 1.8` and `-t 0.05`, are determined using the procedure described in the SPT section. The threshold was slightly elevated to `0.05` to suppress noise. The option, `-C`, is not always necessary to reconstruct super-resolution images but specified here since tracking information might be used in the future. Options to output images are not necessary.
+
+A **bash** user may prefer running the following commands:
+```
+> mkdir analysis
+> cd analysis
+> for i in ../spots/image*.stk; do tanitrace.py -l 1.8 -t 0.05 -C $i; done
+> cd ..
+```
+
+### Correction of sample drifting
+
+Next, calculate sample drifting during the acquisition by running the following command in the `testdata` folder:
+```
+> tanipoc.py bf/*.stk
+```
+
+This script concatenate the image files specified as the arguments and compare each image with the first image. Sample drifts are calculated using a phase-only-correlation (POC) algorithm and output the results in a TSV file, `align.txt`. Empirically, the POC algorithm works well with images with some bright structures, such as bright-field images of *Xenopus* XTC cells shown below. Another script, `taniakaze.py`, using an AKAZE feature matching algorithm seems to be better for samples with a more complicated structure.
+
+![bf.jpg](https://github.com/takushim/tanitracer/raw/master/images/bf.jpg)
+
+### Reconstruction of super-resolution images
+
+Finally, reconstruct a super-resolution images using the TSV files in the `analysis` folder recording the centroids of fluorescent spots and `align.txt` for drift correction. Run the following command:
+
+```
+> taniplot.py -X 8 analysis/*.txt
+```
+
 The output file name is given as `plot_2019-09-01_09-30-00.tif` using the current date and time if not specified. `-X` specifies the magnification to the original single-molecule images. The first command automatically read `align.txt`, and use the drift in each line for each set of 500 frames. The second line reads the TSV file, `drift.txt`, and applies drift correction every 1000 frames. The third command does not use drift correction.
 
-### Analysis of resolution by Fourier ring correlation (advanced)
+![testdata_plot.jpg](https://github.com/takushim/tanitracer/raw/master/images/testdata_plot.jpg)
 
-**Note:** The analysis in this section is not required for reconstructing super-resolution images. Usages are explained very briefly. Please read the source files before you run the scripts.
+## Analysis of resolution by Fourier ring correlation (TL;DR)
+
+**Note:** The analysis in this section is not required for regular use. Usages are explained very briefly. Please read the source files before use.
 
 `frcplot.py` reconstruct two super-resolved images dividing the TSV files into two groups.
 ```
-frcplot.py -d 80 -X 8 [path_to_results]/*.txt
+> frcplot.py -d 80 -X 8 [path_to_results]/*.txt
 ```
 `-d` specifies the size of grouping. In this case, files are divided into groups of 80 files, and then each group is divided into two groups (40 files to group #1 and 40 files to group #2). Two super-resolved images are reconstructed from the files divided into group #1 and those divided into group #2, respectively. The filenames of two images are `plot_eachXX_1.tif` and `plot_eachXX_2.tif`. Drift correction is performed similarly to `taniplot.py` reading `align.txt` and applying the drift of each line to each set of 500 frames.
 
 `firecalc.py` calculate the FRC curve and determine FIRE value from the two super-resolved files.
 ```
-firecalc.py -m mask.tif output_each80_1.tif output_each80_2.tif
+> firecalc.py -m mask.tif output_each80_1.tif output_each80_2.tif
 ```
 displays a FRC curve calculated from the two divided images. `-m` specifies the masking image. The masking image is converted to an array of TRUE and FALSE, and multiplied to the super-resolved images. Thus, the area of value 0 in the masking image is excluded from the calculation.
 
 `fireheat.py` calculate local FIRE value from the two super-resolved files, and makes a heat map.
 ```
-fireheat.py -m mask.tif output_each80_1.tif output_each80_2.tif
+> fireheat.py -m mask.tif output_each80_1.tif output_each80_2.tif
 ```
+
 
 ## Author
 
@@ -203,6 +228,7 @@ fireheat.py -m mask.tif output_each80_1.tif output_each80_2.tif
 
 
 See also the list of [contributors](https://github.com/takushim/tanitracer/contributors) who participated in this project.
+
 
 ## License
 
