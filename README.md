@@ -8,15 +8,16 @@ A python toolbox for semi-automatic single particle tracking (SPT) and reconstru
 
 **tanitracer** is a set of pytho scripts for single particle tracking and resonstruction of super-resolution images. In this document, basic usages of the scripts are described using a 16-bit multi-page sample TIFF file, [testimage.tif](https://github.com/takushim/tanitracer/raw/master/testdata/testimage.tif). The file contains time-lapse single-molecule microscopy images of fluorescently-labeled anti-FLAG tag Fab fragment probes (Fab probes) recognizing FLAG-tagged actin expressed in a *Xenopus* XTC cell. Bound Fab probes are frequently exchanged since the Fab probes are synthesized from our new reagent, **fast-dissociting, highly-specific antibody**.
 
+The images in testimage.tif appears:
+![The first frame of testimage.tif](https://github.com/takushim/tanitracer/raw/master/images/testimage_raw.jpg) <!-- .element height="50%" width="50%" -->
 
-![The first frame of testimage.tif](https://github.com/takushim/tanitracer/raw/master/images/testimage_raw.jpg)
+The following scripts are used for single particle tracking of fluorescent spots:
+* `tanilacian.py` - tests the pre-processing using the LoG filter
+* `tanifit.py` - determines parameters to detect fluorescent spots
+* `tanitrace.py` - tracks fluorescent spots
+* `tanitime.py` - calculates regression rates or distribution of dwell times using
 
 
-
-Usually, images are processed by the following scripts:
-* `tanilacian.py` - testing the pre-processing by LoG filter (optional)
-* `tanifit.py` - determining parameters to detect fluorescent spots
-* `tanitrace.py` - detection and tracking of fluorescent spots
 * `tanipoc.py` or `taniakaze.py` - calculation of sample drift (optional)
 * `taniplot.py` - reconstruction of super-resolved images
 
