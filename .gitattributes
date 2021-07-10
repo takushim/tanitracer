@@ -3,7 +3,7 @@
 testdata export-ignore
 images export-ignore
 .vscode export-ignore
+.pylintrc export-ignore
 *.jpg binary
 *.tif binary
 *.stk binary
-
