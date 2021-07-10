@@ -1,5 +1,8 @@
 .gitignore export-ignore
 .gitattributes export-ignore
+testdata export-ignore
+images export-ignore
+.vscode export-ignore
 *.jpg binary
 *.tif binary
 *.stk binary
