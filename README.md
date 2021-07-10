@@ -81,7 +81,9 @@ The first frame of testimage.tif is shown below. Each white spot is an anti-FLAG
 
 ### Parameter optimization
 
-Download [testimage.tif](https://github.com/takushim/tanitracer/raw/master/testdata/testimage.tif) and place in an appropriate folder. In this tutorial, **I assume that we are in the folder where `testimage.tif` is placed**. Please run each script with a `--help` option to see the options not explained in this document.
+Download [testimage.tif](https://github.com/takushim/tanitracer/raw/master/testdata/testimage.tif) and place in an appropriate folder. In this tutorial, **I assume that we are in the folder where `testimage.tif` is placed**.
+
+**Note:** Run each script with a `--help` option to see the options not explained in this document.
 
 First, optimize the parameter of a LoG filter since **tanitracer** pre-process images using a LoG filter and then determine the centroids of fluorescent spots. Type the following command to see how images are pre-processed:
 ```
@@ -128,7 +130,7 @@ The TSV file output above with "tracking on" can be used to determine the dissoc
 > tanitime -x 0.05 testimage.txt
 ```
 
-The option, `-x 0.05`, is set since the time-lapse images were acquired every 50 ms. An output TSV file can be downloaded from  [testimage_regression.txt](https://github.com/takushim/tanitracer/raw/master/testdata/testimage_regression.txt). Using an appropriate software, such as GraphPad Prism, a one-phase decay model can be fit to determine the "dissociation rate" as shown below. **Note that the curve below does not indicate the accurate dissociation rate of our Fab probe from their targets because the intervals of time-lapse images are not optimized.** Determination of dissociation rates require careful optimization of imaging condition and image processing parameters. 
+The option, `-x 0.05`, is set since the time-lapse images were acquired every 50 ms. An output TSV file can be downloaded from  [testimage_regression.txt](https://github.com/takushim/tanitracer/raw/master/testdata/testimage_regression.txt). Using an appropriate software, such as GraphPad Prism, a one-phase decay model can be fit to determine the "dissociation rate" as shown below. **Note that the curve below does not indicate the accurate dissociation rate of our Fab probe from their targets because the intervals of time-lapse images are not optimized. Determination of dissociation rates requires careful optimization of imaging condition and image processing parameters.**
 
 ![testimage_regression.jpg](https://github.com/takushim/tanitracer/raw/master/images/regression.jpg)
 
@@ -190,15 +192,15 @@ This script concatenate the image files specified as the arguments and compare e
 
 ### Reconstruction of super-resolution images
 
-Finally, reconstruct a super-resolution images using the TSV files in the `analysis` folder recording the centroids of fluorescent spots and `align.txt` for drift correction. Run the following command:
+Finally, reconstruct a super-resolution images using the TSV files in the `analysis` folder listing the centroids of fluorescent spots and `align.txt` recording the sample drifting during the acquisition. Run the following command:
 
 ```
-> taniplot.py -X 8 analysis/*.txt
+> taniplot.py -X 4 analysis/*.txt
 ```
 
-The output file name is given as `plot_2019-09-01_09-30-00.tif` using the current date and time if not specified. `-X` specifies the magnification to the original single-molecule images. The first command automatically read `align.txt`, and use the drift in each line for each set of 500 frames. The second line reads the TSV file, `drift.txt`, and applies drift correction every 1000 frames. The third command does not use drift correction.
+The centroids in the TSV files are plotted on a blank image. The option, `-X`, specifies the magnification to the original images. The script automatically find `align.txt` in the current folder and correct sample drifting using each line for every 500 frames. The final super-resolution image of FLAG-actin is shown below.
 
-![testdata_plot.jpg](https://github.com/takushim/tanitracer/raw/master/images/testdata_plot.jpg)
+![testimage_plot.jpg](https://github.com/takushim/tanitracer/raw/master/images/testimage_plot.jpg)
 
 ## Analysis of resolution by Fourier ring correlation (TL;DR)
 
