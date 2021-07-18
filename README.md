@@ -156,9 +156,9 @@ testdata/   spots/  image001.stk
                     bf320.stk
 ```
 
-The files, `image*.stk`, are 500-frame time-lapse single-molecule microscopy images (MetaMorph stacks) of our fast-dissociating anti-FLAG tag Fab fragment probes (Fab probes) recognizing FLAG-tagged actin expressed in a *Xenopus* XTC cell. The files, `bf*.stk`, are single-frame bright-field images acquired for drift correction. Each bright-field image was acquired before starting each time-lapse acquisition.
+These files are 320 pairs of a bright-field image, `bf*.stk`, and a 500-frame time-lapse single-molecule microscopy images, `image*.stk`, as described in the diagram below. The files, `image*.stk`, are 500-frame time-lapse single-molecule microscopy images (MetaMorph stacks) of our fast-dissociating anti-FLAG tag Fab fragment probes (Fab probes) recognizing FLAG-tagged actin expressed in a *Xenopus* XTC cell. The files, `bf*.stk`, are single-frame bright-field images acquired for drift correction. Each bright-field image was acquired before starting each time-lapse acquisition. 
 
-**Note:** Scheme here?
+![acquisition.jpg](https://github.com/takushim/tanitracer/raw/master/images/acquisition.jpg)
 
 ### Centroid determination for each fluorescent spot
 
