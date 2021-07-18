@@ -7,3 +7,5 @@ images export-ignore
 *.jpg binary
 *.tif binary
 *.stk binary
+*.ai binary
+*.psd binary
