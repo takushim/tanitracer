@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy
+import numpy, tifffile
 import scipy, scipy.fftpack
 from numpy import pi, sin, cos
 from scipy.optimize import leastsq
@@ -67,6 +67,7 @@ def poc(f, g, fitting_shape = (9, 9)):
     u = list(map(lambda x: x / 2.0, m))
 
     r = pocfunc(f, g)
+    tifffile.imsave("temp.tif", r, ome = True)
 
     # least-square fitting
     max_pos = numpy.argmax(r)
@@ -83,4 +84,8 @@ def poc(f, g, fitting_shape = (9, 9)):
     x = x + peak[1] - m[1]
     errorfunction = lambda p: numpy.ravel(pocfunc_model(p[0], p[1], p[2], r, u)(y, x) - fitting_area)
     plsq = leastsq(errorfunction, p0)
+    print(pocfunc_model(plsq[0][0], plsq[0][1], plsq[0][2], r, u)(y, x))
+    print(numpy.max(pocfunc_model(plsq[0][0], plsq[0][1], plsq[0][2], r, u)(y, x)))
+    print(plsq[0])
+
     return (plsq[0][0], plsq[0][1], plsq[0][2])

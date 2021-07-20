@@ -112,7 +112,7 @@ move_x = numpy.zeros(len(orig_images))
 move_y = numpy.zeros(len(orig_images))
 for index in range(len(orig_images)):
     corr, move_y[index], move_x[index] = poc.poc(reference_image, orig_images[index])
-    print("Plane %d, dislocation = (%f, %f)." % (index, move_x[index], move_y[index]))
+    print("Plane %d, dislocation = (%f, %f), corr = %f" % (index, move_x[index], move_y[index], corr))
 
 # make pandas dataframe
 results = pandas.DataFrame({'align_plane' : numpy.arange(len(orig_images)), \

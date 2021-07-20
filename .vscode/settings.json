@@ -7,13 +7,17 @@
         "firecalc",
         "firefrc",
         "fireheat",
+        "fluorescently",
         "frcplot",
         "fullname",
         "grayscale",
+        "hybridoma",
         "kaze",
         "kobayashi",
         "matplotlib",
+        "mendeley",
         "miyoshi",
+        "mkdir",
         "multipage",
         "nnchaser",
         "numpy",
@@ -24,6 +28,7 @@
         "spotmarker",
         "spotplotter",
         "statmodels",
+        "statsmodels",
         "subpixel",
         "takushi",
         "taniakaze",
@@ -36,7 +41,14 @@
         "tanimark",
         "taniplot",
         "tanipoc",
+        "tanitime",
         "tanitrace",
-        "tanitracer"
-    ]
+        "tanitracer",
+        "testdata",
+        "testimage",
+        "testimages",
+        "tifffile",
+        "xenopus"
+    ],
+    "python.linting.pylintEnabled": true
 }

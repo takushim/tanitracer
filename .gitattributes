@@ -1,13 +1,11 @@
 .gitignore export-ignore
 .gitattributes export-ignore
-frcplotspot.py export-ignore
-frcplotwt.py export-ignore
-frcsplit.py export-ignore
-lifetime.py export-ignore
-numspots.py export-ignore
-stamp.py export-ignore
-crop.py export-ignore
-spotalign.py export-ignore
-skipplane.py export-ignore
-thunderplot.py export-ignore
-
+testdata export-ignore
+images export-ignore
+.vscode export-ignore
+.pylintrc export-ignore
+*.jpg binary
+*.tif binary
+*.stk binary
+*.ai binary
+*.psd binary
