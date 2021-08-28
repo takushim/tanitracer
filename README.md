@@ -60,7 +60,7 @@ All of these libraries can be installed using `pip` by typing:
   matplotlib tifffile opencv-contrib-python statsmodels
 ```
 
-**Note:** It is highly recommended to install these packages in [a virtual environments of python](https://docs.python.org/3/library/venv.html).
+**Note:** It is highly recommended to install these packages in [a virtual environment of python](https://docs.python.org/3/library/venv.html).
 
 ### Installation
 
@@ -110,7 +110,7 @@ The image below is a montage of three frames chosen from the output, `testimages
 
 Finally, run the following command to track the fluorescent spots in `testimages.tif`:
 ```
-tanitrace.py -l 1.8 -t 0.03 -C -O -z 3 -i -r testimages.tif
+> tanitrace.py -l 1.8 -t 0.03 -C -O -z 3 -i -r testimages.tif
 ```
 
 This script apply the LoG filter with the parameter of `1.8` and perform Gaussian fitting with the threshold of `0.03` for the entire frames of `testimages.tif`. The option, `-C`, turns on the tracking of spots using *k*-nearest neighbor algorithm. The option, `-O`, is to output an image file with markers on detected spots. The effect of options, `-i` and `-z 3`, are to invert the lookup table of output image and to set the radius of markers as described above. The option, `-r`, is to distinguish each tracking of spots using different colors.
@@ -128,7 +128,7 @@ The list of detected spots (and tracking results) are output into **a TSV (tab s
 
 The TSV file output above with "tracking on" can be used to determine the dissociation rates of fluorescent probes from their targets. Both `regression from t = 0` and `distribution of dwell-time` can be calculated using the TSV file. Type the following command to output the regression from t = 0:
 ```
-> tanitime -x 0.05 testimage.txt
+> tanitime.py -x 0.05 testimage.txt
 ```
 
 The option, `-x 0.05`, is set since the time-lapse images were acquired every 50 ms. An output TSV file can be downloaded from  [testimage_regression.txt](https://github.com/takushim/tanitracer/raw/master/testdata/testimage_regression.txt). Using an appropriate software, such as GraphPad Prism, a one-phase decay model can be fit to determine the "dissociation rate" as shown below. **Note that the curve below does not indicate the accurate dissociation rate of our Fab probe from their targets because the intervals of time-lapse images are not optimized. Determination of dissociation rates requires careful optimization of imaging condition and image processing parameters.**
