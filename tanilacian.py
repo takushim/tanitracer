@@ -79,18 +79,10 @@ float_images = tracer.clip_array(float_images)
 for index in range(len(float_images)):
     float_images[index] = tracer.standardize_and_filter_image(float_images[index])
 
-# prepare pseudo-color palette
-palette = numpy.zeros((256, 3), dtype=numpy.uint8)
-for i in range(256):
-    palette[i, 0], palette[i, 1], palette[i, 2] = i, i, i
-
 # prepare image of 8-bit RGB color
 float_max = numpy.max(float_images)
 float_min = numpy.min(float_images)
-uint8_images = (255.0 * (float_images - float_min) / (float_max - float_min)).astype(numpy.uint8)
-
-output_images = numpy.zeros((orig_images.shape + (3,)), dtype = numpy.uint8)
-output_images[:, :, :] = palette[uint8_images[:, :, :]]
+output_images = (65535.0 * (float_images - float_min) / (float_max - float_min)).astype(numpy.uint16)
 
 # output image
 tifffile.imsave(output_filename, output_images)
