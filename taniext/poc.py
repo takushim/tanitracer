@@ -84,8 +84,5 @@ def poc(f, g, fitting_shape = (9, 9)):
     x = x + peak[1] - m[1]
     errorfunction = lambda p: numpy.ravel(pocfunc_model(p[0], p[1], p[2], r, u)(y, x) - fitting_area)
     plsq = leastsq(errorfunction, p0)
-    print(pocfunc_model(plsq[0][0], plsq[0][1], plsq[0][2], r, u)(y, x))
-    print(numpy.max(pocfunc_model(plsq[0][0], plsq[0][1], plsq[0][2], r, u)(y, x)))
-    print(plsq[0])
 
     return (plsq[0][0], plsq[0][1], plsq[0][2])
