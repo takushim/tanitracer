@@ -192,4 +192,4 @@ for index, condition in enumerate(conditions):
 
 # combine images and output
 output_images = numpy.hstack((output_images, font_images, count_images))
-tifffile.imsave(output_filename, output_images)
+tifffile.imwrite(output_filename, output_images)

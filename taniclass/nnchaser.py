@@ -54,12 +54,12 @@ class NNChaser:
                 results.append(numpy.array([]))
                 continue
 
-            pairs = numpy.zeros(len(orig_spots), dtype=[('orig_array_index', numpy.int), \
-                                                        ('orig_total_index', numpy.int), \
-                                                        ('next_array_index', numpy.int), \
-                                                        ('distance', numpy.float), \
-                                                        ('track_distance', numpy.float), \
-                                                        ('valid', numpy.bool)])
+            pairs = numpy.zeros(len(orig_spots), dtype=[('orig_array_index', int), \
+                                                        ('orig_total_index', int), \
+                                                        ('next_array_index', int), \
+                                                        ('distance', float), \
+                                                        ('track_distance', float), \
+                                                        ('valid', bool)])
 
             if len(next_spots) == 0:
                 # do not run nn since there are no spots on the next plane
@@ -90,7 +90,7 @@ class NNChaser:
                 unique_index = numpy.unique(pairs['next_array_index'], return_index = True)[1]
 
                 # omit duplicates
-                mask = numpy.ones(len(pairs), dtype=numpy.bool)
+                mask = numpy.ones(len(pairs), dtype=bool)
                 mask[unique_index] = False
                 pairs['valid'][mask] = False
 
@@ -104,12 +104,12 @@ class NNChaser:
 
         # add last results
         lastplane_spots = spot_table[spot_table.plane == max(spot_table.plane)]
-        pairs = numpy.zeros(len(lastplane_spots), dtype=[('orig_array_index', numpy.int), \
-                                                         ('orig_total_index', numpy.int), \
-                                                         ('next_array_index', numpy.int), \
-                                                         ('distance', numpy.float), \
-                                                         ('track_distance', numpy.float), \
-                                                         ('valid', numpy.bool)])
+        pairs = numpy.zeros(len(lastplane_spots), dtype=[('orig_array_index', int), \
+                                                         ('orig_total_index', int), \
+                                                         ('next_array_index', int), \
+                                                         ('distance', float), \
+                                                         ('track_distance', float), \
+                                                         ('valid', bool)])
         pairs['orig_array_index'] = numpy.arange(len(lastplane_spots))
         pairs['orig_total_index'] = lastplane_spots.total_index.values
         pairs['next_array_index'] = -1

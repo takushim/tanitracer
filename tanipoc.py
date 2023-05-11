@@ -149,4 +149,4 @@ if output_image is True:
 
     # output multipage tiff
     print("Output image file to %s." % (output_image_filename))
-    tifffile.imsave(output_image_filename, output_image_array)
+    tifffile.imwrite(output_image_filename, output_image_array)

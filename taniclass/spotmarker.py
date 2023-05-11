@@ -138,8 +138,8 @@ class SpotMarker:
                 skipped_planes.append(index)
                 continue
 
-            spots['int_x'] = spots['x'].astype(numpy.int)
-            spots['int_y'] = spots['y'].astype(numpy.int)
+            spots['int_x'] = spots['x'].astype(int)
+            spots['int_y'] = spots['y'].astype(int)
             spots = spots.sort_values(by = ['int_x', 'int_y']).reset_index(drop=True)
 
             # check possible error spots (duplicated)

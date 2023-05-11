@@ -183,8 +183,8 @@ for index, input_filename in enumerate(input_filenames):
 # clip output.tif to 32bit and output
 print("Output image file to %s." % (output_filename1))
 output_image_32bit = output_image1.clip(0, numpy.iinfo(numpy.int32).max).astype(numpy.int32)
-tifffile.imsave(output_filename1, output_image_32bit)
+tifffile.imwrite(output_filename1, output_image_32bit)
 
 print("Output image file to %s." % (output_filename2))
 output_image_32bit = output_image2.clip(0, numpy.iinfo(numpy.int32).max).astype(numpy.int32)
-tifffile.imsave(output_filename2, output_image_32bit)
+tifffile.imwrite(output_filename2, output_image_32bit)

@@ -70,7 +70,7 @@ image2 = tifffile.imread(input_filename2)
 if mask_image_filename is not None:
     # read masking image
     mask_image = tifffile.imread(mask_image_filename)
-    mask_image = mask_image.astype(numpy.bool).astype(numpy.uint8)
+    mask_image = mask_image.astype(bool).astype(numpy.uint8)
     # mask image
     image1 = image1 * mask_image
     image2 = image2 * mask_image

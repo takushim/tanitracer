@@ -56,7 +56,7 @@ class FireFRC:
 
         [y_grid, x_grid] = numpy.meshgrid(y, x)
 
-        indexes = numpy.round(numpy.sqrt(y_grid * y_grid + x_grid * x_grid)).astype(numpy.int)
+        indexes = numpy.round(numpy.sqrt(y_grid * y_grid + x_grid * x_grid)).astype(int)
         fft_sum = numpy.zeros(numpy.max(indexes) + 1, dtype = numpy.complex)
         fft_count = numpy.zeros(numpy.max(indexes) + 1, dtype = numpy.complex )
 

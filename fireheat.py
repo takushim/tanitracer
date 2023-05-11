@@ -103,11 +103,11 @@ size_y = image2.shape[0] // (box_size // 2) - 1
 
 # prepare masking
 # masking array for fire_array
-mask_array = numpy.ones((size_y, size_x), dtype=numpy.int)
+mask_array = numpy.ones((size_y, size_x), dtype=int)
 if mask_image_filename is not None:
     # read masking image
     mask_image = tifffile.imread(mask_image_filename)
-    mask_image = mask_image.astype(numpy.bool).astype(numpy.uint8)
+    mask_image = mask_image.astype(bool).astype(numpy.uint8)
     # mask image
     image1 = image1 * mask_image
     image2 = image2 * mask_image
@@ -122,9 +122,9 @@ if mask_image_filename is not None:
             if 1.0 * masked / total > 0.1:
                 mask_array[index_y, index_x] = 0
 
-fire_array = numpy.zeros((size_y, size_x), dtype=numpy.float)
-image1_box = numpy.zeros((box_size, box_size), dtype=numpy.int)
-image2_box = numpy.zeros((box_size, box_size), dtype=numpy.int)
+fire_array = numpy.zeros((size_y, size_x), dtype=float)
+image1_box = numpy.zeros((box_size, box_size), dtype=int)
+image2_box = numpy.zeros((box_size, box_size), dtype=int)
 
 for index_y in range(size_y):
     for index_x in range(size_x):
@@ -199,7 +199,7 @@ for index_y in range(size_y):
 
 # output heatmap tiff
 print("Output image file to %s." % (output_image_filename))
-tifffile.imsave(output_image_filename, output_image)
+tifffile.imwrite(output_image_filename, output_image)
 
 # output histogram
 if output_histogram is True:

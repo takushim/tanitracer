@@ -131,38 +131,38 @@ class Gaussian8:
         error_dict = {}
 
         # omit spots of abnormal subpixel correction (this should be run first of all)
-        indexes = numpy.ones(len(result_dict['x']), dtype=numpy.bool)
+        indexes = numpy.ones(len(result_dict['x']), dtype=bool)
         indexes = indexes & ((0.5 * (c10/c20)) < 1)
         indexes = indexes & ((0.5 * (c01/c02)) < 1)
         error_dict['large_subpixel_shift'] = len(result_dict['x']) - numpy.sum(indexes)
         result_dict = {k: result_dict[k][indexes] for k in result_dict}
 
         # omit nan spots
-        indexes = numpy.ones(len(result_dict['x']), dtype=numpy.bool)
+        indexes = numpy.ones(len(result_dict['x']), dtype=bool)
         indexes = indexes & (result_dict['x'] >= 0) & (result_dict['x'] <= float_image.shape[1])
         indexes = indexes & (result_dict['y'] >= 0) & (result_dict['y'] <= float_image.shape[0])
         error_dict['nan_coordinate'] = len(result_dict['x']) - numpy.sum(indexes)
         result_dict = {k: result_dict[k][indexes] for k in result_dict}
 
         # omit spots of large diameter
-        indexes = numpy.ones(len(result_dict['x']), dtype=numpy.bool)
+        indexes = numpy.ones(len(result_dict['x']), dtype=bool)
         indexes = indexes & (result_dict['diameter'] <= self.max_diameter)
         error_dict['large_diameter'] = len(result_dict['x']) - numpy.sum(indexes)
         result_dict = {k: result_dict[k][indexes] for k in result_dict}
 
         # omit duplicated spots
         if len(result_dict['x']) > 1:
-            indexes = numpy.ones(len(result_dict['x']), dtype=numpy.bool)
+            indexes = numpy.ones(len(result_dict['x']), dtype=bool)
 
             # find nearest spots
             nn = NearestNeighbors(n_neighbors = 2, metric = 'euclidean').fit(numpy.array([result_dict['x'], result_dict['y']]).T)
             distances, targets = nn.kneighbors(numpy.array([result_dict['x'], result_dict['y']]).T)
             distances, targets = distances[:,1], targets[:,1]
-            pairs = numpy.zeros(len(result_dict['x']), dtype=[('orig_index', numpy.int), \
-                                                              ('near_index', numpy.int), \
-                                                              ('distance', numpy.float), \
-                                                              ('fit_error', numpy.float), \
-                                                              ('duplicated', numpy.bool)])
+            pairs = numpy.zeros(len(result_dict['x']), dtype=[('orig_index', int), \
+                                                              ('near_index', int), \
+                                                              ('distance', float), \
+                                                              ('fit_error', float), \
+                                                              ('duplicated', bool)])
             pairs['orig_index'] = numpy.arange(len(result_dict['x']))
             pairs['near_index'] = targets
             pairs['distance'] = distances

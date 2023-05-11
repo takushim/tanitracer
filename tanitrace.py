@@ -216,7 +216,7 @@ if output_image is True:
     image_color = marker.mark_spots(image_color, results)
 
     # output multipage tiff
-    tifffile.imsave(output_image_filename, image_color)
+    tifffile.imwrite(output_image_filename, image_color)
     print("Output image file to %s." % (output_image_filename))
 
 # spacer to next processing

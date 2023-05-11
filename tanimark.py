@@ -123,7 +123,7 @@ spot_table = pandas.read_csv(marker_filename, comment = '#', sep = '\t')
 if filter.mask_image_filename is not None:
     total_spots = len(spot_table)
     spot_table = filter.filter_spots_maskimage(spot_table)
-    print("Filtered %d spots using a mask image: %s." % (total_spots - len(spot_table), mask_image_filename))
+    print("Filtered %d spots using a mask image: %s." % (total_spots - len(spot_table), filter.mask_image_filename))
 
 # mark tracking status
 print("Marked %d spots on %s." % (len(spot_table), input_filename))
@@ -131,4 +131,4 @@ image_color = marker.mark_spots(image_color, spot_table)
 
 # output multipage tiff
 print("Output image file to %s." % (output_filename))
-tifffile.imsave(output_filename, image_color)
+tifffile.imwrite(output_filename, image_color)

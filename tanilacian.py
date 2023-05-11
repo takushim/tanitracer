@@ -85,4 +85,4 @@ float_min = numpy.min(float_images)
 output_images = (65535.0 * (float_images - float_min) / (float_max - float_min)).astype(numpy.uint16)
 
 # output image
-tifffile.imsave(output_filename, output_images)
+tifffile.imwrite(output_filename, output_images)

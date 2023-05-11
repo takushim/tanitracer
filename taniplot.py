@@ -241,9 +241,9 @@ if output_stackmode is None:
     # clip output.tif to 32bit and output
     print("Output image file to %s." % (output_filename))
     output_image_32bit = output_image.clip(0, numpy.iinfo(numpy.int32).max).astype(numpy.int32)
-    tifffile.imsave(output_filename, output_image_32bit, description = desc_text)
+    tifffile.imwrite(output_filename, output_image_32bit, description = desc_text)
 else:
     # clip output.tif to 32bit and output
     print("Output %s stack image file to %s." % (output_stackmode, output_filename))
     output_image_32bit = output_stack.clip(0, numpy.iinfo(numpy.int32).max).astype(numpy.int32)
-    tifffile.imsave(output_filename, output_image_32bit, description = desc_text)
+    tifffile.imwrite(output_filename, output_image_32bit, description = desc_text)

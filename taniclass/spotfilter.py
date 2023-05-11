@@ -78,10 +78,10 @@ class SpotFilter:
             return spot_table
 
         mask_image = tifffile.imread(self.mask_image_filename)
-        mask_image = mask_image.astype(numpy.bool).astype(numpy.uint8)
+        mask_image = mask_image.astype(bool).astype(numpy.uint8)
 
         first_spot_table = spot_table.drop_duplicates(subset='total_index', keep='first').reset_index(drop=True)
-        first_spot_table['mask'] = mask_image[first_spot_table.y.values.astype(numpy.int), first_spot_table.x.values.astype(numpy.int)]
+        first_spot_table['mask'] = mask_image[first_spot_table.y.values.astype(int), first_spot_table.x.values.astype(int)]
         index_set = set(first_spot_table[first_spot_table['mask'] > 0].total_index.to_list())
 
         return spot_table[spot_table.total_index.isin(index_set)]
