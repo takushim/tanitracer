@@ -6,7 +6,7 @@ A python toolbox for semi-automatic single particle tracking (SPT) and reconstru
 
 ## Introduction
 
-**tanitracer** is a set of python scripts for single particle tracking (SPT) and reconstruction of super-resolution images. In this document, basic usages of scripts are described using a 16-bit multi-page sample TIFF file, [testimage.tif](https://github.com/takushim/tanitracer/raw/master/testdata/testimage.tif).
+**tanitracer** is a set of python scripts for single particle tracking (SPT) and reconstruction of super-resolution images. In this document, basic usages of scripts are described using a 16-bit multi-page sample TIFF file, [testimage.tif](https://github.com/takushim/tanitracer/raw/main/testdata/testimage.tif).
 
 These four scripts are for SPT of fluorescent spots:
 * `tanilacian.py` - tests the pre-processing using the LoG filter
@@ -73,16 +73,16 @@ Download the zip file from my [GitHub repository](https://github.com/takushim/ta
 
 ### Overview
 
-Basic usages are described using a 16-bit multi-page sample TIFF file, [testimage.tif](https://github.com/takushim/tanitracer/raw/master/testdata/testimage.tif). The file contains time-lapse single-molecule microscopy images of fluorescently-labeled anti-FLAG tag Fab fragment probes (Fab probes) recognizing FLAG-tagged actin expressed in a *Xenopus* XTC cell. Bound Fab probes are frequently exchanged since the Fab probes are synthesized from our new reagent, **fast-dissociating, highly-specific antibody**.
+Basic usages are described using a 16-bit multi-page sample TIFF file, [testimage.tif](https://github.com/takushim/tanitracer/raw/main/testdata/testimage.tif). The file contains time-lapse single-molecule microscopy images of fluorescently-labeled anti-FLAG tag Fab fragment probes (Fab probes) recognizing FLAG-tagged actin expressed in a *Xenopus* XTC cell. Bound Fab probes are frequently exchanged since the Fab probes are synthesized from our new reagent, **fast-dissociating, highly-specific antibody**.
 
 The first frame of testimage.tif is shown below. Each white spot is an anti-FLAG tag Fab probe molecule recognizing FLAG-actin in the cell and a single particle to be tracked.
 
-![testimage.tif](https://github.com/takushim/tanitracer/raw/master/images/testimage_raw.jpg)
+![testimage.tif](https://github.com/takushim/tanitracer/raw/main/images/testimage_raw.jpg)
 
 
 ### Parameter optimization
 
-Download [testimage.tif](https://github.com/takushim/tanitracer/raw/master/testdata/testimage.tif) and place in an appropriate folder. In this tutorial, **I assume that we are in the folder where `testimage.tif` is placed**.
+Download [testimage.tif](https://github.com/takushim/tanitracer/raw/main/testdata/testimage.tif) and place in an appropriate folder. In this tutorial, **I assume that we are in the folder where `testimage.tif` is placed**.
 
 **Note:** Run each script with a `--help` option to see the options not explained in this document.
 
@@ -93,7 +93,7 @@ First, optimize the parameter of a LoG filter since **tanitracer** pre-process i
 
 Processed images are output in `testimages_log.tif` in the current folder. The first frame is shown below. Fluorescent spots are selectively enhanced. The parameter, `1.8`, was determined to be close to the radius of fluorescent spots because the LoG filter enhances objects with the diameters double of the given parameter. Empirically, better tracking can be achieved by setting the parameter slightly smaller than the radius of fluorescent spots. 
 
-![testimage_log.jpg](https://github.com/takushim/tanitracer/raw/master/images/testimage_log.jpg)
+![testimage_log.jpg](https://github.com/takushim/tanitracer/raw/main/images/testimage_log.jpg)
 
 Next, determine the threshold for Gaussian fitting. Type the following command:
 ```
@@ -104,7 +104,7 @@ For the first frame of `testimages.tif`, this script apply a LoG filter with a p
 
 The image below is a montage of three frames chosen from the output, `testimages_fit.tif`. In the left panel (threshold = 0.01), false spots are detected in almost all areas of the image. In the right panel (threshold = 0.1), many fluorescent spots are "missed". **The center panel (threshold = 0.03) seems to be the best.**
 
-![testimage_fit.jpg](https://github.com/takushim/tanitracer/raw/master/images/testimage_fit.jpg)
+![testimage_fit.jpg](https://github.com/takushim/tanitracer/raw/main/images/testimage_fit.jpg)
 
 ### Particle tracking 
 
@@ -117,9 +117,9 @@ This script apply the LoG filter with the parameter of `1.8` and perform Gaussia
 
 Here is the first frame of output image:
 
-![testimage_marked.jpg](https://github.com/takushim/tanitracer/raw/master/images/testimage_marked.jpg)
+![testimage_marked.jpg](https://github.com/takushim/tanitracer/raw/main/images/testimage_marked.jpg)
 
-The list of detected spots (and tracking results) are output into **a TSV (tab separated values) file**. The TSV file for the demonstration above can be downloaded from [testimage.txt](https://github.com/takushim/tanitracer/raw/master/testdata/testimage.txt).
+The list of detected spots (and tracking results) are output into **a TSV (tab separated values) file**. The TSV file for the demonstration above can be downloaded from [testimage.txt](https://github.com/takushim/tanitracer/raw/main/testdata/testimage.txt).
 
 **Note:** The script, `tanitrace.py`, automatically converts input images into 8-bit images and draw markers on them. To improve the contrast of images, convert the input images into 8-bit by yourself and use `tanimark.py` to draw markers.
 
@@ -131,9 +131,9 @@ The TSV file output above with "tracking on" can be used to determine the dissoc
 > tanitime.py -x 0.05 testimage.txt
 ```
 
-The option, `-x 0.05`, is set since the time-lapse images were acquired every 50 ms. An output TSV file can be downloaded from  [testimage_regression.txt](https://github.com/takushim/tanitracer/raw/master/testdata/testimage_regression.txt). Using an appropriate software, such as GraphPad Prism, a one-phase decay model can be fit to determine the "dissociation rate" as shown below. **Note that the curve below does not indicate the accurate dissociation rate of our Fab probe from their targets because the intervals of time-lapse images are not optimized. Determination of dissociation rates requires careful optimization of imaging condition and image processing parameters.**
+The option, `-x 0.05`, is set since the time-lapse images were acquired every 50 ms. An output TSV file can be downloaded from  [testimage_regression.txt](https://github.com/takushim/tanitracer/raw/main/testdata/testimage_regression.txt). Using an appropriate software, such as GraphPad Prism, a one-phase decay model can be fit to determine the "dissociation rate" as shown below. **Note that the curve below does not indicate the accurate dissociation rate of our Fab probe from their targets because the intervals of time-lapse images are not optimized. Determination of dissociation rates requires careful optimization of imaging condition and image processing parameters.**
 
-![testimage_regression.jpg](https://github.com/takushim/tanitracer/raw/master/images/regression.jpg)
+![testimage_regression.jpg](https://github.com/takushim/tanitracer/raw/main/images/regression.jpg)
 
 
 ## Reconstruction of super-resolution images
@@ -158,7 +158,7 @@ testdata/   spots/  image001.stk
 
 These files are 320 pairs of a bright-field image, `bf*.stk`, and a 500-frame time-lapse single-molecule microscopy images, `image*.stk`, as described in the diagram below. The files, `image*.stk`, are 500-frame time-lapse single-molecule microscopy images (MetaMorph stacks) of our fast-dissociating anti-FLAG tag Fab fragment probes (Fab probes) recognizing FLAG-tagged actin expressed in a *Xenopus* XTC cell. The files, `bf*.stk`, are single-frame bright-field images acquired for drift correction. Each bright-field image was acquired before starting each time-lapse acquisition. 
 
-![acquisition.jpg](https://github.com/takushim/tanitracer/raw/master/images/acquisition.jpg)
+![acquisition.jpg](https://github.com/takushim/tanitracer/raw/main/images/acquisition.jpg)
 
 ### Centroid determination for each fluorescent spot
 
@@ -189,7 +189,7 @@ Next, calculate sample drifting during the acquisition by running the following 
 
 This script concatenate the image files specified as the arguments and compare each image with the first image. Sample drifts are calculated using a phase-only-correlation (POC) algorithm and output the results in a TSV file, `align.txt`. Empirically, the POC algorithm works well with images with some bright structures, such as bright-field images of *Xenopus* XTC cells shown below. Another script, `taniakaze.py`, using an AKAZE feature matching algorithm seems to be better for samples with a more complicated structure.
 
-![bf.jpg](https://github.com/takushim/tanitracer/raw/master/images/bf.jpg)
+![bf.jpg](https://github.com/takushim/tanitracer/raw/main/images/bf.jpg)
 
 ### Reconstruction of super-resolution images
 
@@ -201,7 +201,7 @@ Finally, reconstruct a super-resolution images using the TSV files in the `analy
 
 The centroids in the TSV files are plotted on a blank image. The option, `-X`, specifies the magnification to the original images. The script automatically find `align.txt` in the current folder and correct sample drifting using each line for every 500 frames. The final super-resolution image of FLAG-actin is shown below.
 
-![testimage_plot.jpg](https://github.com/takushim/tanitracer/raw/master/images/testimage_plot.jpg)
+![testimage_plot.jpg](https://github.com/takushim/tanitracer/raw/main/images/testimage_plot.jpg)
 
 ## Analysis of resolution by Fourier ring correlation (TL;DR)
 
