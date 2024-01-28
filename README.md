@@ -215,7 +215,7 @@ frcplot.py -d 80 -X 8 [path_to_results]/*.txt
 
 `firecalc.py` calculate the FRC curve and determine FIRE value from the two super-resolved files.
 ```
-> firecalc.py -m mask.tif output_each80_1.tif output_each80_2.tif
+firecalc.py -m mask.tif output_each80_1.tif output_each80_2.tif
 ```
 displays a FRC curve calculated from the two divided images. `-m` specifies the masking image. The masking image is converted to an array of TRUE and FALSE, and multiplied to the super-resolved images. Thus, the area of value 0 in the masking image is excluded from the calculation.
 
