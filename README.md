@@ -64,7 +64,11 @@ pip install numpy pandas scipy scikit-image scikit-learn pillow \
 
 ### Installation
 
-Download the zip file from my [GitHub repository](https://github.com/takushim/tanitracer) and place all the files in an appropriate folder, for example, `C:\Users\[username]\tanitracer`. Add the installed folder to the `PATH` environment variable. The library files in `taniclass` and `taniext` folders are automatically found by the python interpreter as long as they are located in the folder of script files. If [git](https://git-scm.com/) is installed, my git repository can be cloned using the following commend:
+Download the zip file from my [GitHub repository](https://github.com/takushim/tanitracer) and place all the files in an appropriate folder, for example, `C:\Users\[username]\tanitracer` or  `C:\Users\[username]\bin\tanitracer`. Add the installed folder to the `PATH` environment variable. The library files in `taniclass` and `taniext` folders are automatically found by the python interpreter as long as they are located in the folder of script files. 
+
+**Note:** If you are using PowerShell, add `.PY` to the PATHEXT environment variable. Otherwise, Python will start in a separate window and finishes soon.
+
+If [git](https://git-scm.com/) is installed, my git repository can be cloned using the following commend:
 ```
 git clone https://github.com/takushim/tanitracer.git
 ```
