@@ -39,36 +39,32 @@ Algorithms are capsuled in the module files in `taniclass` and `taniext` folders
 (**) implemented by the author, but referred to the codes by [Sajid Ari](https://github.com/s-sajid-ali/FRC)
 
 ## Getting Started
+### Installation and usage
+Please refer to the following guides, using the **tanitracer** as the repository name.
+* [Installation of the Python toolkits](https://github.com/takushim/momodoc/blob/main/installation.md)
+* [Basic usage of Python scripts](https://github.com/takushim/momodoc/blob/main/usage.md)
 
-### Requirements
-
-First of all, install [ImageJ](https://imagej.nih.gov/ij/) or [Fiji](https://fiji.sc/) to check output images. Then, install Python 3.6 or later to run the python scripts in **tanitracer**. The 64-bit version is highly recommended. Required libraries are:
+The required Python packages are:
 * `numpy`
 * `pandas`
 * `scipy`
 * `scikit-image`
 * `scikit-learn`
-* `Pillow (PIL)`
+* `Pillow` (PIL)
 * `matplotlib`
 * `tifffile`
 * `opencv-contrib-python` - for A-KAZE feature matching
 * `statsmodels` - for calculating FRC curves and FIRE values
 
-All of these libraries can be installed using `pip` by typing:
+You can install these packages using the following command:
 ```
 pip install numpy pandas scipy scikit-image scikit-learn pillow matplotlib tifffile opencv-contrib-python statsmodels
 ```
 
-**Note:** It is highly recommended to install these packages in [a virtual environment of python](https://docs.python.org/3/library/venv.html).
-
-### Installation
-
-Download the zip file from my [GitHub repository](https://github.com/takushim/tanitracer) and place all the files in an appropriate folder, for example, `C:\Users\[username]\tanitracer` or  `C:\Users\[username]\bin\tanitracer`. Add the installed folder to the `PATH` environment variable. The library files in `taniclass` and `taniext` folders are automatically found by the python interpreter as long as they are located in the folder of script files. If [git](https://git-scm.com/) is installed, my git repository can be cloned using the following commend:
+To clone this repository, run:
 ```
 git clone https://github.com/takushim/tanitracer.git
 ```
-
-**Note:** If you are using PowerShell, add `.PY` to the PATHEXT environment variable. Otherwise, Python will start in a separate window and finishes soon.
 
 ## Single particle tracking (SPT)
 
